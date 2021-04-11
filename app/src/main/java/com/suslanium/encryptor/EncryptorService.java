@@ -594,6 +594,7 @@ public class EncryptorService extends Service {
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
                                 .setContentTitle("Something went wrong while uploading...")
+                                .setContentText(e.getMessage())
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager2.notify(operationID, builder2.build());
