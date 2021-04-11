@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_explorer">
+
+    <fragment
+        android:id="@+id/nav_explorer"
+        android:name="com.suslanium.encryptor.ui.home.HomeFragment"
+        android:label="@string/menu_explorer"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_datavault"
+        android:name="com.suslanium.encryptor.ui.gallery.GalleryFragment"
+        android:label="@string/menu_datavault"
+        tools:layout="@layout/fragment_gallery" />
+
+    <fragment
+        android:id="@+id/nav_keyexchange"
+        android:name="com.suslanium.encryptor.ui.slideshow.SlideshowFragment"
+        android:label="@string/menu_keyexchange"
+        tools:layout="@layout/fragment_slideshow" />
+</navigation>

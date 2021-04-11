@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Encryptor</string>
+    <string name="password" translatable="false">Password</string>
+    <string name="welcome" translatable="false">WELCOME</string>
+    <string name="logintip" translatable="false">Please enter your password.</string>
+    <string name="login" translatable="false">LOG IN</string>
+    <string name="title_activity_explorer">Explorer</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Encryptor</string>
+    <string name="nav_header_desc" translatable="false">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">File explorer</string>
+    <string name="menu_gallery">Password vault</string>
+    <string name="menu_slideshow">Key exchange</string>
+    <string name="nav_header_subtitle">Keep your data secure!</string>
+    <string name="menu_explorer">File explorer</string>
+    <string name="menu_datavault">Password vault</string>
+    <string name="menu_keyexchange">Key exchange</string>
+</resources>
