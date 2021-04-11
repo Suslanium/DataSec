@@ -17,6 +17,8 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,7 +75,36 @@ public class YandexDiskSignIn extends FragmentActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl(AUTH_URL);
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String[] url = {null};
+                do {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                url[0] = webView.getUrl();
+                            }
+                        });
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } while (!url[0].contains("https://yx6afb1b69b37f4608ae9f0d74f3d29f92.oauth.yandex.ru/"));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String token = url[0].substring(101, 140);
+                        Snackbar.make(webView, token, Snackbar.LENGTH_LONG).show();
+                        saveToken(token);
+                    }
+                });
+            }
+        });
+        thread.start();
     }
+
     public static class AuthDialogFragment extends DialogFragment {
 
         public AuthDialogFragment () {
