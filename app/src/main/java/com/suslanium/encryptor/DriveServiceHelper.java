@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -95,6 +96,7 @@ public class DriveServiceHelper {
     public List<File> listDriveFiles(String folderID) throws Exception {
         String pageToken = null;
         FileList result = null;
+        List<File> files = new ArrayList<>();
         if(folderID == null) {
             do {
                 result = mDriveService.files().list()
@@ -103,16 +105,9 @@ public class DriveServiceHelper {
                         .setPageToken(pageToken)
                         .setQ("'" + mDriveService.files().get("appDataFolder").setFields("id").execute().getId() + "' in parents")
                         .execute();
+                if(result.getFiles() != null)files.addAll(result.getFiles());
                 pageToken = result.getNextPageToken();
             } while (pageToken != null);
-            List<File> files = result.getFiles();
-            if(files != null)
-            for(int i = 0;i<files.size(); i++){
-                Log.d("Drive", files.get(i).getName());
-                //if(!files.get(i).get(files.get(i).getId()).equals(mDriveService.files().get("appDataFolder").setFields("id").execute().getId())){
-                    //files.remove(i);
-                //}
-            }
             return files;
         } else {
             do {
@@ -122,16 +117,9 @@ public class DriveServiceHelper {
                         .setPageToken(pageToken)
                         .setQ("'" + folderID + "' in parents")
                         .execute();
+                if(result.getFiles() != null)files.addAll(result.getFiles());
                 pageToken = result.getNextPageToken();
             } while (pageToken != null);
-            List<File> files = result.getFiles();
-            if(files != null)
-            for(int i = 0;i<files.size(); i++){
-                Log.d("Drive", files.get(i).getName());
-                //if(!files.get(i).get(files.get(i).getId()).equals(folderID)){
-                    //files.remove(i);
-                //}
-            }
             return files;
         }
     }

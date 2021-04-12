@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
@@ -44,35 +46,15 @@ public class EncryptorService extends Service {
     private ArrayList<Boolean> isRunning = new ArrayList<>();
     private ISaver mSaver;
     private String ONEDRIVE_APP_ID = "4a85af0e-df80-4f4f-a172-625d168df915";
-    private WifiManager.WifiLock wifiLock = null;
-    private PowerManager.WakeLock wakeLock = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF , "Encryptor:WifiLock");
-        wifiLock.acquire();
-        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Encryptor:CPULock");
-        wakeLock.acquire();
-        Log.d("EncService", "Wakelock acquired");
     }
 
     @Override
     public void onDestroy() {
-        if (wakeLock != null) {
-            if (wakeLock.isHeld()) {
-                wakeLock.release();
-            }
-        }
-        if (wifiLock != null) {
-            if (wifiLock.isHeld()) {
-                wifiLock.release();
-            }
-        }
-        Log.d("EncService", "Wakelock released");
         super.onDestroy();
     }
 
@@ -579,14 +561,14 @@ public class EncryptorService extends Service {
                                 deleteFolder(encryptedFiles.get(i));
                             }
                         }
-                        NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                        NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
                                 .setContentTitle("Encrypted files have been successfully uploaded to GDrive!")
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
-                            builder2.setContentText("Errors: " + errorsCount[0]);
-                        NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
-                        notificationManager2.notify(operationID, builder2.build());
+                            builder3.setContentText("Errors: " + errorsCount[0]);
+                        NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
+                        notificationManager3.notify(operationID, builder3.build());
                         isRunning.remove(running);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
@@ -645,8 +627,8 @@ public class EncryptorService extends Service {
                             notificationManager1.notify(operationID, builder1.build());
                             final int[] errorsCount = {0};
                             ArrayList<String> downloadedPaths = new ArrayList<>();
-                            if(downloadedFiles.size() > 0){
-                                for(int i=0;i<downloadedFiles.size();i++){
+                            if (downloadedFiles.size() > 0) {
+                                for (int i = 0; i < downloadedFiles.size(); i++) {
                                     downloadedPaths.add(downloadedFiles.get(i).getPath());
                                 }
                                 for (String path : downloadedPaths) {
@@ -707,15 +689,17 @@ public class EncryptorService extends Service {
                                     }
                                 }
                             }
-                            for(int i=0;i<downloadedFiles.size();i++){
-                                if(downloadedFiles.get(i).isFile()) downloadedFiles.get(i).delete();
+                            for (int i = 0; i < downloadedFiles.size(); i++) {
+                                if (downloadedFiles.get(i).isFile())
+                                    downloadedFiles.get(i).delete();
                                 else deleteFolder(downloadedFiles.get(i));
                             }
                             NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                     .setSmallIcon(R.drawable.locked)
                                     .setContentTitle("File(s) have been successfully downloaded and decrypted!")
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-                            if (errorsCount[0] > 0) builder.setContentText("Errors: " + errorsCount[0]);
+                            if (errorsCount[0] > 0)
+                                builder.setContentText("Errors: " + errorsCount[0]);
                             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                             notificationManager.notify(operationID, builder.build());
                             isRunning.remove(running);
@@ -739,14 +723,14 @@ public class EncryptorService extends Service {
                 @Override
                 public void run() {
                     try {
-                        NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                        NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
                                 .setContentTitle("Deleting file(s) from Google drive...")
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-                        NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
-                        notificationManager2.notify(operationID, builder2.build());
+                        NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
+                        notificationManager3.notify(operationID, builder3.build());
                         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                 .requestEmail()
                                 .build();
@@ -891,12 +875,12 @@ public class EncryptorService extends Service {
         folder.delete();
     }
 
-    private ArrayList<File> gDriveDownloadFiles(DriveServiceHelper mDriveServiceHelper, ArrayList<String> paths, ArrayList<String> names, String dirPath) throws Exception{
+    private ArrayList<File> gDriveDownloadFiles(DriveServiceHelper mDriveServiceHelper, ArrayList<String> paths, ArrayList<String> names, String dirPath) throws Exception {
         ArrayList<File> downloadedFiles = new ArrayList<>();
         for (int i = 0; i < paths.size(); i++) {
-            if(names.get(i).contains(".")) {
+            if (names.get(i).contains(".")) {
                 File toDownload = new File(dirPath + File.separator + names.get(i));
-                if(toDownload.exists())toDownload.delete();
+                if (toDownload.exists()) toDownload.delete();
                 mDriveServiceHelper.downloadFile(toDownload, paths.get(i));
                 downloadedFiles.add(toDownload);
             } else {
@@ -905,7 +889,7 @@ public class EncryptorService extends Service {
                 List<com.google.api.services.drive.model.File> filesInFolder = mDriveServiceHelper.listDriveFiles(paths.get(i));
                 ArrayList<String> paths2 = new ArrayList<>();
                 ArrayList<String> names2 = new ArrayList<>();
-                if(filesInFolder != null && filesInFolder.size()>0) {
+                if (filesInFolder != null && filesInFolder.size() > 0) {
                     for (int j = 0; j < filesInFolder.size(); j++) {
                         paths2.add(filesInFolder.get(j).getId());
                         names2.add(filesInFolder.get(j).getName());

@@ -1,5 +1,6 @@
 package com.suslanium.encryptor;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,8 +10,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.text.InputType;
 import android.util.Base64;
 import android.view.Surface;
@@ -68,13 +73,52 @@ public class PasswordActivity extends AppCompatActivity {
 
     public void checkPassword(View v) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent();
+            String packageName = getPackageName();
+            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+                startActivityForResult(intent, 1002);
+            } else {
+                TextInputLayout text = findViewById(R.id.textInputLayout);
+                String password = text.getEditText().getText().toString();
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        byte[] pass;
+                        try {
+                            pass = Encryptor.RSAEncrypt(password);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = new Intent(PasswordActivity.this, Explorer.class);
+                                    intent.putExtra("pass", pass);
+                                    startActivity(intent);
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                thread.start();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1002) {
             TextInputLayout text = findViewById(R.id.textInputLayout);
             String password = text.getEditText().getText().toString();
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    byte[] pass;
                     try {
-                        byte [] pass = Encryptor.RSAEncrypt(password);
+                        pass = Encryptor.RSAEncrypt(password);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -84,12 +128,7 @@ public class PasswordActivity extends AppCompatActivity {
                             }
                         });
                     } catch (Exception e) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Snackbar.make(v, "Oops, something went wrong. Try again.", Snackbar.LENGTH_LONG).show();
-                            }
-                        });
+                        e.printStackTrace();
                     }
                 }
             });
