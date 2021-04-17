@@ -2,6 +2,7 @@ package com.suslanium.encryptor;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,7 +14,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.yandex.disk.rest.Credentials;
 import com.yandex.disk.rest.RestClient;
 
-import java.util.List;
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,11 +38,18 @@ public class YandexDiskSignIn extends FragmentActivity {
             return;
         } else {
             client = new RestClient(credentials);
-            YaDiLoader loader = new YaDiLoader(this, new YaDiCredentials(loadCredentials().getUser(), loadCredentials().getToken()), "%2F");
-            List<YaDiListItem> yaDiListItems = loader.loadInBackground();
-            for(YaDiListItem yaDiListItem: yaDiListItems){
-                System.out.println(yaDiListItem.toString());
-            }
+            YaDiServiceHelper helper = new YaDiServiceHelper(client);
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        helper.uploadFile(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator +  "Superlaser2.png"),"/");
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
         }
     }
     public void startLogin() {

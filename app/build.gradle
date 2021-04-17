@@ -51,6 +51,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'net.zetetic:android-database-sqlcipher:4.4.3@aar'
     implementation "androidx.sqlite:sqlite:2.0.1"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -65,4 +66,5 @@ dependencies {
                 exclude group: 'org.apache.httpcomponents'
             }
     implementation group: 'com.yandex.android', name: 'disk-restapi-sdk', version: '1.03'
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
 }

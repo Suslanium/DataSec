@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MessageFragment">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/keyText"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/confirmEncrypt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/plainText"
+        app:layout_constraintVertical_bias="0.3">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/keyEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Key"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/plainText"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.100000024">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/plainEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Plain Text"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/cipherText"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/plainText"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.7">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cipherEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ciphertext"
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="false" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/confirmEncrypt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Encrypt"
+        app:layout_constraintBottom_toTopOf="@+id/cipherText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/plainText" />
+
+    <RadioGroup
+        android:id="@+id/hashGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/confirmEncrypt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/plainText"
+        app:layout_constraintVertical_bias="0.35000002">
+
+        <RadioButton
+            android:id="@+id/sha1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SHA-1" />
+
+        <RadioButton
+            android:id="@+id/sha2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SHA-256" />
+
+        <RadioButton
+            android:id="@+id/sha3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SHA-512" />
+
+        <RadioButton
+            android:id="@+id/md5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MD5" />
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

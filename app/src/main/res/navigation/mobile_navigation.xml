@@ -22,4 +22,10 @@
         android:name="com.suslanium.encryptor.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_keyexchange"
         tools:layout="@layout/fragment_slideshow" />
+
+    <fragment
+        android:id="@+id/nav_messagecrypt"
+        android:name="com.suslanium.encryptor.MessageFragment"
+        android:label="Messagecrypt"
+        tools:layout="@layout/fragment_message" />
 </navigation>

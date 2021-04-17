@@ -16,5 +16,9 @@
             android:id="@+id/nav_keyexchange"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_keyexchange" />
+        <item
+            android:id="@+id/nav_messagecrypt"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="MessageCrypt" />
     </group>
 </menu>
