@@ -51,7 +51,7 @@ public final class Encryptor {
     private static PrivateKey privateKey;
 
     //TODO: add buffered encryption/decryption instead of cipher.doFinal(input);(look into MainActivity encrypting/decrypting methods
-    private static byte[] encryptBytesAES256(byte[] input, String password) {
+    public static byte[] encryptBytesAES256(byte[] input, String password) {
         try {
             SecureRandom secureRandom = SecureRandom.getInstanceStrong();
             // Derive the key, given password and salt
@@ -93,7 +93,7 @@ public final class Encryptor {
         }
     }
 
-    private static byte[] decryptBytesAES256(byte[] encrypted, String password) {
+    public static byte[] decryptBytesAES256(byte[] encrypted, String password) {
         try {
             // Salt and nonce have to be extracted
             ByteBuffer byteBuffer = ByteBuffer.wrap(encrypted);
@@ -329,15 +329,11 @@ public final class Encryptor {
         zos.closeEntry();
     }
     public static String calculateHash(final String s, String function) {
-        final String MD5 = "MD5";
         try {
-            // Create MD5 Hash
             MessageDigest digest = java.security.MessageDigest
                     .getInstance(function);
             digest.update(s.getBytes());
             byte messageDigest[] = digest.digest();
-
-            // Create Hex String
             StringBuilder hexString = new StringBuilder();
             for (byte aMessageDigest : messageDigest) {
                 String h = Integer.toHexString(0xFF & aMessageDigest);
