@@ -3,6 +3,7 @@ package com.suslanium.encryptor;
 import android.app.DownloadManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -91,6 +93,7 @@ public class EncryptorService extends Service {
                 @Override
                 public void run() {
                     try {
+                        ArrayList<String> encryptedPaths = new ArrayList<>();
                         String password = Encryptor.RSADecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
@@ -117,7 +120,9 @@ public class EncryptorService extends Service {
                                     }
                                 }
                                 try {
-                                    Encryptor.encryptFolderAES_GCM(file, password, new File(path + "Enc"));
+                                    File file1 = new File(path + "Enc");
+                                    Encryptor.encryptFolderAES_GCM(file, password, file1);
+                                    encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -132,7 +137,9 @@ public class EncryptorService extends Service {
                             } else {
                                 new File(path + ".enc").delete();
                                 try {
-                                    Encryptor.encryptFileAES256(file, password, new File(path + ".enc"));
+                                    File file1 = new File(path + ".enc");
+                                    Encryptor.encryptFileAES256(file, password, file1);
+                                    encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -146,10 +153,24 @@ public class EncryptorService extends Service {
                                 }
                             }
                         }
+                        ArrayList<String> filesWSub = constructFilePaths(encryptedPaths);
+                        ArrayList<Uri> uris = new ArrayList<>();
+                        if(!filesWSub.isEmpty()){
+                            for(int j=0;j<filesWSub.size();j++){
+                                uris.add(FileProvider.getUriForFile(getBaseContext(), "com.suslanium.encryptor.fileprovider", new File(filesWSub.get(j))));
+                            }
+                        }
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                        shareIntent.setType("*/*");
+                        shareIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, uris);
+                        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 12345, shareIntent, 0);
                         NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
                                 .setContentTitle("File(s) have been successfully encrypted!")
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .addAction(R.drawable.checkmark, "Share", pendingIntent);
                         if (errorsCount[0] > 0) builder.setContentText("Errors: " + errorsCount[0]);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder.build());
@@ -900,6 +921,22 @@ public class EncryptorService extends Service {
             }
         }
         return downloadedFiles;
+    }
+    private ArrayList<String> constructFilePaths(ArrayList<String> paths){
+        ArrayList<String> pathsWithFolders = new ArrayList<>();
+        for(int i=0;i<paths.size();i++){
+            if(new File(paths.get(i)).isDirectory()){
+                File[] files = new File(paths.get(i)).listFiles();
+                ArrayList<String> subPaths = new ArrayList<>();
+                for(int j=0;j<files.length;j++){
+                    subPaths.add(files[j].getPath());
+                }
+                pathsWithFolders.addAll(constructFilePaths(subPaths));
+            } else {
+                pathsWithFolders.add(paths.get(i));
+            }
+        }
+        return pathsWithFolders;
     }
 
     @Nullable

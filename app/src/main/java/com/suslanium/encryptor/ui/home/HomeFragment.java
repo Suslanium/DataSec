@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,7 +54,6 @@ public class HomeFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        //homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         return root;
     }
@@ -264,6 +264,53 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+        FloatingActionButton shareButton = getActivity().findViewById(R.id.shareButton);
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> paths = adapter.getCheckedFiles();
+                ArrayList<String> pathsW_Sub = constructFilePaths(paths);
+                ArrayList<Uri> uris = new ArrayList<>();
+                if(pathsW_Sub.size() > 0){
+                    for(int i = 0; i<pathsW_Sub.size(); i++) {
+                        uris.add(FileProvider.getUriForFile(getContext(), "com.suslanium.encryptor.fileprovider", new File(pathsW_Sub.get(i))));
+                    }
+                    shareFiles(uris);
+                } else {
+                    Snackbar.make(v, "Please select files/folders", Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void shareFiles(ArrayList<Uri> filePaths){
+        try {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            shareIntent.setType("*/*");
+            shareIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, filePaths);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(shareIntent);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private ArrayList<String> constructFilePaths(ArrayList<String> paths){
+        ArrayList<String> pathsWithFolders = new ArrayList<>();
+        for(int i=0;i<paths.size();i++){
+            if(new File(paths.get(i)).isDirectory()){
+                File[] files = new File(paths.get(i)).listFiles();
+                ArrayList<String> subPaths = new ArrayList<>();
+                for(int j=0;j<files.length;j++){
+                    subPaths.add(files[j].getPath());
+                }
+                pathsWithFolders.addAll(constructFilePaths(subPaths));
+            } else {
+                pathsWithFolders.add(paths.get(i));
+            }
+        }
+        return pathsWithFolders;
     }
 
     @Override
