@@ -20,5 +20,9 @@
             android:id="@+id/nav_messagecrypt"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="MessageCrypt" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Settings" />
     </group>
 </menu>

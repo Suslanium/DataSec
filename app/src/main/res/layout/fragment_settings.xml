@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsFragment">
+
+    <ScrollView
+        android:id="@+id/settingsView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/settingsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <Switch
+                android:id="@+id/darkTheme"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:checked="false"
+                android:fontFamily="sans-serif"
+                android:text="Dark Theme"
+                android:textSize="18sp"
+                tools:checked="false" />
+
+            <Switch
+                android:id="@+id/deleteAfter"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:fontFamily="sans-serif"
+                android:text="Delete original files after encryption"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/changePassword"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:backgroundTint="#00FFFFFF"
+                android:fontFamily="sans-serif"
+                android:gravity="start|center_vertical"
+                android:letterSpacing="0"
+                android:text="Change password"
+                android:textAllCaps="false"
+                android:textColor="@android:color/primary_text_dark"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -28,4 +28,9 @@
         android:name="com.suslanium.encryptor.MessageFragment"
         android:label="Messagecrypt"
         tools:layout="@layout/fragment_message" />
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.suslanium.encryptor.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

@@ -1,7 +1,9 @@
 package com.suslanium.encryptor;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +27,10 @@ public class Explorer extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        if(dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
+        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
         super.onCreate(savedInstanceState);
         intent = getIntent();
         setContentView(R.layout.activity_explorer);
@@ -32,7 +38,7 @@ public class Explorer extends AppCompatActivity {
         setSupportActionBar(toolbar);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange, R.id.nav_messagecrypt)
+        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange, R.id.nav_messagecrypt, R.id.nav_settings)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
