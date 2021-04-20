@@ -49,8 +49,9 @@
                 android:letterSpacing="0"
                 android:text="Change password"
                 android:textAllCaps="false"
-                android:textColor="@android:color/primary_text_dark"
-                android:textSize="18sp" />
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:stateListAnimator="@null" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,6 +2,7 @@ package com.suslanium.encryptor;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -35,8 +37,11 @@ public class SettingsFragment extends Fragment {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
         Switch darkTheme = getActivity().findViewById(R.id.darkTheme);
+        Button changePass = getActivity().findViewById(R.id.changePassword);
         if(dark_theme){
             darkTheme.setChecked(true);
+        } else {
+            changePass.setTextColor(Color.parseColor("#000000"));
         }
         //TODO:change fragment to settings on restart
         darkTheme.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -48,6 +53,7 @@ public class SettingsFragment extends Fragment {
                     editor.apply();
                     Intent intent = new Intent(getContext(), Explorer.class);
                     intent.putExtra("pass", ((Explorer) getActivity()).getIntent2().getByteArrayExtra("pass"));
+                    intent.putExtra("fromSettings", true);
                     startActivity(intent);
                     getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 } else {
@@ -55,6 +61,7 @@ public class SettingsFragment extends Fragment {
                     editor.putBoolean("dark_Theme", false);
                     editor.apply();
                     Intent intent = new Intent(getContext(), Explorer.class);
+                    intent.putExtra("fromSettings", true);
                     intent.putExtra("pass", ((Explorer) getActivity()).getIntent2().getByteArrayExtra("pass"));
                     startActivity(intent);
                     getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

@@ -6,8 +6,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.view.View;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -23,6 +25,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        if(dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
+        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_upload_selector);
         RecyclerView fileView = findViewById(R.id.deviceFiles);

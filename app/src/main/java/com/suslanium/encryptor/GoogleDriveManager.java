@@ -8,9 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -58,6 +60,10 @@ public class GoogleDriveManager extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        if(dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
+        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_manager);
         sView = findViewById(R.id.gDriveUp);

@@ -20,7 +20,7 @@
     <fragment
         android:id="@+id/nav_keyexchange"
         android:name="com.suslanium.encryptor.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_keyexchange"
+        android:label="Google Drive"
         tools:layout="@layout/fragment_slideshow" />
 
     <fragment
