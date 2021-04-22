@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.Explorer;
 import com.suslanium.encryptor.PasswordAdapter;
 import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.passwordAdd;
@@ -31,6 +32,7 @@ import java.util.Set;
 public class GalleryFragment extends Fragment {
     private boolean isOnResume = false;
     private GalleryViewModel galleryViewModel;
+    private Intent intent2 = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -43,43 +45,22 @@ public class GalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FloatingActionButton fab = getView().findViewById(R.id.addData);
+        intent2 = ((Explorer) getActivity()).getIntent2();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), passwordAdd.class);
+                intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                 startActivity(intent);
             }
         });
-        ArrayList<String> strings3 = new ArrayList<>();
-        ArrayList<Integer> ids = new ArrayList<>();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SQLiteDatabase database = Encryptor.initDataBase(getContext(), "password");
-                HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
-                Set<Integer> integers = listHashMap.keySet();
-                for (Integer i : integers) {
-                    ArrayList<String> strings = listHashMap.get(i);
-                    String s = strings.get(0);
-                    strings3.add(s);
-                    ids.add(i);
-                }
-                Encryptor.closeDataBase(database);
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onThreadDone(strings3, ids);
-                    }
-                });
-            }
-        });
-        thread.start();
+        updateView(view);
     }
 
     public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id){
         RecyclerView recyclerView = getView().findViewById(R.id.passwords);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        PasswordAdapter adapter = new PasswordAdapter(strings2, id);
+        PasswordAdapter adapter = new PasswordAdapter(strings2, id, intent2);
         recyclerView.setAdapter(adapter);
     }
 
@@ -87,12 +68,23 @@ public class GalleryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if(isOnResume) {
-            ArrayList<String> strings3 = new ArrayList<>();
-            ArrayList<Integer> ids = new ArrayList<>();
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    SQLiteDatabase database = Encryptor.initDataBase(getContext(), "password");
+            updateView(getView());
+        }
+        else {
+            isOnResume = true;
+        }
+    }
+
+    private void updateView(View view){
+        ArrayList<String> strings3 = new ArrayList<>();
+        ArrayList<Integer> ids = new ArrayList<>();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    byte[] pass = intent2.getByteArrayExtra("pass");
+                    String password = Encryptor.RSADecrypt(pass);
+                    SQLiteDatabase database = Encryptor.initDataBase(getContext(), password);
                     HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
                     Set<Integer> integers = listHashMap.keySet();
                     for (Integer i : integers) {
@@ -108,12 +100,17 @@ public class GalleryFragment extends Fragment {
                             onThreadDone(strings3, ids);
                         }
                     });
+                } catch (Exception e){
+                    e.printStackTrace();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show();
+                        }
+                    });
                 }
-            });
-            thread.start();
-        }
-        else {
-            isOnResume = true;
-        }
+            }
+        });
+        thread.start();
     }
 }

@@ -1,12 +1,15 @@
 package com.suslanium.encryptor;
 
+import android.app.ActivityManager;
 import android.app.DownloadManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -16,6 +19,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,6 +27,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -37,9 +45,12 @@ import com.google.api.services.drive.Drive;
 import com.microsoft.onedrivesdk.saver.ISaver;
 import com.microsoft.onedrivesdk.saver.Saver;
 
+import net.sqlcipher.database.SQLiteDatabase;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class EncryptorService extends Service {
@@ -786,6 +797,45 @@ public class EncryptorService extends Service {
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder.build());
+                        isRunning.remove(running);
+                        if (!isRunning.contains(true)) stopSelf();
+                    }
+                }
+            });
+            thread.start();
+        } else if(actionType.equals("changePass")){
+            byte[] newPassEnc = intent.getByteArrayExtra("newPass");
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        SharedPreferences.Editor editor1 = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
+                        editor1.putBoolean("changingPassword", true);
+                        editor1.apply();
+                        String password = Encryptor.RSADecrypt(pass);
+                        SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
+                        String newPass = Encryptor.RSADecrypt(newPassEnc);
+                        HashMap<Integer, ArrayList<String>> data = Encryptor.readPasswordData(database);
+                        Encryptor.closeDataBase(database);
+                        Encryptor.deleteDatabase(getBaseContext());
+                        if(data != null && data.size() > 0) {
+                            SQLiteDatabase newDatabase = Encryptor.initDataBase(getBaseContext(), newPass);
+                            for(int i=1;i<=data.size();i++){
+                                Encryptor.insertDataIntoPasswordTable(newDatabase, data.get(i).get(0), data.get(i).get(1), data.get(i).get(2));
+                            }
+                            Encryptor.closeDataBase(newDatabase);
+                        }
+                        String keyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+                        SharedPreferences editor = EncryptedSharedPreferences.create("encryptor_shared_prefs", keyAlias, getBaseContext(), EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                        SharedPreferences.Editor edit = editor.edit();
+                        edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
+                        edit.apply();
+                        editor1.putBoolean("changingPassword", false);
+                        editor1.apply();
+                        isRunning.remove(running);
+                        if (!isRunning.contains(true)) stopSelf();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         isRunning.remove(running);
                         if (!isRunning.contains(true)) stopSelf();
                     }

@@ -3,6 +3,7 @@ package com.suslanium.encryptor;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -36,16 +37,24 @@ public class passwordChange extends AppCompatActivity {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, "password");
-                HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
-                ArrayList<String> strings = listHashMap.get(id);
-                Encryptor.closeDataBase(database);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onThreadDone(strings);
-                    }
-                });
+                try {
+                    Intent intent = getIntent();
+                    byte[] passEnc = intent.getByteArrayExtra("pass");
+                    String password = Encryptor.RSADecrypt(passEnc);
+                    SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
+                    HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
+                    ArrayList<String> strings = listHashMap.get(id);
+                    Encryptor.closeDataBase(database);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onThreadDone(strings);
+                        }
+                    });
+                } catch (Exception e){
+                    e.printStackTrace();
+                    finish();
+                }
             }
         });
         thread.start();
@@ -60,13 +69,26 @@ public class passwordChange extends AppCompatActivity {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, "password");
-                            Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString());
-                            Encryptor.closeDataBase(database);
+                            try {
+                                Intent intent = getIntent();
+                                byte[] passEnc = intent.getByteArrayExtra("pass");
+                                String password = Encryptor.RSADecrypt(passEnc);
+                                SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
+                                Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString());
+                                Encryptor.closeDataBase(database);
+                                finish();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Snackbar.make(v, "Failed to update entry.", Snackbar.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
                         }
                     });
                     thread.start();
-                    finish();
                 } else {
                     Snackbar.make(v, "Please fill data", Snackbar.LENGTH_LONG).show();
                 }
@@ -113,14 +135,27 @@ public class passwordChange extends AppCompatActivity {
                                 Thread thread = new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, "password");
-                                        Encryptor.deleteDataFromPasswordTable(database, id);
-                                        Encryptor.closeDataBase(database);
+                                        try {
+                                            Intent intent = getIntent();
+                                            byte[] passEnc = intent.getByteArrayExtra("pass");
+                                            String password = Encryptor.RSADecrypt(passEnc);
+                                            SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
+                                            Encryptor.deleteDataFromPasswordTable(database, id);
+                                            Encryptor.closeDataBase(database);
+                                            finish();
+                                        } catch (Exception e){
+                                            e.printStackTrace();
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Snackbar.make(v, "Failed to delete entry.", Snackbar.LENGTH_LONG).show();
+                                                }
+                                            });
+                                        }
                                     }
                                 });
                                 thread.start();
                                 dialog.dismiss();
-                                finish();
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -47,8 +47,8 @@ public final class Encryptor {
     // An authentication tag size
     private static final int GCM_TAG_LENGTH = 128; //in bits
     private static final String alias = "encryptorKey";
-    private static PublicKey publicKey;
-    private static PrivateKey privateKey;
+    private static PublicKey publicKey = null;
+    private static PrivateKey privateKey = null;
 
     //TODO: add buffered encryption/decryption instead of cipher.doFinal(input);(look into MainActivity encrypting/decrypting methods
     public static byte[] encryptBytesAES256(byte[] input, String password) {
@@ -442,6 +442,11 @@ public final class Encryptor {
         database.execSQL("DELETE FROM passwordTable WHERE id = " + id + ";");
     }
 
+    public static void deleteDatabase(Context context){
+        File databaseFile = new File(context.getApplicationInfo().dataDir + File.separator + "database.db");
+        databaseFile.delete();
+    }
+
     public static void closeDataBase(SQLiteDatabase database) {
         database.close();
     }
@@ -489,11 +494,13 @@ public final class Encryptor {
     }*/
 
     public static byte[] RSAEncrypt(final String plain) throws Exception {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-        kpg.initialize(2048);
-        KeyPair kp = kpg.genKeyPair();
-        publicKey = kp.getPublic();
-        privateKey = kp.getPrivate();
+        if(publicKey == null || privateKey == null) {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(2048);
+            KeyPair kp = kpg.genKeyPair();
+            publicKey = kp.getPublic();
+            privateKey = kp.getPrivate();
+        }
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         byte[] encryptedBytes = cipher.doFinal(plain.getBytes());

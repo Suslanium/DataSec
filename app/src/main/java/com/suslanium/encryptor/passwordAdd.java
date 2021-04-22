@@ -3,6 +3,7 @@ package com.suslanium.encryptor;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -64,13 +65,26 @@ public class passwordAdd extends AppCompatActivity {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            SQLiteDatabase database = Encryptor.initDataBase(passwordAdd.this, "password");
-                            Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString());
-                            Encryptor.closeDataBase(database);
+                            try {
+                                Intent intent = getIntent();
+                                byte[] passEnc = intent.getByteArrayExtra("pass");
+                                String password = Encryptor.RSADecrypt(passEnc);
+                                SQLiteDatabase database = Encryptor.initDataBase(passwordAdd.this, password);
+                                Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString());
+                                Encryptor.closeDataBase(database);
+                                finish();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Snackbar.make(v, "Failed to add entry.", Snackbar.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
                         }
                     });
                     thread.start();
-                    finish();
                 }
                 else {
                     Snackbar.make(v, "Please fill data", Snackbar.LENGTH_LONG).show();
