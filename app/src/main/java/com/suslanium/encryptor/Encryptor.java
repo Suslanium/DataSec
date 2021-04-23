@@ -1,6 +1,8 @@
 package com.suslanium.encryptor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -165,7 +167,12 @@ public final class Encryptor {
         }
     }
 
-    public static void encryptFolderAES_GCM(File folder, String password, File folderToSave) throws Exception {
+    public static void encryptFolderAES_GCM(File folder, String password, File folderToSave, Context context) throws Exception {
+        boolean auto_delete = false;
+        if(context != null) {
+            SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
+            auto_delete = editor.getBoolean("auto_Delete", false);
+        }
         if (folderToSave.exists()) {
             if (folderToSave.isDirectory()) {
                 if (folder.exists() && folder.isDirectory()) {
@@ -173,8 +180,10 @@ public final class Encryptor {
                     for (int i = 0; i < filesInFolder.length; i++) {
                         if (filesInFolder[i].isFile()) {
                             encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
+                            if(auto_delete)filesInFolder[i].delete();
                         } else if (filesInFolder[i].isDirectory()) {
-                            encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"));
+                            encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
+                            if(auto_delete)filesInFolder[i].delete();
                         }
                     }
                 }
@@ -187,15 +196,22 @@ public final class Encryptor {
                 for (int i = 0; i < filesInFolder.length; i++) {
                     if (filesInFolder[i].isFile()) {
                         encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
+                        if(auto_delete)filesInFolder[i].delete();
                     } else if (filesInFolder[i].isDirectory()) {
-                        encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"));
+                        encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
+                        if(auto_delete)filesInFolder[i].delete();
                     }
                 }
             }
         }
     }
 
-    public static void decryptFolderAES_GCM(File folder, String password, File folderToSave) throws Exception {
+    public static void decryptFolderAES_GCM(File folder, String password, File folderToSave, Context context, boolean gDrive) throws Exception {
+        boolean auto_delete2 = false;
+        if(context != null) {
+            SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
+            auto_delete2 = editor.getBoolean("auto_Delete2", false);
+        }
         if (folderToSave.exists()) {
             if (folderToSave.isDirectory()) {
                 if (folder.exists() && folder.isDirectory()) {
@@ -203,8 +219,10 @@ public final class Encryptor {
                     for (int i = 0; i < filesInFolder.length; i++) {
                         if (filesInFolder[i].isFile()) {
                             decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
+                            if(auto_delete2 || gDrive)filesInFolder[i].delete();
                         } else if (filesInFolder[i].isDirectory()) {
-                            decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)));
+                            decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
+                            if(auto_delete2 || gDrive)filesInFolder[i].delete();
                         }
                     }
                 }
@@ -217,8 +235,10 @@ public final class Encryptor {
                 for (int i = 0; i < filesInFolder.length; i++) {
                     if (filesInFolder[i].isFile()) {
                         decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
+                        if(auto_delete2 || gDrive)filesInFolder[i].delete();
                     } else if (filesInFolder[i].isDirectory()) {
-                        decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)));
+                        decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
+                        if(auto_delete2 || gDrive)filesInFolder[i].delete();
                     }
                 }
             }

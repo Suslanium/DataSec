@@ -39,6 +39,14 @@
                 android:text="Delete original files after encryption"
                 android:textSize="18sp" />
 
+            <Switch
+                android:id="@+id/deleteAfter2"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:fontFamily="sans-serif"
+                android:text="Delete encrypted files after decryption"
+                android:textSize="18sp" />
+
             <Button
                 android:id="@+id/changePassword"
                 android:layout_width="match_parent"

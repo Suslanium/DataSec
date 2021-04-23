@@ -5,6 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="100dp">
 
+    <TextView
+        android:id="@+id/modDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DD/MM/YY HH:MM"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxButton"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/fileImage"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.75" />
+
     <Button
         android:id="@+id/checkBoxButton"
         android:layout_width="wrap_content"
@@ -40,16 +52,17 @@
 
     <TextView
         android:id="@+id/fileName"
-        android:layout_width="250dp"
-        android:layout_height="70dp"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
         android:gravity="center|left"
+        android:singleLine="true"
         android:text="File_name"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxButton"
         app:layout_constraintStart_toEndOf="@+id/fileImage"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
 
     <CheckBox
         android:id="@+id/fileCheckbox"
@@ -64,5 +77,17 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/fileSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Size: XXX B"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fileCheckbox"
+        app:layout_constraintHorizontal_bias="0.9"
+        app:layout_constraintStart_toEndOf="@+id/fileImage"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.75" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,6 +39,7 @@
             android:name=".Explorer"
             android:label="@string/title_activity_explorer"
             android:theme="@style/Theme.MaterialComponents.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".MainActivity" />
         <activity android:name=".PasswordActivity">

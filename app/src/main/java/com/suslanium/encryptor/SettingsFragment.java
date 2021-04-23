@@ -50,14 +50,62 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        updateUI();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
+    private void updateUI(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        boolean autoDelete = preferences.getBoolean("auto_Delete", false);
+        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
         Switch darkTheme = getActivity().findViewById(R.id.darkTheme);
         Button changePass = getActivity().findViewById(R.id.changePassword);
+        Switch deleteAfter = getActivity().findViewById(R.id.deleteAfter);
+        Switch deleteAfter2  = getActivity().findViewById(R.id.deleteAfter2);
+        deleteAfter2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+                    editor.putBoolean("auto_Delete2", true);
+                    editor.apply();
+                } else {
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+                    editor.putBoolean("auto_Delete2", false);
+                    editor.apply();
+                }
+            }
+        });
+        deleteAfter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+                    editor.putBoolean("auto_Delete", true);
+                    editor.apply();
+                } else {
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+                    editor.putBoolean("auto_Delete", false);
+                    editor.apply();
+                }
+            }
+        });
         if(dark_theme){
             darkTheme.setChecked(true);
         } else {
             changePass.setTextColor(Color.parseColor("#000000"));
+        }
+        if(autoDelete){
+            deleteAfter.setChecked(true);
+        }
+        if(autoDelete2){
+            deleteAfter2.setChecked(true);
         }
         darkTheme.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

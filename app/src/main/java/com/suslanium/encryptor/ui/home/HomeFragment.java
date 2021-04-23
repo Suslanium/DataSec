@@ -39,6 +39,7 @@ import com.suslanium.encryptor.R;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ListIterator;
 
 import static android.app.Activity.RESULT_OK;
@@ -79,9 +80,18 @@ public class HomeFragment extends Fragment {
         pathIterator.next();
         File internalStorageDir = Environment.getExternalStorageDirectory();
         File[] files = internalStorageDir.listFiles();
+        ArrayList<String> paths = new ArrayList<>();
+        for(int i=0; i<files.length;i++){
+            paths.add(files[i].getPath());
+        }
+        ArrayList<String> sorted = sortFiles(paths);
+        ArrayList<File> filesSorted = new ArrayList<>();
+        for(int i=0;i<sorted.size();i++){
+            filesSorted.add(new File(sorted.get(i)));
+        }
         ArrayList<String> fileNames = new ArrayList<>();
-        for (int i = 0; i < files.length; i++) {
-            fileNames.add(files[i].getName());
+        for (int i = 0; i < filesSorted.size(); i++) {
+            fileNames.add(filesSorted.get(i).getName());
         }
         fileList.addAll(fileNames);
         ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, getActivity());
@@ -115,9 +125,18 @@ public class HomeFragment extends Fragment {
                     File parent = new File(path);
                     if (parent.canWrite()) {
                         File[] files2 = parent.listFiles();
+                        ArrayList<String> paths = new ArrayList<>();
+                        for(int i=0; i<files2.length;i++){
+                            paths.add(files2[i].getPath());
+                        }
+                        ArrayList<String> sorted = sortFiles(paths);
+                        ArrayList<File> filesSorted = new ArrayList<>();
+                        for(int i=0;i<sorted.size();i++){
+                            filesSorted.add(new File(sorted.get(i)));
+                        }
                         ArrayList<String> fileNames2 = new ArrayList<>();
-                        for (int i = 0; i < files2.length; i++) {
-                            fileNames2.add(files2[i].getName());
+                        for (int i = 0; i < filesSorted.size(); i++) {
+                            fileNames2.add(filesSorted.get(i).getName());
                         }
                         fileList.clear();
                         fileList.addAll(fileNames2);
@@ -140,9 +159,18 @@ public class HomeFragment extends Fragment {
                     Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG).show();
                 } else {
                     File[] files2 = parent.listFiles();
+                    ArrayList<String> paths = new ArrayList<>();
+                    for(int i=0; i<files2.length;i++){
+                        paths.add(files2[i].getPath());
+                    }
+                    ArrayList<String> sorted = sortFiles(paths);
+                    ArrayList<File> filesSorted = new ArrayList<>();
+                    for(int i=0;i<sorted.size();i++){
+                        filesSorted.add(new File(sorted.get(i)));
+                    }
                     ArrayList<String> fileNames2 = new ArrayList<>();
-                    for (int i = 0; i < files2.length; i++) {
-                        fileNames2.add(files2[i].getName());
+                    for (int i = 0; i < filesSorted.size(); i++) {
+                        fileNames2.add(filesSorted.get(i).getName());
                     }
                     fileList.clear();
                     fileList.addAll(fileNames2);
@@ -311,6 +339,49 @@ public class HomeFragment extends Fragment {
             }
         }
         return pathsWithFolders;
+    }
+
+    public static ArrayList<String> sortFiles(ArrayList<String> filePaths){
+        ArrayList<String> sortedFiles = new ArrayList<>();
+        ArrayList<String> originDirs = new ArrayList<>();
+        ArrayList<String> originFiles = new ArrayList<>();
+        if(filePaths != null && filePaths.size() > 0) {
+            for (int i = 0; i < filePaths.size(); i++) {
+                if (new File(filePaths.get(i)).isFile()) {
+                    originFiles.add(filePaths.get(i));
+                } else {
+                    originDirs.add(filePaths.get(i));
+                }
+            }
+            //Collections.sort(originDirs);
+            //Collections.sort(originFiles);
+            originDirs.sort(String::compareToIgnoreCase);
+            originFiles.sort(String::compareToIgnoreCase);
+            sortedFiles.addAll(originDirs);
+            sortedFiles.addAll(originFiles);
+        }
+        return sortedFiles;
+    }
+    private ArrayList<String> sortFiles(String[] filePaths){
+        ArrayList<String> sortedFiles = new ArrayList<>();
+        ArrayList<String> originDirs = new ArrayList<>();
+        ArrayList<String> originFiles = new ArrayList<>();
+        if(filePaths != null && filePaths.length > 0) {
+            for (int i = 0; i < filePaths.length; i++) {
+                if (new File(filePaths[i]).isFile()) {
+                    originFiles.add(filePaths[i]);
+                } else {
+                    originDirs.add(filePaths[i]);
+                }
+            }
+            //Collections.sort(originDirs);
+            //Collections.sort(originFiles);
+            originDirs.sort(String::compareToIgnoreCase);
+            originFiles.sort(String::compareToIgnoreCase);
+            sortedFiles.addAll(originDirs);
+            sortedFiles.addAll(originFiles);
+        }
+        return sortedFiles;
     }
 
     @Override

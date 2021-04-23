@@ -66,6 +66,8 @@ public class EncryptorService extends Service {
         createNotificationChannel();
     }
 
+    //TODO:app crashes on fragment reopening
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -104,6 +106,8 @@ public class EncryptorService extends Service {
                 @Override
                 public void run() {
                     try {
+                        SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                        boolean auto_delete = editor.getBoolean("auto_Delete", false);
                         ArrayList<String> encryptedPaths = new ArrayList<>();
                         String password = Encryptor.RSADecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -132,7 +136,8 @@ public class EncryptorService extends Service {
                                 }
                                 try {
                                     File file1 = new File(path + "Enc");
-                                    Encryptor.encryptFolderAES_GCM(file, password, file1);
+                                    Encryptor.encryptFolderAES_GCM(file, password, file1, getBaseContext());
+                                    if(auto_delete) file.delete();
                                     encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -150,6 +155,7 @@ public class EncryptorService extends Service {
                                 try {
                                     File file1 = new File(path + ".enc");
                                     Encryptor.encryptFileAES256(file, password, file1);
+                                    if(auto_delete) file.delete();
                                     encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -198,6 +204,8 @@ public class EncryptorService extends Service {
                 @Override
                 public void run() {
                     try {
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
                         String password = Encryptor.RSADecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
@@ -235,7 +243,8 @@ public class EncryptorService extends Service {
                                     }
                                 }
                                 try {
-                                    Encryptor.decryptFolderAES_GCM(file, password, new File((path).substring(0, (path).length() - 3)));
+                                    Encryptor.decryptFolderAES_GCM(file, password, new File((path).substring(0, (path).length() - 3)), getBaseContext(), false);
+                                    if(autoDelete2) file.delete();
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -252,6 +261,7 @@ public class EncryptorService extends Service {
                                 file1.delete();
                                 try {
                                     Encryptor.decryptFileAES256(file, password, file1);
+                                    if(autoDelete2)file.delete();
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -281,6 +291,7 @@ public class EncryptorService extends Service {
             });
             thread.start();
         } else if (actionType.equals("E1")) {
+            //TODO: remove
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -323,6 +334,7 @@ public class EncryptorService extends Service {
             });
             thread.start();
         } else if (actionType.equals("D1")) {
+            //TODO: remove
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -365,6 +377,7 @@ public class EncryptorService extends Service {
             });
             thread.start();
         } else if (actionType.equals("D2")) {
+            //TODO: remove
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -409,6 +422,7 @@ public class EncryptorService extends Service {
             });
             thread.start();
         } else if (actionType.equals("E2")) {
+            //TODO: remove
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -488,7 +502,7 @@ public class EncryptorService extends Service {
                                     }
                                 }
                                 try {
-                                    Encryptor.encryptFolderAES_GCM(file, password, new File(getFilesDir() + File.separator + file.getName() + "Enc"));
+                                    Encryptor.encryptFolderAES_GCM(file, password, new File(getFilesDir() + File.separator + file.getName() + "Enc"), null);
                                     encryptedFiles.add(new File(getFilesDir() + File.separator + file.getName() + "Enc"));
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -690,7 +704,7 @@ public class EncryptorService extends Service {
                                             }
                                         }
                                         try {
-                                            Encryptor.decryptFolderAES_GCM(file, password, new File((path).substring(0, (path).length() - 3)));
+                                            Encryptor.decryptFolderAES_GCM(file, password, new File((path).substring(0, (path).length() - 3)), null, true);
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                     .setSmallIcon(R.drawable.locked)
@@ -707,6 +721,7 @@ public class EncryptorService extends Service {
                                         file1.delete();
                                         try {
                                             Encryptor.decryptFileAES256(file, password, file1);
+                                            file.delete();
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                     .setSmallIcon(R.drawable.locked)
@@ -720,11 +735,6 @@ public class EncryptorService extends Service {
                                         }
                                     }
                                 }
-                            }
-                            for (int i = 0; i < downloadedFiles.size(); i++) {
-                                if (downloadedFiles.get(i).isFile())
-                                    downloadedFiles.get(i).delete();
-                                else deleteFolder(downloadedFiles.get(i));
                             }
                             NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                     .setSmallIcon(R.drawable.locked)
