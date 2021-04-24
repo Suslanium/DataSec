@@ -14,6 +14,8 @@ import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -81,12 +83,12 @@ public class HomeFragment extends Fragment {
         File internalStorageDir = Environment.getExternalStorageDirectory();
         File[] files = internalStorageDir.listFiles();
         ArrayList<String> paths = new ArrayList<>();
-        for(int i=0; i<files.length;i++){
+        for (int i = 0; i < files.length; i++) {
             paths.add(files[i].getPath());
         }
         ArrayList<String> sorted = sortFiles(paths);
         ArrayList<File> filesSorted = new ArrayList<>();
-        for(int i=0;i<sorted.size();i++){
+        for (int i = 0; i < sorted.size(); i++) {
             filesSorted.add(new File(sorted.get(i)));
         }
         ArrayList<String> fileNames = new ArrayList<>();
@@ -124,24 +126,61 @@ public class HomeFragment extends Fragment {
                     }
                     File parent = new File(path);
                     if (parent.canWrite()) {
-                        File[] files2 = parent.listFiles();
-                        ArrayList<String> paths = new ArrayList<>();
-                        for(int i=0; i<files2.length;i++){
-                            paths.add(files2[i].getPath());
+                        if (((Explorer) getActivity()).currentOperationNumber == 0) {
+                            fileView.stopScroll();
+                            ((Explorer) getActivity()).currentOperationNumber++;
+                            Animation fadeIn = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_out_right);
+                            fadeIn.setDuration(200);
+                            fadeIn.setFillAfter(true);
+                            fileView.startAnimation(fadeIn);
+                            Thread thread = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    File[] files2 = parent.listFiles();
+                                    ArrayList<String> paths = new ArrayList<>();
+                                    for (int i = 0; i < files2.length; i++) {
+                                        paths.add(files2[i].getPath());
+                                    }
+                                    ArrayList<String> sorted = sortFiles(paths);
+                                    ArrayList<File> filesSorted = new ArrayList<>();
+                                    for (int i = 0; i < sorted.size(); i++) {
+                                        filesSorted.add(new File(sorted.get(i)));
+                                    }
+                                    ArrayList<String> fileNames2 = new ArrayList<>();
+                                    for (int i = 0; i < filesSorted.size(); i++) {
+                                        fileNames2.add(filesSorted.get(i).getName());
+                                    }
+                                    fileList.clear();
+                                    fileList.addAll(fileNames2);
+                                    while (!fadeIn.hasEnded()) {
+                                        try {
+                                            Thread.sleep(10);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    Animation fadeOut = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_in_left);
+                                    fadeOut.setDuration(200);
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            adapter.setNewData(parent.getPath(), fileList);
+                                            fileView.scrollToPosition(0);
+                                            fileView.startAnimation(fadeOut);
+                                        }
+                                    });
+                                    while (!fadeOut.hasEnded()) {
+                                        try {
+                                            Thread.sleep(10);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    ((Explorer) getActivity()).currentOperationNumber--;
+                                }
+                            });
+                            thread.start();
                         }
-                        ArrayList<String> sorted = sortFiles(paths);
-                        ArrayList<File> filesSorted = new ArrayList<>();
-                        for(int i=0;i<sorted.size();i++){
-                            filesSorted.add(new File(sorted.get(i)));
-                        }
-                        ArrayList<String> fileNames2 = new ArrayList<>();
-                        for (int i = 0; i < filesSorted.size(); i++) {
-                            fileNames2.add(filesSorted.get(i).getName());
-                        }
-                        fileList.clear();
-                        fileList.addAll(fileNames2);
-                        adapter.setNewData(parent.getPath(), fileList);
-                        fileView.scrollToPosition(0);
                     }
                 }
             }
@@ -149,33 +188,70 @@ public class HomeFragment extends Fragment {
         upFolder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String path = adapter.getPath();
-                File parent = new File(path).getParentFile();
-                boolean matches = false;
-                for (int i = 0; i < storagePaths.size(); i++) {
-                    if (path.matches(storagePaths.get(i))) matches = true;
-                }
-                if (matches) {
-                    Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    File[] files2 = parent.listFiles();
-                    ArrayList<String> paths = new ArrayList<>();
-                    for(int i=0; i<files2.length;i++){
-                        paths.add(files2[i].getPath());
+                if (((Explorer) getActivity()).currentOperationNumber == 0) {
+                    fileView.stopScroll();
+                    String path = adapter.getPath();
+                    File parent = new File(path).getParentFile();
+                    boolean matches = false;
+                    for (int i = 0; i < storagePaths.size(); i++) {
+                        if (path.matches(storagePaths.get(i))) matches = true;
                     }
-                    ArrayList<String> sorted = sortFiles(paths);
-                    ArrayList<File> filesSorted = new ArrayList<>();
-                    for(int i=0;i<sorted.size();i++){
-                        filesSorted.add(new File(sorted.get(i)));
+                    if (matches) {
+                        Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        ((Explorer) getActivity()).currentOperationNumber++;
+                        Animation fadeIn = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_out_right);
+                        fadeIn.setDuration(200);
+                        fadeIn.setFillAfter(true);
+                        fileView.startAnimation(fadeIn);
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                File[] files2 = parent.listFiles();
+                                ArrayList<String> paths = new ArrayList<>();
+                                for (int i = 0; i < files2.length; i++) {
+                                    paths.add(files2[i].getPath());
+                                }
+                                ArrayList<String> sorted = sortFiles(paths);
+                                ArrayList<File> filesSorted = new ArrayList<>();
+                                for (int i = 0; i < sorted.size(); i++) {
+                                    filesSorted.add(new File(sorted.get(i)));
+                                }
+                                ArrayList<String> fileNames2 = new ArrayList<>();
+                                for (int i = 0; i < filesSorted.size(); i++) {
+                                    fileNames2.add(filesSorted.get(i).getName());
+                                }
+                                fileList.clear();
+                                fileList.addAll(fileNames2);
+                                while (!fadeIn.hasEnded()) {
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                Animation fadeOut = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_in_left);
+                                fadeOut.setDuration(200);
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.setNewData(parent.getPath(), fileList);
+                                        fileView.scrollToPosition(0);
+                                        fileView.startAnimation(fadeOut);
+                                    }
+                                });
+                                while (!fadeOut.hasEnded()) {
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                ((Explorer) getActivity()).currentOperationNumber--;
+                            }
+                        });
+                        thread.start();
                     }
-                    ArrayList<String> fileNames2 = new ArrayList<>();
-                    for (int i = 0; i < filesSorted.size(); i++) {
-                        fileNames2.add(filesSorted.get(i).getName());
-                    }
-                    fileList.clear();
-                    fileList.addAll(fileNames2);
-                    adapter.setNewData(parent.getPath(), fileList);
-                    fileView.scrollToPosition(0);
                 }
             }
         });
@@ -299,8 +375,8 @@ public class HomeFragment extends Fragment {
                 ArrayList<String> paths = adapter.getCheckedFiles();
                 ArrayList<String> pathsW_Sub = constructFilePaths(paths);
                 ArrayList<Uri> uris = new ArrayList<>();
-                if(pathsW_Sub.size() > 0){
-                    for(int i = 0; i<pathsW_Sub.size(); i++) {
+                if (pathsW_Sub.size() > 0) {
+                    for (int i = 0; i < pathsW_Sub.size(); i++) {
                         uris.add(FileProvider.getUriForFile(getContext(), "com.suslanium.encryptor.fileprovider", new File(pathsW_Sub.get(i))));
                     }
                     shareFiles(uris);
@@ -311,7 +387,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void shareFiles(ArrayList<Uri> filePaths){
+    private void shareFiles(ArrayList<Uri> filePaths) {
         try {
             Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
             shareIntent.setType("*/*");
@@ -319,18 +395,18 @@ public class HomeFragment extends Fragment {
             shareIntent.putExtra(Intent.EXTRA_STREAM, filePaths);
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getContext().startActivity(shareIntent);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private ArrayList<String> constructFilePaths(ArrayList<String> paths){
+    private ArrayList<String> constructFilePaths(ArrayList<String> paths) {
         ArrayList<String> pathsWithFolders = new ArrayList<>();
-        for(int i=0;i<paths.size();i++){
-            if(new File(paths.get(i)).isDirectory()){
+        for (int i = 0; i < paths.size(); i++) {
+            if (new File(paths.get(i)).isDirectory()) {
                 File[] files = new File(paths.get(i)).listFiles();
                 ArrayList<String> subPaths = new ArrayList<>();
-                for(int j=0;j<files.length;j++){
+                for (int j = 0; j < files.length; j++) {
                     subPaths.add(files[j].getPath());
                 }
                 pathsWithFolders.addAll(constructFilePaths(subPaths));
@@ -341,11 +417,11 @@ public class HomeFragment extends Fragment {
         return pathsWithFolders;
     }
 
-    public static ArrayList<String> sortFiles(ArrayList<String> filePaths){
+    public static ArrayList<String> sortFiles(ArrayList<String> filePaths) {
         ArrayList<String> sortedFiles = new ArrayList<>();
         ArrayList<String> originDirs = new ArrayList<>();
         ArrayList<String> originFiles = new ArrayList<>();
-        if(filePaths != null && filePaths.size() > 0) {
+        if (filePaths != null && filePaths.size() > 0) {
             for (int i = 0; i < filePaths.size(); i++) {
                 if (new File(filePaths.get(i)).isFile()) {
                     originFiles.add(filePaths.get(i));
@@ -362,11 +438,12 @@ public class HomeFragment extends Fragment {
         }
         return sortedFiles;
     }
-    private ArrayList<String> sortFiles(String[] filePaths){
+
+    private ArrayList<String> sortFiles(String[] filePaths) {
         ArrayList<String> sortedFiles = new ArrayList<>();
         ArrayList<String> originDirs = new ArrayList<>();
         ArrayList<String> originFiles = new ArrayList<>();
-        if(filePaths != null && filePaths.length > 0) {
+        if (filePaths != null && filePaths.length > 0) {
             for (int i = 0; i < filePaths.length; i++) {
                 if (new File(filePaths[i]).isFile()) {
                     originFiles.add(filePaths[i]);

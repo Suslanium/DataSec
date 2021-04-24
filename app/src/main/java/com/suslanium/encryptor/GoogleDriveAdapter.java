@@ -1,11 +1,15 @@
 package com.suslanium.encryptor;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -17,6 +21,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.api.services.drive.model.File;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +45,8 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         private final Button fileButton;
         private final Button checkBoxButton;
         private final CheckBox fileCheckBox;
+        private final TextView fileModDate;
+        private final TextView fileSize;
 
         public ViewHolder(View view) {
             super(view);
@@ -48,6 +56,8 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
             fileButton = (Button) view.findViewById(R.id.fileButton);
             checkBoxButton = (Button) view.findViewById(R.id.checkBoxButton);
             fileCheckBox = (CheckBox) view.findViewById(R.id.fileCheckbox);
+            fileSize = (TextView) view.findViewById(R.id.fileSize);
+            fileModDate = (TextView) view.findViewById(R.id.modDate);
             checkBoxButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -81,7 +91,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                                 intent.putExtra("actionType", "gDriveD");
                                                 intent.putExtra("paths", paths);
                                                 intent.putExtra("names", names);
-                                                intent.putExtra("pass", ((GoogleDriveManager)context).getIntent().getByteArrayExtra("pass"));
+                                                intent.putExtra("pass", ((GoogleDriveManager) context).getIntent().getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(context, intent);
                                             }
                                         }
@@ -95,59 +105,95 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                 });
                         builder.show();
                     } else {
-                        for (int i = 0; i < localDataSet.size(); i++) {
-                            if (localDataSet.get(i).contentEquals(textView.getText())) {
-                                String id = ids.get(i);
-                                Thread thread = new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            List<File> files = helper.listDriveFiles(id);
-                                            if (files != null) {
-                                                ArrayList<String>[] names = new ArrayList[]{null, null};
-                                                names[0] = new ArrayList<String>();
-                                                names[1] = new ArrayList<String>();
-                                                for (File file : files) {
-                                                    names[0].add(file.getName());
-                                                    names[1].add(file.getId());
+                        if(((GoogleDriveManager) context).currentOperationNumber == 0) {
+                            for (int i = 0; i < localDataSet.size(); i++) {
+                                if (localDataSet.get(i).contentEquals(textView.getText())) {
+                                    String id = ids.get(i);
+                                    recyclerView.stopScroll();
+                                    Animation fadeIn = AnimationUtils.loadAnimation(context, android.R.anim.slide_out_right);
+                                    fadeIn.setDuration(200);
+                                    fadeIn.setFillAfter(true);
+                                    recyclerView.startAnimation(fadeIn);
+                                    ((GoogleDriveManager) context).currentOperationNumber++;
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                List<File> files = helper.listDriveFiles(id);
+                                                if (files != null) {
+                                                    ArrayList<String>[] names = new ArrayList[]{null, null};
+                                                    names[0] = new ArrayList<String>();
+                                                    names[1] = new ArrayList<String>();
+                                                    for (File file : files) {
+                                                        names[0].add(file.getName());
+                                                        names[1].add(file.getId());
+                                                    }
+                                                    ((GoogleDriveManager) context).lists.put(((GoogleDriveManager) context).lists.size(), new ArrayList[]{localDataSet, ids});
+                                                    int position = getAdapterPosition();
+                                                    localDataSet = names[0];
+                                                    ids = names[1];
+                                                    while (!fadeIn.hasEnded()) {
+                                                        Thread.sleep(10);
+                                                    }
+                                                    Animation fadeOut = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
+                                                    fadeOut.setDuration(200);
+                                                    ((GoogleDriveManager) context).runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            notifyDataSetChanged();
+                                                            recyclerView.scrollToPosition(0);
+                                                            recyclerView.startAnimation(fadeOut);
+                                                        }
+                                                    });
+                                                    while (!fadeOut.hasEnded()){
+                                                        try {
+                                                            Thread.sleep(10);
+                                                        } catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                    ((GoogleDriveManager) context).currentOperationNumber--;
+                                                    ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
+                                                    ((GoogleDriveManager) context).setCurrentFolderID(id);
+                                                } else {
+                                                    ArrayList<String>[] names = new ArrayList[]{null, null};
+                                                    names[0] = new ArrayList<String>();
+                                                    names[1] = new ArrayList<String>();
+                                                    ((GoogleDriveManager) context).lists.put(((GoogleDriveManager) context).lists.size(), new ArrayList[]{localDataSet, ids});
+                                                    int position = getAdapterPosition();
+                                                    localDataSet = names[0];
+                                                    ids = names[1];
+                                                    while (!fadeIn.hasEnded()) {
+                                                        Thread.sleep(10);
+                                                    }
+                                                    Animation fadeOut = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
+                                                    fadeOut.setDuration(200);
+                                                    ((GoogleDriveManager) context).runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            notifyDataSetChanged();
+                                                            recyclerView.scrollToPosition(0);
+                                                            recyclerView.startAnimation(fadeOut);
+                                                        }
+                                                    });
+                                                    while (!fadeOut.hasEnded()){
+                                                        try {
+                                                            Thread.sleep(10);
+                                                        } catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                    ((GoogleDriveManager) context).currentOperationNumber--;
+                                                    ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
+                                                    ((GoogleDriveManager) context).setCurrentFolderID(id);
                                                 }
-                                                ((GoogleDriveManager) context).lists.put(((GoogleDriveManager) context).lists.size(), new ArrayList[]{localDataSet, ids});
-                                                int position = getAdapterPosition();
-                                                localDataSet = names[0];
-                                                ids = names[1];
-                                                ((GoogleDriveManager) context).runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        notifyDataSetChanged();
-                                                        recyclerView.scrollToPosition(0);
-                                                    }
-                                                });
-                                                ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
-                                                ((GoogleDriveManager) context).setCurrentFolderID(id);
-                                            } else {
-                                                ArrayList<String>[] names = new ArrayList[]{null, null};
-                                                names[0] = new ArrayList<String>();
-                                                names[1] = new ArrayList<String>();
-                                                ((GoogleDriveManager) context).lists.put(((GoogleDriveManager) context).lists.size(), new ArrayList[]{localDataSet, ids});
-                                                int position = getAdapterPosition();
-                                                localDataSet = names[0];
-                                                ids = names[1];
-                                                ((GoogleDriveManager) context).runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        notifyDataSetChanged();
-                                                        recyclerView.scrollToPosition(0);
-                                                    }
-                                                });
-                                                ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
-                                                ((GoogleDriveManager) context).setCurrentFolderID(id);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
                                         }
-                                    }
-                                });
-                                thread.start();
+                                    });
+                                    thread.start();
+                                }
                             }
                         }
                     }
@@ -161,6 +207,14 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
 
         public TextView getTextView() {
             return textView;
+        }
+
+        public TextView getFileModDate() {
+            return fileModDate;
+        }
+
+        public TextView getFileSize() {
+            return fileSize;
         }
     }
 
@@ -202,6 +256,8 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         viewHolder.getTextView().setText(localDataSet.get(position));
         if (localDataSet.get(position).contains("."))
             viewHolder.getFileType().setImageResource(R.drawable.file);
+        viewHolder.getFileSize().setVisibility(View.INVISIBLE);
+        viewHolder.getFileModDate().setVisibility(View.INVISIBLE);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

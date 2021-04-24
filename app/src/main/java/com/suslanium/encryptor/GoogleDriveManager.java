@@ -16,6 +16,8 @@ import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -57,6 +59,8 @@ public class GoogleDriveManager extends AppCompatActivity {
     public HashMap<Integer, ArrayList<String>[]> lists = new HashMap<>();
     public ArrayList<String> ids = new ArrayList<>();
     private View sView;
+    public int currentOperationNumber = 0;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,12 +99,48 @@ public class GoogleDriveManager extends AppCompatActivity {
     public void onBackPressed() {
         //super.onBackPressed();
         if(lists.size() > 1){
-            //Log.d("a", String.valueOf(lists.size()));
-            ArrayList<String>[] list = lists.get(lists.size()-1);
-            currentFolderID = ids.get(ids.size() - 1);
-            ids.remove(ids.size() - 1);
-            adapter.setNewData(list[0],list[1]);
-            lists.remove(lists.size()-1);
+            if(currentOperationNumber == 0) {
+                currentOperationNumber++;
+                Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
+                fadeIn.setDuration(200);
+                fadeIn.setFillAfter(true);
+                recyclerView.startAnimation(fadeIn);
+                //Log.d("a", String.valueOf(lists.size()));
+                ArrayList<String>[] list = lists.get(lists.size() - 1);
+                currentFolderID = ids.get(ids.size() - 1);
+                ids.remove(ids.size() - 1);
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!fadeIn.hasEnded()){
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        adapter.setNewData(list[0], list[1]);
+                        lists.remove(lists.size() - 1);
+                        Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_in_left);
+                        fadeOut.setDuration(200);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.startAnimation(fadeOut);
+                            }
+                        });
+                        while (!fadeOut.hasEnded()){
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        currentOperationNumber--;
+                    }
+                });
+                thread.start();
+            }
         } else {
             Snackbar snackbar = Snackbar.make(sView, "Sorry, this is the root", Snackbar.LENGTH_LONG);
             snackbar.setAction("Exit", new View.OnClickListener() {
@@ -169,12 +209,48 @@ public class GoogleDriveManager extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(lists.size() > 1){
-                    //Log.d("a", String.valueOf(lists.size()));
-                    ArrayList<String>[] list = lists.get(lists.size()-1);
-                    currentFolderID = ids.get(ids.size() - 1);
-                    ids.remove(ids.size() - 1);
-                    adapter.setNewData(list[0],list[1]);
-                    lists.remove(lists.size()-1);
+                    if(currentOperationNumber == 0) {
+                        currentOperationNumber++;
+                        Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
+                        fadeIn.setDuration(200);
+                        fadeIn.setFillAfter(true);
+                        recyclerView.startAnimation(fadeIn);
+                        //Log.d("a", String.valueOf(lists.size()));
+                        ArrayList<String>[] list = lists.get(lists.size() - 1);
+                        currentFolderID = ids.get(ids.size() - 1);
+                        ids.remove(ids.size() - 1);
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                while (!fadeIn.hasEnded()){
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                adapter.setNewData(list[0], list[1]);
+                                lists.remove(lists.size() - 1);
+                                Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_in_left);
+                                fadeOut.setDuration(200);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        recyclerView.startAnimation(fadeOut);
+                                    }
+                                });
+                                while (!fadeOut.hasEnded()){
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                currentOperationNumber--;
+                            }
+                        });
+                        thread.start();
+                    }
                 } else {
                     Snackbar.make(v, "Sorry, this is the root", Snackbar.LENGTH_LONG).show();
                     //Log.d("a", "a");
@@ -339,7 +415,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                RecyclerView recyclerView = findViewById(R.id.gDriveFileList);
+                                recyclerView = findViewById(R.id.gDriveFileList);
                                 recyclerView.setLayoutManager(new LinearLayoutManager(GoogleDriveManager.this));
                                 adapter = new GoogleDriveAdapter(names[0], mDriveServiceHelper, names[1], GoogleDriveManager.this, recyclerView);
                                 recyclerView.setAdapter(adapter);

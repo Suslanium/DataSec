@@ -27,6 +27,7 @@ public class Explorer extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private HomeFragment fragment = null;
     private Intent intent = null;
+    public int currentOperationNumber = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
