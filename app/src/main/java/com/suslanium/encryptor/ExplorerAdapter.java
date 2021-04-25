@@ -58,6 +58,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private ArrayList<String> CheckedId = new ArrayList<>();
     private DateFormat format;
     private Date date;
+    public boolean isSearching = false;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -72,6 +73,8 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         private final TextView dateView;
         private final TextView sizeView;
         private final ImageView isEncrypted;
+        public boolean encrypted = false;
+        public String realPath;
 
         //TODO: add progress bar on encryption/decryption
         //TODO: add option to store encrypted/decrypted files in separate folder(ex. /storage/emulated/0/EncryptedFiles/)(на будущее)
@@ -91,173 +94,197 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 public void onClick(View v) {
                     if (fileCheckbox.isChecked()) {
                         fileCheckbox.setChecked(false);
-                        CheckedId.remove(textView.getText().toString());
+                        CheckedId.remove(realPath);
                     } else {
                         fileCheckbox.setChecked(true);
-                        CheckedId.add(textView.getText().toString());
+                        CheckedId.add(realPath);
                     }
                 }
             });
             fileButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (new File(path + File.separator + textView.getText()).isDirectory()) {
-                        if (new File(path + File.separator + textView.getText()).canWrite()) {
-                            if(((Explorer) activity).currentOperationNumber == 0) {
-                                Recview.stopScroll();
-                                ((Explorer) activity).currentOperationNumber++;
-                                Animation fadeIn = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_out_right);
-                                fadeIn.setDuration(200);
-                                fadeIn.setFillAfter(true);
-                                Recview.startAnimation(fadeIn);
-                                Thread thread = new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        File[] files = new File(path + File.separator + textView.getText()).listFiles();
-                                        //if(files != null){}
-                                        ArrayList<String> paths = new ArrayList<>();
-                                        for (int i = 0; i < files.length; i++) {
-                                            paths.add(files[i].getPath());
-                                        }
-                                        ArrayList<String> sorted = sortFiles(paths);
-                                        ArrayList<File> filesSorted = new ArrayList<>();
-                                        for (int i = 0; i < sorted.size(); i++) {
-                                            filesSorted.add(new File(sorted.get(i)));
-                                        }
-                                        ArrayList<String> fileNames = new ArrayList<>();
-                                        for (int i = 0; i < filesSorted.size(); i++) {
-                                            fileNames.add(filesSorted.get(i).getName());
-                                        }
-                                        for (int i = 0; i < holders.size(); i++) {
-                                            holders.get(i).fileCheckbox.setChecked(false);
-                                        }
-                                        CheckedId.clear();
-                                        holders.clear();
-                                        int position = getAdapterPosition();
-                                        localDataSet = fileNames;
-                                        path = path + File.separator + textView.getText();
-                                        //new ExplorerAdapter(fileNames, path + File.separator + textView.getText(), Recview, activity);
-                                        while (!fadeIn.hasEnded()) {
-                                            try {
-                                                Thread.sleep(10);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
+                    if (!isSearching) {
+                        if (new File(path + File.separator + realPath).isDirectory()) {
+                            if (new File(path + File.separator + realPath).canWrite()) {
+                                if (((Explorer) activity).currentOperationNumber == 0) {
+                                    Recview.stopScroll();
+                                    ((Explorer) activity).currentOperationNumber++;
+                                    Animation fadeIn = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_out_right);
+                                    fadeIn.setDuration(200);
+                                    fadeIn.setFillAfter(true);
+                                    Recview.startAnimation(fadeIn);
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            File[] files = new File(path + File.separator + realPath).listFiles();
+                                            //if(files != null){}
+                                            ArrayList<String> paths = new ArrayList<>();
+                                            for (int i = 0; i < files.length; i++) {
+                                                paths.add(files[i].getPath());
                                             }
-                                        }
-                                        Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
-                                        fadeOut.setDuration(200);
-                                        activity.runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                notifyDataSetChanged();
-                                                Recview.scrollToPosition(0);
-                                                Recview.startAnimation(fadeOut);
+                                            ArrayList<String> sorted = sortFiles(paths);
+                                            ArrayList<File> filesSorted = new ArrayList<>();
+                                            for (int i = 0; i < sorted.size(); i++) {
+                                                filesSorted.add(new File(sorted.get(i)));
                                             }
-                                        });
-                                        while (!fadeOut.hasEnded()){
-                                            try {
-                                                Thread.sleep(10);
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
+                                            ArrayList<String> fileNames = new ArrayList<>();
+                                            for (int i = 0; i < filesSorted.size(); i++) {
+                                                fileNames.add(filesSorted.get(i).getName());
                                             }
+                                            for (int i = 0; i < holders.size(); i++) {
+                                                holders.get(i).fileCheckbox.setChecked(false);
+                                            }
+                                            CheckedId.clear();
+                                            holders.clear();
+                                            int position = getAdapterPosition();
+                                            localDataSet = fileNames;
+                                            path = path + File.separator + realPath;
+                                            //new ExplorerAdapter(fileNames, path + File.separator + textView.getText(), Recview, activity);
+                                            while (!fadeIn.hasEnded()) {
+                                                try {
+                                                    Thread.sleep(10);
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
+                                            fadeOut.setDuration(200);
+                                            activity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    notifyDataSetChanged();
+                                                    Recview.scrollToPosition(0);
+                                                    Recview.startAnimation(fadeOut);
+                                                }
+                                            });
+                                            while (!fadeOut.hasEnded()) {
+                                                try {
+                                                    Thread.sleep(10);
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            ((Explorer) activity).currentOperationNumber--;
                                         }
-                                        ((Explorer) activity).currentOperationNumber--;
-                                    }
-                                });
-                                thread.start();
+                                    });
+                                    thread.start();
+                                }
+                            } else {
+                                Snackbar.make(v, "Access denied", Snackbar.LENGTH_LONG).show();
                             }
                         } else {
-                            Snackbar.make(v, "Access denied", Snackbar.LENGTH_LONG).show();
-                        }
-                    } else {
-                        CharSequence[] items = new CharSequence[]{"Encrypt file", "Decrypt file"};
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                        builder.setTitle("Choose action");
-                        builder.setItems(items, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0:
-                                        if (new File(path + File.separator + textView.getText() + ".enc").exists()) {
-                                            MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                            dialogBuilder.setTitle("Warning");
-                                            dialogBuilder.setMessage("Encrypted file already exists. Do you want to replace it?");
-                                            dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
+                            CharSequence[] items = null;
+                            if (encrypted) {
+                                items = new CharSequence[]{"Decrypt file"};
+                            } else {
+                                items = new CharSequence[]{"Encrypt file", "Open file"};
+                            }
+                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
+                            builder.setTitle("Choose action");
+                            builder.setItems(items, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            if (!encrypted) {
+                                                if (new File(path + File.separator + realPath + ".enc").exists()) {
+                                                    MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
+                                                    dialogBuilder.setTitle("Warning");
+                                                    dialogBuilder.setMessage("Encrypted file already exists. Do you want to replace it?");
+                                                    dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            Snackbar.make(v, "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                            ArrayList<String> paths = new ArrayList<>();
+                                                            paths.add(path + File.separator + realPath);
+                                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
+                                                            intent.putExtra("actionType", "E");
+                                                            intent.putExtra("paths", paths);
+                                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
+                                                        }
+                                                    });
+                                                    dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+
+                                                        }
+                                                    });
+                                                    dialogBuilder.show();
+                                                } else {
                                                     Snackbar.make(v, "Encryption started!", Snackbar.LENGTH_LONG).show();
                                                     ArrayList<String> paths = new ArrayList<>();
-                                                    paths.add(path + File.separator + textView.getText());
+                                                    paths.add(path + File.separator + realPath);
                                                     Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                     intent.putExtra("actionType", "E");
                                                     intent.putExtra("paths", paths);
                                                     intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                 }
-                                            });
-                                            dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
+                                            } else {
+                                                if (new File((path + File.separator + realPath).substring(0, (path + File.separator + realPath).length() - 4)).exists()) {
+                                                    MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
+                                                    dialogBuilder.setTitle("Warning");
+                                                    dialogBuilder.setMessage("Decrypted file already exists. Do you want to replace it?");
+                                                    dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            Snackbar.make(v, "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                            ArrayList<String> paths = new ArrayList<>();
+                                                            paths.add(path + File.separator + realPath);
+                                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
+                                                            intent.putExtra("actionType", "D");
+                                                            intent.putExtra("paths", paths);
+                                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
+                                                        }
+                                                    });
+                                                    dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
 
-                                                }
-                                            });
-                                            dialogBuilder.show();
-                                        } else {
-                                            Snackbar.make(v, "Encryption started!", Snackbar.LENGTH_LONG).show();
-                                            ArrayList<String> paths = new ArrayList<>();
-                                            paths.add(path + File.separator + textView.getText());
-                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
-                                            intent.putExtra("actionType", "E");
-                                            intent.putExtra("paths", paths);
-                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                        }
-                                        break;
-                                    case 1:
-                                        if (new File((path + File.separator + textView.getText()).substring(0, (path + File.separator + textView.getText()).length() - 4)).exists()) {
-                                            MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                            dialogBuilder.setTitle("Warning");
-                                            dialogBuilder.setMessage("Decrypted file already exists. Do you want to replace it?");
-                                            dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
+                                                        }
+                                                    });
+                                                    dialogBuilder.show();
+                                                } else {
                                                     Snackbar.make(v, "Decryption started!", Snackbar.LENGTH_LONG).show();
                                                     ArrayList<String> paths = new ArrayList<>();
-                                                    paths.add(path + File.separator + textView.getText());
+                                                    paths.add(path + File.separator + realPath);
                                                     Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                     intent.putExtra("actionType", "D");
                                                     intent.putExtra("paths", paths);
                                                     intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                 }
-                                            });
-                                            dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-
-                                                }
-                                            });
-                                            dialogBuilder.show();
-                                        } else {
-                                            Snackbar.make(v, "Decryption started!", Snackbar.LENGTH_LONG).show();
-                                            ArrayList<String> paths = new ArrayList<>();
-                                            paths.add(path + File.separator + textView.getText());
-                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
-                                            intent.putExtra("actionType", "D");
-                                            intent.putExtra("paths", paths);
-                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                        }
-                                        break;
-                                    default:
-                                        break;
+                                            }
+                                            break;
+                                        case 1:
+                                            try {
+                                                String filePath = path + File.separator + realPath;
+                                                File file = new File(filePath);
+                                                Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
+                                                String type = activity.getContentResolver().getType(uriForFile);
+                                                Intent intent = new Intent();
+                                                intent.setAction(Intent.ACTION_VIEW);
+                                                intent.setDataAndType(uriForFile, type);
+                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                activity.startActivity(intent);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                Snackbar.make(v, "Failed to open file", Snackbar.LENGTH_LONG).show();
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
-                            }
-                        });
-                        builder.show();
+                            });
+                            builder.show();
 
+                        }
+                        //Move to next folder if clicked element is folder
                     }
-                    //Move to next folder if clicked element is folder
                 }
             });
             textView = (TextView) view.findViewById(R.id.fileName);
@@ -314,14 +341,19 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         holders.add(viewHolder);
-        viewHolder.setFile(R.drawable.folder);
-        viewHolder.getSizeView().setVisibility(View.VISIBLE);
+        viewHolder.setFile(android.R.drawable.list_selector_background);
         if (!CheckedId.contains(localDataSet.get(position))) {
             viewHolder.fileCheckbox.setChecked(false);
         } else {
             viewHolder.fileCheckbox.setChecked(true);
         }
-        viewHolder.getTextView().setText(localDataSet.get(position));
+        if (localDataSet.get(position).contains(File.separator)) {
+            viewHolder.getTextView().setText(localDataSet.get(position).substring(localDataSet.get(position).lastIndexOf(File.separator) + 1));
+            viewHolder.realPath = localDataSet.get(position);
+        } else {
+            viewHolder.getTextView().setText(localDataSet.get(position));
+            viewHolder.realPath = localDataSet.get(position);
+        }
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -333,6 +365,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         @Override
                         public void run() {
                             viewHolder.getIsEncrypted().setVisibility(View.VISIBLE);
+                            viewHolder.encrypted = true;
                         }
                     });
                 } else {
@@ -340,6 +373,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         @Override
                         public void run() {
                             viewHolder.getIsEncrypted().setVisibility(View.INVISIBLE);
+                            viewHolder.encrypted = false;
                         }
                     });
                 }
@@ -360,11 +394,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             } else if (type.contains("x-msdos-program") || type.contains("vnd.android.package-archive")) {
                                 //EXE
                                 viewHolder.setFile(R.drawable.app);
+                            } else if (type.contains("powerpoint") || type.contains("presentation")) {
+                                viewHolder.setFile(R.drawable.powerpoint);
                             } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {
                                 //DOCX
                                 viewHolder.setFile(R.drawable.richtext);
-                            } else if (type.contains("powerpoint") || type.contains("presentation")) {
-                                viewHolder.setFile(R.drawable.powerpoint);
                             } else if (type.contains("rar") || type.contains("zip") || type.contains("7z")) {
                                 viewHolder.setFile(R.drawable.zip);
                             } else {
@@ -412,6 +446,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            viewHolder.setFile(R.drawable.folder);
                             viewHolder.getSizeView().setText("Calculating...");
                         }
                     });
@@ -448,7 +483,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         HashMap<Integer, String> files = new HashMap<>();
         for (int i = 0; i < holders.size(); i++) {
             if (holders.get(i).fileCheckbox.isChecked()) {
-                files.put(holders.get(i).getAdapterPosition(), (holders.get(i).getTextView().getText()).toString());
+                files.put(holders.get(i).getAdapterPosition(), (holders.get(i).realPath));
             }
         }
         return files;

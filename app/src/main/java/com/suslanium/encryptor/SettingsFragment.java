@@ -1,5 +1,6 @@
 package com.suslanium.encryptor;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,8 +9,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+import androidx.navigation.Navigation;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKeys;
 
@@ -18,6 +23,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -68,6 +74,14 @@ public class SettingsFragment extends Fragment {
         Button changePass = getActivity().findViewById(R.id.changePassword);
         Switch deleteAfter = getActivity().findViewById(R.id.deleteAfter);
         Switch deleteAfter2  = getActivity().findViewById(R.id.deleteAfter2);
+        Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
+        if(((Explorer) getActivity()).searchBar != null) {
+            t.removeView(((Explorer) getActivity()).searchBar);
+            ((Explorer) getActivity()).searchBar = null;
+            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+        }
         deleteAfter2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -211,5 +225,6 @@ public class SettingsFragment extends Fragment {
                 builder1.show();
             }
         });
+
     }
 }

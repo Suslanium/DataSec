@@ -1,14 +1,17 @@
 package com.suslanium.encryptor.ui.slideshow;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -45,6 +48,14 @@ public class SlideshowFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
+        if(((Explorer) getActivity()).searchBar != null) {
+            t.removeView(((Explorer) getActivity()).searchBar);
+            ((Explorer) getActivity()).searchBar = null;
+            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
         Intent intent2 = ((Explorer) getActivity()).getIntent2();
         /*Button oneDriveButton = (Button)getActivity().findViewById(R.id.oneDriveButton);
         Button googleDriveButtton = (Button)getActivity().findViewById(R.id.googleDriveButton);

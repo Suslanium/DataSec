@@ -30,8 +30,10 @@
         </provider>
 
         <activity android:name=".YandexDiskSignIn" />
-        <activity android:name=".GoogleDriveUploadSelector" />
-        <activity android:name=".GoogleDriveManager" />
+        <activity android:name=".GoogleDriveUploadSelector"
+            android:theme="@style/Theme.MaterialComponents"/>
+        <activity android:name=".GoogleDriveManager"
+            android:theme="@style/Theme.MaterialComponents"/>
         <activity android:name=".oneDriveActivity" />
         <activity android:name=".passwordChange" />
         <activity android:name=".passwordAdd" />

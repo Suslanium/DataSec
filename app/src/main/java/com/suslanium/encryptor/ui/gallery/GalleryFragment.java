@@ -1,14 +1,22 @@
 package com.suslanium.encryptor.ui.gallery;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -44,6 +52,45 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //-------------
+        Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
+        if(((Explorer) getActivity()).searchBar != null) {
+            t.removeView(((Explorer) getActivity()).searchBar);
+            ((Explorer) getActivity()).searchBar = null;
+            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        ImageButton b1=new ImageButton(getContext());
+        Drawable drawable = getContext().getDrawable(android.R.drawable.ic_menu_search);
+        b1.setImageDrawable(drawable);
+        b1.setBackgroundColor(Color.parseColor("#00000000"));
+        Toolbar.LayoutParams l3=new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
+        l3.gravity= Gravity.END;
+        b1.setLayoutParams(l3);
+        ((Explorer) getActivity()).searchButton = b1;
+        t.addView(b1);
+        //--------------
+        b1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(((Explorer) getActivity()).searchBar == null) {
+                    EditText layout = new EditText(getContext());
+                    Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                    layoutParams.gravity = Gravity.START;
+                    layout.setLayoutParams(l3);
+                    layout.setHint("Enter service name here...");
+                    t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                    layout.setFocusableInTouchMode(true);
+                    layout.requestFocus();
+                    final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
+                    ((Explorer) getActivity()).searchBar = layout;
+                } else {
+                    //Search
+                }
+            }
+        });
         FloatingActionButton fab = getView().findViewById(R.id.addData);
         intent2 = ((Explorer) getActivity()).getIntent2();
         fab.setOnClickListener(new View.OnClickListener() {

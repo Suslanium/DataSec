@@ -7,15 +7,27 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputLayout;
 import com.microsoft.onedrivesdk.picker.IPicker;
 import com.microsoft.onedrivesdk.picker.LinkType;
 import com.microsoft.onedrivesdk.picker.Picker;
@@ -75,7 +88,7 @@ public class HomeFragment extends Fragment {
         File[] dir = getContext().getExternalFilesDirs(null);
         ArrayList<String> storagePaths = new ArrayList<>();
         for (int i = 0; i < dir.length; i++) {
-            //Recaclulate substring end index after changing package name
+            //Recalculate substring end index after changing package name
             storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
         }
         ListIterator<String> pathIterator = storagePaths.listIterator();
@@ -96,6 +109,30 @@ public class HomeFragment extends Fragment {
             fileNames.add(filesSorted.get(i).getName());
         }
         fileList.addAll(fileNames);
+        //------------
+        Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        if (((Explorer) getActivity()).searchButton != null)
+            t.removeView(((Explorer) getActivity()).searchButton);
+        if (((Explorer) getActivity()).searchBar != null) {
+            t.removeView(((Explorer) getActivity()).searchBar);
+            ((Explorer) getActivity()).searchBar = null;
+            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        ImageButton b1 = new ImageButton(getContext());
+        Drawable drawable = getContext().getDrawable(android.R.drawable.ic_menu_search);
+        b1.setImageDrawable(drawable);
+        b1.setBackgroundColor(Color.parseColor("#00000000"));
+        Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
+        l3.gravity = Gravity.END;
+        b1.setLayoutParams(l3);
+        ((Explorer) getActivity()).searchButton = b1;
+        t.addView(b1);
+        final TextView[] search = {getActivity().findViewById(R.id.searchText)};
+        final ProgressBar[] bar = {getActivity().findViewById(R.id.progressBarSearch)};
+        search[0].setVisibility(View.INVISIBLE);
+        bar[0].setVisibility(View.INVISIBLE);
+        //-------------
         ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, getActivity());
         fileView.setLayoutManager(new LinearLayoutManager(getContext()));
         fileView.setAdapter(adapter);
@@ -385,6 +422,123 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+        b1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (((Explorer) getActivity()).searchBar == null) {
+                    EditText layout = new EditText(getContext());
+                    Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                    layoutParams.gravity = Gravity.START;
+                    layout.setLayoutParams(l3);
+                    layout.setHint("Enter file name here...");
+                    t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                    layout.setFocusableInTouchMode(true);
+                    layout.requestFocus();
+                    final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
+                    ((Explorer) getActivity()).searchBar = layout;
+                } else {
+                    //Search
+                    String fileName = ((Explorer) getActivity()).searchBar.getText().toString();
+                    if (!fileName.matches("")) {
+                        shareButton.setEnabled(false);
+                        encryptButton.setEnabled(false);
+                        sdcardButton.setEnabled(false);
+                        upFolder.setEnabled(false);
+                        adapter.isSearching = true;
+                        if (((Explorer) getActivity()).searchBar != null) {
+                            t.removeView(((Explorer) getActivity()).searchBar);
+                            ((Explorer) getActivity()).searchBar = null;
+                            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        Animation fadeIn = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_out);
+                        Animation fadeOut = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_in);
+                        fadeOut.setDuration(200);
+                        fadeIn.setDuration(200);
+                        fadeIn.setFillAfter(true);
+                        search[0].setText("Searching...");
+                        fileView.startAnimation(fadeIn);
+                        fileView.setEnabled(false);
+                        search[0] = getActivity().findViewById(R.id.searchText);
+                        bar[0] = getActivity().findViewById(R.id.progressBarSearch);
+                        search[0].setVisibility(View.VISIBLE);
+                        bar[0].setVisibility(View.VISIBLE);
+                        search[0].startAnimation(fadeOut);
+                        bar[0].startAnimation(fadeOut);
+                        String path = adapter.getPath();
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ArrayList<File> searchResult = searchFiles(path, fileName);
+                                while (!fadeOut.hasEnded()) {
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                if (searchResult.isEmpty()) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                fileView.startAnimation(fadeOut);
+                                                search[0].startAnimation(fadeIn);
+                                                bar[0].startAnimation(fadeIn);
+                                                Snackbar.make(v, "No results", Snackbar.LENGTH_LONG).show();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    ArrayList<String> fileNamesResult = new ArrayList<>();
+                                    for (int i = 0; i < searchResult.size(); i++) {
+                                        fileNamesResult.add(searchResult.get(i).getPath().substring(adapter.getPath().length() + 1));
+                                    }
+                                    fileList.clear();
+                                    fileList.addAll(fileNamesResult);
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            adapter.setNewData(adapter.getPath(), fileList);
+                                            fileView.scrollToPosition(0);
+                                            fileView.startAnimation(fadeOut);
+                                            search[0].startAnimation(fadeIn);
+                                            bar[0].startAnimation(fadeIn);
+                                        }
+                                    });
+                                }
+                                while (!fadeIn.hasEnded()) {
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        search[0].setVisibility(View.INVISIBLE);
+                                        bar[0].setVisibility(View.INVISIBLE);
+                                        adapter.isSearching = false;
+                                        shareButton.setEnabled(true);
+                                        encryptButton.setEnabled(true);
+                                        sdcardButton.setEnabled(true);
+                                        upFolder.setEnabled(true);
+                                    }
+                                });
+                            }
+                        });
+                        thread.start();
+                        //fileView.setVisibility(View.INVISIBLE);
+                    } else {
+                        Snackbar.make(v, "Please enter file name", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+            }
+        });
     }
 
     private void shareFiles(ArrayList<Uri> filePaths) {
@@ -415,6 +569,24 @@ public class HomeFragment extends Fragment {
             }
         }
         return pathsWithFolders;
+    }
+
+    private ArrayList<File> searchFiles(String path, String fileName) {
+        ArrayList<File> result = new ArrayList<>();
+        File parent = new File(path);
+        File[] childs = parent.listFiles();
+        if (childs != null && childs.length > 0) {
+            for (int i = 0; i < childs.length; i++) {
+                //Log.d("a", childs[i].getName());
+                if (childs[i].getName().contains(fileName)) {
+                    Log.d("Added", childs[i].getName());
+                    result.add(childs[i]);
+                }
+                if (childs[i].isDirectory())
+                    result.addAll(searchFiles(childs[i].getPath(), fileName));
+            }
+        }
+        return result;
     }
 
     public static ArrayList<String> sortFiles(ArrayList<String> filePaths) {

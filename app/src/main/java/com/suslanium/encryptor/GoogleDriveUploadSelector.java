@@ -32,8 +32,8 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if(dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
-        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
+        if(dark_theme) setTheme(R.style.Theme_MaterialComponents);
+        else setTheme(R.style.Theme_MaterialComponents_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_upload_selector);
         RecyclerView fileView = findViewById(R.id.deviceFiles);

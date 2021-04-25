@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -28,6 +30,8 @@ public class Explorer extends AppCompatActivity {
     private HomeFragment fragment = null;
     private Intent intent = null;
     public int currentOperationNumber = 0;
+    public ImageButton searchButton = null;
+    public EditText searchBar = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
