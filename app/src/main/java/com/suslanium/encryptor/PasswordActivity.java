@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 import androidx.security.crypto.MasterKeys;
 
 import android.Manifest;
@@ -82,10 +83,54 @@ public class PasswordActivity extends AppCompatActivity {
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             SharedPreferences editor1 = PreferenceManager.getDefaultSharedPreferences(this);
             if(!editor1.getBoolean("changingPassword", false)) {
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + packageName));
-                    startActivityForResult(intent, 1002);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                        intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        intent.setData(Uri.parse("package:" + packageName));
+                        startActivityForResult(intent, 1002);
+                    } else {
+                        TextInputLayout text = findViewById(R.id.textInputLayout);
+                        String password = text.getEditText().getText().toString();
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                            .build();
+                                    SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                    String passHash = editor.getString("passHash", null);
+                                    if (passHash == null) {
+                                        SharedPreferences.Editor edit = editor.edit();
+                                        edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
+                                        edit.apply();
+                                        login(password);
+                                    } else {
+                                        String passwordHash = Encryptor.calculateHash(password, "SHA-512");
+                                        if (passwordHash.equals(passHash)) {
+                                            login(password);
+                                        } else {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Snackbar.make(v, "Wrong password!", Snackbar.LENGTH_LONG).show();
+                                                }
+                                            });
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Snackbar.make(v, "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        thread.start();
+                    }
                 } else {
                     TextInputLayout text = findViewById(R.id.textInputLayout);
                     String password = text.getEditText().getText().toString();
@@ -93,8 +138,10 @@ public class PasswordActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             try {
-                                String keyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-                                SharedPreferences editor = EncryptedSharedPreferences.create("encryptor_shared_prefs", keyAlias, PasswordActivity.this, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .build();
+                                SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
                                 String passHash = editor.getString("passHash", null);
                                 if (passHash == null) {
                                     SharedPreferences.Editor edit = editor.edit();
@@ -139,11 +186,55 @@ public class PasswordActivity extends AppCompatActivity {
         if (requestCode == 1002) {
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                intent.setData(Uri.parse("package:" + packageName));
-                startActivityForResult(intent, 1002);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + packageName));
+                    startActivityForResult(intent, 1002);
+                } else {
+                    TextInputLayout text = findViewById(R.id.textInputLayout);
+                    String password = text.getEditText().getText().toString();
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .build();
+                                SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                String passHash = editor.getString("passHash", null);
+                                if (passHash == null) {
+                                    SharedPreferences.Editor edit = editor.edit();
+                                    edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
+                                    edit.apply();
+                                    login(password);
+                                } else {
+                                    String passwordHash = Encryptor.calculateHash(password, "SHA-512");
+                                    if (passwordHash.equals(passHash)) {
+                                        login(password);
+                                    } else {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Snackbar.make(getCurrentFocus(), "Wrong password!", Snackbar.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+                                }
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Snackbar.make(getCurrentFocus(), "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    thread.start();
+                }
             } else {
                 TextInputLayout text = findViewById(R.id.textInputLayout);
                 String password = text.getEditText().getText().toString();
@@ -151,8 +242,10 @@ public class PasswordActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            String keyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-                            SharedPreferences editor = EncryptedSharedPreferences.create("encryptor_shared_prefs", keyAlias, PasswordActivity.this, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                            MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                    .build();
+                            SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
                             String passHash = editor.getString("passHash", null);
                             if (passHash == null) {
                                 SharedPreferences.Editor edit = editor.edit();

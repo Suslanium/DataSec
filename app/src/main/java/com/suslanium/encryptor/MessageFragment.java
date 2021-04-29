@@ -34,6 +34,7 @@ public class MessageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ((Explorer) getActivity()).messageCryptVisible = true;
         Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
         if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
         if(((Explorer) getActivity()).searchBar != null) {
@@ -61,6 +62,12 @@ public class MessageFragment extends Fragment {
                 }
             }
         }).attach();
+    }
+
+    @Override
+    public void onDestroyView() {
+        ((Explorer) getActivity()).messageCryptVisible = false;
+        super.onDestroyView();
     }
 }
 

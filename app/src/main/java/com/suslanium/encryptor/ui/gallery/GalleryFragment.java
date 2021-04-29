@@ -50,8 +50,15 @@ public class GalleryFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        ((Explorer) getActivity()).passwordVaultVisible = false;
+        super.onDestroyView();
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ((Explorer) getActivity()).passwordVaultVisible = true;
         //-------------
         Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
         if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
@@ -62,7 +69,12 @@ public class GalleryFragment extends Fragment {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         ImageButton b1=new ImageButton(getContext());
-        Drawable drawable = getContext().getDrawable(android.R.drawable.ic_menu_search);
+        Drawable drawable = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            drawable = getContext().getDrawable(android.R.drawable.ic_menu_search);
+        } else {
+            drawable = getResources().getDrawable(android.R.drawable.ic_menu_search);
+        }
         b1.setImageDrawable(drawable);
         b1.setBackgroundColor(Color.parseColor("#00000000"));
         Toolbar.LayoutParams l3=new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);

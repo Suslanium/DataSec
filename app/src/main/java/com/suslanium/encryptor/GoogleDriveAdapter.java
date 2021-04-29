@@ -89,8 +89,11 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                                 names.add(localDataSet.get(i));
                                                 Intent intent = new Intent(context, EncryptorService.class);
                                                 intent.putExtra("actionType", "gDriveD");
-                                                intent.putExtra("paths", paths);
-                                                intent.putExtra("names", names);
+                                                EncryptorService.uniqueID++;
+                                                int j = EncryptorService.uniqueID;
+                                                EncryptorService.paths.put(j, paths);
+                                                EncryptorService.names.put(j,names);
+                                                intent.putExtra("index", j);
                                                 intent.putExtra("pass", ((GoogleDriveManager) context).getIntent().getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(context, intent);
                                             }

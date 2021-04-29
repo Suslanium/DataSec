@@ -1,0 +1,53 @@
+
+^
+java:S1874@"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(›†ƒÄÿÿÿÿÿ
+e	java:S117""QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨•Ù
+C
+java:S1604E"(Make this anonymous inner class a lambda(‘¢×øÿÿÿÿ
+o
+java:S1104"TMake upFolder a static final constant or non-public and provide accessors if needed.(Ïä¹Çùÿÿÿÿ
+}
+java:S1104"bMake currentOperationNumber a static final constant or non-public and provide accessors if needed.(žäà…ÿÿÿÿÿ
+C
+java:S1604~"(Make this anonymous inner class a lambda(˜ã¯þÿÿÿÿ
+?
+java:S1604–"(Make this anonymous inner class a lambda(ÀˆÝ¯
+D
+java:S1604Ý"(Make this anonymous inner class a lambda(’æ‡‘ùÿÿÿÿ
+\
+java:S2142x"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+‚
+java:S3252W"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÔÅ¹„þÿÿÿÿ
+Y
+java:S18740"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(¶ä£œ
+D
+java:S1604Å"(Make this anonymous inner class a lambda(˜ã¯þÿÿÿÿ
+U
+java:S1155á">Use isEmpty() to check whether the collection is empty or not.(êÇÖ™
+‚
+java:S3252M"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(Ýüóÿÿÿÿÿ
+]
+java:S2142Ð"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+O
+java:S1874!"9Remove this use of "PreferenceManager"; it is deprecated.(Äâá…
+ƒ
+java:S3252ê"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(®•ÀÆøÿÿÿÿ
+n
+java:S3776 "SRefactor this method to reduce its Cognitive Complexity from 125 to the 15 allowed.(ž¨Œþÿÿÿÿ
+~
+java:S3252¢"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(¢¥‘è
+E
+java:S1066["/Merge this if statement with the enclosing one.(è¸Á°
+=
+java:S1604b"(Make this anonymous inner class a lambda(ô§ê
+}
+java:S3252O"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ŸþÈ²
+]
+java:S2142¿"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+>
+java:S1604©"(Make this anonymous inner class a lambda(ô§ê
+Q	java:S110"<This class has 9 parents which is greater than 5 authorized.(¼õò°
+]
+java:S2142‰"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+Y
+java:S1874!"CRemove this use of "getDefaultSharedPreferences"; it is deprecated.(Äâá…

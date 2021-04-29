@@ -187,7 +187,10 @@ public class GoogleDriveManager extends AppCompatActivity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
                                     intent.putExtra("actionType", "gDriveDelete");
-                                    intent.putExtra("paths", ids2);
+                                    EncryptorService.uniqueID++;
+                                    int i = EncryptorService.uniqueID;
+                                    EncryptorService.paths.put(i, ids2);
+                                    intent.putExtra("index", i);
                                     intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                                     ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
                                 }
@@ -343,8 +346,13 @@ public class GoogleDriveManager extends AppCompatActivity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
                                     intent.putExtra("actionType", "gDriveD");
-                                    intent.putExtra("paths", checkedIds);
-                                    intent.putExtra("names", adapter.getCheckedNames());
+                                    //intent.putExtra("paths", checkedIds);
+                                    EncryptorService.uniqueID++;
+                                    int i = EncryptorService.uniqueID;
+                                    EncryptorService.paths.put(i, checkedIds);
+                                    EncryptorService.names.put(i,adapter.getCheckedNames());
+                                    intent.putExtra("index", i);
+                                    //intent.putExtra("names", adapter.getCheckedNames());
                                     intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                                     ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
                                 }

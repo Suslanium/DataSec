@@ -1,0 +1,149 @@
+
+b
+java:S1192Ê"KDefine a constant instead of duplicating this literal "actionType" 4 times.(™ğé²
+b
+java:S1192Ë"FDefine a constant instead of duplicating this literal "paths" 4 times.(ğ÷¤ñøÿÿÿÿ
+\
+java:S1155Ô">Use isEmpty() to check whether the collection is empty or not.(ƒÍ¥¤8•äÄ/
+Q
+java:S1128<";Remove this unused import 'android.app.Activity.RESULT_OK'.(£°ÀÌ
+Y	java:S125—"<This block of commented-out lines of code should be removed.(Â…¦€8•äÄ/
+F
+java:S1604©"(Make this anonymous inner class a lambda(¬İí¼8“¥ôÀ/
+w
+java:S1488I"\Immediately return this expression instead of assigning it to the temporary variable "root".(¼…¼€ùÿÿÿÿ
+?
+java:S1604á"(Make this anonymous inner class a lambda(Àˆİ¯
+V	java:S125A"<This block of commented-out lines of code should be removed.(—èØ¶şÿÿÿÿ
+>
+java:S1604­"(Make this anonymous inner class a lambda(ô§ê
+]
+java:S2142›"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+>
+java:S1604ô"(Make this anonymous inner class a lambda(ô§ê
+s
+java:S3252®"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(˜úîåşÿÿÿÿ8°‡ŒÁ/
+D
+java:S1604"(Make this anonymous inner class a lambda(‘¢×øÿÿÿÿ
+S
+java:S1128	">Remove this unused import 'android.content.SharedPreferences'.(íÎÉr
+?
+java:S1604Æ"(Make this anonymous inner class a lambda(œ¿‘õ
+~
+java:S3252š"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ŸşÈ²
+F
+java:S11287"0Remove this unused import 'java.nio.file.Files'.(‚ƒü
+r
+java:S3252~"PUse static access with "android.view.ViewGroup$LayoutParams" for "WRAP_CONTENT".(ãŠğÅÿÿÿÿÿ8öœ±À/
+T
+java:S1128"2Remove this unused import 'android.widget.Button'.(²òıÿÿÿÿ8Àâ¼À/
+D
+java:S1604¨"(Make this anonymous inner class a lambda(®–¥âşÿÿÿÿ
+ƒ
+java:S3252¢"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÔÅ¹„şÿÿÿÿ
+U
+java:S1161G":Add the "@Override" annotation above this method signature(î•Éğûÿÿÿÿ
+]
+java:S2142Ô"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+˜
+java:S1186Ó"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢
+J
+java:S1128"/Remove this unused import 'android.os.IBinder'.(Ñğôˆùÿÿÿÿ
+P
+java:S1128":Remove this unused import 'android.content.ComponentName'.(½‹æŠ
+E
+java:S1604ˆ"(Make this anonymous inner class a lambda(»¬ãS8ë§Å/
+~
+java:S3252İ"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ßİÃã
+Y
+java:S1874`"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(¶ä£œ
+?
+java:S1604ò"(Make this anonymous inner class a lambda(œ¿‘õ
+…
+java:S3252é"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ì ‚¶8•äÄ/
+?
+java:S1604Ñ"(Make this anonymous inner class a lambda(´‹ªÙ
+ƒ
+java:S3252˜"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(İüóÿÿÿÿÿ
+d
+java:S2142İ"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€8‚õØÃ/
+E
+java:S1604ö"(Make this anonymous inner class a lambda(»¬ãS8•äÄ/
+˜
+java:S1186ÿ"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢
+E
+java:S1604Ö"(Make this anonymous inner class a lambda(ô§ê8¢Ø¹Ã/
+D
+java:S1604°"(Make this anonymous inner class a lambda(òÜÖÿÿÿÿÿÿ
+r
+java:S3252~"PUse static access with "android.view.ViewGroup$LayoutParams" for "WRAP_CONTENT".(ãŠğÅÿÿÿÿÿ8öœ±À/
+?
+java:S1604™"(Make this anonymous inner class a lambda(çùÜì
+E
+java:S1604â"(Make this anonymous inner class a lambda(»¬ãS8ÑáşÃ/
+]
+java:S2142Š"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+s
+java:S3252²"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(Ù°ò¤ÿÿÿÿÿ8²¿‘Á/
+d
+java:S2142„"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€8•äÄ/
+o
+java:S1104B"TMake upFolder a static final constant or non-public and provide accessors if needed.(Ïä¹Çùÿÿÿÿ
+T
+java:S1128">Remove this unused import 'android.content.ServiceConnection'.(¾ÄãÛ
+~
+java:S3252Î"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ßİÃã
+~
+java:S3252‰"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÁÚó¨
+U
+java:S1155¬">Use isEmpty() to check whether the collection is empty or not.(êÇÖ™
+^	java:S125Ü"<This block of commented-out lines of code should be removed.(®–›ªşÿÿÿÿ8•äÄ/
+F
+java:S1185ı"(Remove this method to simply inherit it.(öÿÕÅ8•äÄ/
+V	java:S125C"<This block of commented-out lines of code should be removed.(¦ç´üÿÿÿÿ
+ƒ
+java:S3252¥"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(®•ÀÆøÿÿÿÿ
+L
+java:S1144æ".Remove this unused private "sortFiles" method.(©É’„8•äÄ/
+i
+java:S3776U"SRefactor this method to reduce its Cognitive Complexity from 251 to the 15 allowed.(¡Œşø
+—
+java:S1319Ğ"tThe type of the "filePaths" object should be an interface such as "List" rather than the implementation "ArrayList".(Ñ§õÿÿÿÿÿ8•äÄ/
+s
+java:S3252²"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(Ù°ò¤ÿÿÿÿÿ8²¿‘Á/
+~
+java:S3252ú"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÁÚó¨
+]
+java:S2142Ã"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+W
+java:S1128="ARemove this unused import 'android.content.Context.MODE_PRIVATE'.(–Ù¶
+_
+java:S1874ˆ"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(í–õâıÿÿÿÿ
+^	java:S125ò"<This block of commented-out lines of code should be removed.(®–›ªşÿÿÿÿ8•äÄ/
+U
+java:S1155Ÿ">Use isEmpty() to check whether the collection is empty or not.(íàµÉ
+>
+java:S1604É"(Make this anonymous inner class a lambda(»¬ãS
+ƒ
+java:S3252”"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(®•ÀÆøÿÿÿÿ
+>
+java:S1604"(Make this anonymous inner class a lambda(»¬ãS
+Š
+java:S3252™"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(»í„¸ÿÿÿÿÿ8•äÄ/
+g	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ĞôÈ
+“
+java:S1319Ğ"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(Ñ§õÿÿÿÿÿ8•äÄ/
+~
+java:S3252í"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(¢¥‘è
+^	java:S125Ä"<This block of commented-out lines of code should be removed.(ŞËƒ¹øÿÿÿÿ8•äÄ/
+o
+java:S1128,"RRemove this unused import 'com.google.android.material.textfield.TextInputLayout'.(¾¸‰ˆ8Ú†ˆÁ/
+?
+java:S1604ı"(Make this anonymous inner class a lambda(´‹ªÙ
+s
+java:S3252®"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(˜úîåşÿÿÿÿ8€ÆŠÁ/
+T
+java:S11280">Remove this unused import 'com.suslanium.encryptor.Encryptor'.(Ûê´·
+E
+java:S1066¦"/Merge this if statement with the enclosing one.(Âôù2
+W	java:S125‘"<This block of commented-out lines of code should be removed.(ÌƒƒØúÿÿÿÿ

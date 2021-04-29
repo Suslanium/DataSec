@@ -1,0 +1,19 @@
+
+u
+java:S1104!"XMake searchButton a static final constant or non-public and provide accessors if needed.(©¸®Ù8¸ÃÏÀ/
+w
+java:S1104""UMake searchBar a static final constant or non-public and provide accessors if needed.(óëèÉÿÿÿÿÿ8–¬•Á/
+e	java:S117'"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨•Ù
+I
+java:S1128	".Remove this unused import 'android.view.View'.(Ø½­äşÿÿÿÿ
+Q	java:S110"<This class has 9 parents which is greater than 5 authorized.(ô«¦½
+S
+java:S1128"8Remove this unused import 'android.app.FragmentManager'.(í£“ûÿÿÿÿ
+O
+java:S1874&"9Remove this use of "PreferenceManager"; it is deprecated.(Äâá…
+V
+java:S1128";Remove this unused import 'androidx.fragment.app.Fragment'.(‚Š©“ùÿÿÿÿ
+}
+java:S1104 "bMake currentOperationNumber a static final constant or non-public and provide accessors if needed.(äà…ÿÿÿÿÿ
+Y
+java:S1874&"CRemove this use of "getDefaultSharedPreferences"; it is deprecated.(Äâá…

@@ -1,0 +1,40 @@
+
+O
+java:S1128"4Remove this unused import 'android.widget.TextView'.(„Ë‚ˆÿÿÿÿÿ
+w
+java:S14880"\Immediately return this expression instead of assigning it to the temporary variable "root".(éÃ‘úúÿÿÿÿ
+r
+java:S3252D"PUse static access with "android.view.ViewGroup$LayoutParams" for "WRAP_CONTENT".(ãŠğÅÿÿÿÿÿ8öäØÀ/
+r
+java:S3252O"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(˜úîåşÿÿÿÿ8¾²Á/
+r
+java:S3252O"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(˜úîåşÿÿÿÿ8¾²Á/
+C
+java:S1604`"(Make this anonymous inner class a lambda(ù‘’Øüÿÿÿÿ
+E
+java:S1604J"(Make this anonymous inner class a lambda(¬İí¼8¾²Á/
+>
+java:S1604"(Make this anonymous inner class a lambda(»¬ãS
+S
+java:S1128"8Remove this unused import 'androidx.lifecycle.Observer'.(ÒÁˆÉşÿÿÿÿ
+
+java:S1319k"sThe type of the "strings2" object should be an interface such as "List" rather than the implementation "ArrayList".(˜Å¹õıÿÿÿÿ
+V	java:S125/"<This block of commented-out lines of code should be removed.(ÃÓòüÿÿÿÿ
+ƒ
+java:S3252›"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(Âì¯Àÿÿÿÿÿ
+ˆ
+java:S1319k"mThe type of the "id" object should be an interface such as "List" rather than the implementation "ArrayList".(˜Å¹õıÿÿÿÿ
+J
+java:S1068*"4Remove this unused "galleryViewModel" private field.(ŸŒÀ€
+>
+java:S1604€"(Make this anonymous inner class a lambda(ô§ê
+r
+java:S3252S"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(Ù°ò¤ÿÿÿÿÿ8¾²Á/
+r
+java:S3252S"PUse static access with "android.view.ViewGroup$LayoutParams" for "MATCH_PARENT".(Ù°ò¤ÿÿÿÿÿ8¾²Á/
+>
+java:S1604˜"(Make this anonymous inner class a lambda(»¬ãS
+r
+java:S3252D"PUse static access with "android.view.ViewGroup$LayoutParams" for "WRAP_CONTENT".(ãŠğÅÿÿÿÿÿ8öäØÀ/
+U
+java:S1161-":Add the "@Override" annotation above this method signature(î•Éğûÿÿÿÿ

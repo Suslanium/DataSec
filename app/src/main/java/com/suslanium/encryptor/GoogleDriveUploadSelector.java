@@ -225,7 +225,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 if(paths.size()>0) {
                     Intent intent = new Intent(GoogleDriveUploadSelector.this, EncryptorService.class);
                     intent.putExtra("actionType", "gDriveE");
-                    intent.putExtra("paths", paths);
+                    EncryptorService.uniqueID++;
+                    int i = EncryptorService.uniqueID;
+                    EncryptorService.paths.put(i, paths);
+                    intent.putExtra("index", i);
                     intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                     intent.putExtra("gDriveFolder", getIntent().getStringExtra("gDriveFolder"));
                     ContextCompat.startForegroundService(GoogleDriveUploadSelector.this, intent);

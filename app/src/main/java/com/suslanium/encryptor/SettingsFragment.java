@@ -56,7 +56,14 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ((Explorer) getActivity()).settingsVisible = true;
         updateUI();
+    }
+
+    @Override
+    public void onDestroyView() {
+        ((Explorer) getActivity()).settingsVisible = false;
+        super.onDestroyView();
     }
 
     @Override

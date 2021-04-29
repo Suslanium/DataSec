@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ import androidx.core.content.FileProvider;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 import androidx.security.crypto.MasterKeys;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -47,7 +49,15 @@ import com.microsoft.onedrivesdk.saver.Saver;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,15 +65,23 @@ import java.util.List;
 
 public class EncryptorService extends Service {
     private final String CHANNEL_ID = "Encryptor";
-    private int id = 0;
+    private int id = 1;
     private ArrayList<Boolean> isRunning = new ArrayList<>();
     private ISaver mSaver;
     private String ONEDRIVE_APP_ID = "4a85af0e-df80-4f4f-a172-625d168df915";
+    public static HashMap<Integer, ArrayList<String>> paths = new HashMap<>();
+    public static HashMap<Integer, String> path = new HashMap<>();
+    public static HashMap<Integer, String> originalPath = new HashMap<>();
+    public static HashMap<Integer, ArrayList<String>> originalPaths = new HashMap<>();
+    public static HashMap<Integer, ArrayList<String>> names = new HashMap<>();
+    public static Integer uniqueID = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d("Service", "OnCreate");
         createNotificationChannel();
+        Log.d("Service", "OnCreateEnd");
     }
 
     //TODO:app crashes on fragment reopening
@@ -87,15 +105,18 @@ public class EncryptorService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("Service", "start");
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.locked)
                 .setContentTitle("Encrypting service is running")
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        Log.d("Service", "NotifCreated");
         startForeground(++id, builder.build());
         String actionType = intent.getStringExtra("actionType");
-        ArrayList<String> paths = intent.getStringArrayListExtra("paths");
-        ArrayList<String> names = intent.getStringArrayListExtra("names");
+        int index = intent.getIntExtra("index", 0);
+        ArrayList<String> paths = EncryptorService.paths.get(index);
+        ArrayList<String> names = EncryptorService.names.get(index);
         byte[] pass = intent.getByteArrayExtra("pass");
         String currentFolderID = intent.getStringExtra("gDriveFolder");
         Boolean running = true;
@@ -137,7 +158,7 @@ public class EncryptorService extends Service {
                                 try {
                                     File file1 = new File(path + "Enc");
                                     Encryptor.encryptFolderAES_GCM(file, password, file1, getBaseContext());
-                                    if(auto_delete) file.delete();
+                                    if (auto_delete) file.delete();
                                     encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -155,7 +176,7 @@ public class EncryptorService extends Service {
                                 try {
                                     File file1 = new File(path + ".enc");
                                     Encryptor.encryptFileAES256(file, password, file1);
-                                    if(auto_delete) file.delete();
+                                    if (auto_delete) file.delete();
                                     encryptedPaths.add(file1.getPath());
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -172,8 +193,8 @@ public class EncryptorService extends Service {
                         }
                         ArrayList<String> filesWSub = constructFilePaths(encryptedPaths);
                         ArrayList<Uri> uris = new ArrayList<>();
-                        if(!filesWSub.isEmpty()){
-                            for(int j=0;j<filesWSub.size();j++){
+                        if (!filesWSub.isEmpty()) {
+                            for (int j = 0; j < filesWSub.size(); j++) {
                                 uris.add(FileProvider.getUriForFile(getBaseContext(), "com.suslanium.encryptor.fileprovider", new File(filesWSub.get(j))));
                             }
                         }
@@ -244,7 +265,7 @@ public class EncryptorService extends Service {
                                 }
                                 try {
                                     Encryptor.decryptFolderAES_GCM(file, password, new File((path).substring(0, (path).length() - 3)), getBaseContext(), false);
-                                    if(autoDelete2) file.delete();
+                                    if (autoDelete2) file.delete();
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -261,7 +282,7 @@ public class EncryptorService extends Service {
                                 file1.delete();
                                 try {
                                     Encryptor.decryptFileAES256(file, password, file1);
-                                    if(autoDelete2)file.delete();
+                                    if (autoDelete2) file.delete();
                                 } catch (Exception e) {
                                     NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                             .setSmallIcon(R.drawable.locked)
@@ -813,7 +834,7 @@ public class EncryptorService extends Service {
                 }
             });
             thread.start();
-        } else if(actionType.equals("changePass")){
+        } else if (actionType.equals("changePass")) {
             byte[] newPassEnc = intent.getByteArrayExtra("newPass");
             Thread thread = new Thread(new Runnable() {
                 @Override
@@ -828,15 +849,17 @@ public class EncryptorService extends Service {
                         HashMap<Integer, ArrayList<String>> data = Encryptor.readPasswordData(database);
                         Encryptor.closeDataBase(database);
                         Encryptor.deleteDatabase(getBaseContext());
-                        if(data != null && data.size() > 0) {
+                        if (data != null && data.size() > 0) {
                             SQLiteDatabase newDatabase = Encryptor.initDataBase(getBaseContext(), newPass);
-                            for(int i=1;i<=data.size();i++){
+                            for (int i = 1; i <= data.size(); i++) {
                                 Encryptor.insertDataIntoPasswordTable(newDatabase, data.get(i).get(0), data.get(i).get(1), data.get(i).get(2));
                             }
                             Encryptor.closeDataBase(newDatabase);
                         }
-                        String keyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-                        SharedPreferences editor = EncryptedSharedPreferences.create("encryptor_shared_prefs", keyAlias, getBaseContext(), EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                        MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                .build();
+                        SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
                         SharedPreferences.Editor edit = editor.edit();
                         edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                         edit.apply();
@@ -852,9 +875,192 @@ public class EncryptorService extends Service {
                 }
             });
             thread.start();
+        } else if (actionType.equals("delete")) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SharedPreferences.Editor editor1 = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
+                    editor1.putBoolean("deletingFiles", true);
+                    editor1.apply();
+                    NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.locked)
+                            .setContentTitle("Deleting file(s)...")
+                            .setOngoing(true)
+                            .setProgress(1, 0, true)
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                    NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
+                    notificationManager3.notify(operationID, builder3.build());
+                    deleteFiles(paths);
+                    notificationManager3.cancel(operationID);
+                    editor1.putBoolean("deletingFiles", false);
+                    editor1.apply();
+                    isRunning.remove(running);
+                    if (!isRunning.contains(true)) stopSelf();
+                }
+            });
+            thread.start();
+        } else if (actionType.equals("copyFiles")) {
+            String path = EncryptorService.path.get(index);
+            String originalPath = EncryptorService.originalPath.get(index);
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.locked)
+                            .setContentTitle("Copying file(s)...")
+                            .setOngoing(true)
+                            .setProgress(paths.size(), 0, false)
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                    NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
+                    notificationManager3.notify(operationID, builder3.build());
+                    copyFiles(paths, path, originalPath, false, null, operationID);
+                }
+            });
+            thread.start();
+        } else if (actionType.equals("moveFiles")) {
+            String path = EncryptorService.path.get(index);
+            String originalPath = EncryptorService.originalPath.get(index);
+            ArrayList<String> originalPaths = EncryptorService.originalPaths.get(index);
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.locked)
+                            .setContentTitle("Moving file(s)...")
+                            .setOngoing(true)
+                            .setProgress(paths.size(), 0, false)
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                    NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
+                    notificationManager3.notify(operationID, builder3.build());
+                    copyFiles(paths, path, originalPath, true, originalPaths, operationID);
+                }
+            });
+            thread.start();
         }
-        //code
         return START_REDELIVER_INTENT;
+    }
+
+    private void copyFiles(ArrayList<String> paths, String toCopyPath, String originalPath, boolean cut, ArrayList<String> originalPaths, int operationID) {
+        int errorCount = 0;
+        int pathsSize = paths.size();
+        NotificationManagerCompat manager = NotificationManagerCompat.from(EncryptorService.this);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.locked)
+                .setContentTitle("")
+                .setOngoing(true)
+                .setProgress(paths.size(), 0, false)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        String storagePath = Environment.getExternalStorageDirectory().getPath();
+        File[] dir = getBaseContext().getExternalFilesDirs(null);
+        for (int i = 0; i < dir.length; i++) {
+            String currPath = dir[i].getPath().substring(0, dir[i].getPath().length() - 43);
+            if(originalPath.contains(currPath)){
+                storagePath = currPath;
+            }
+        }
+        int copiedCount = 0;
+        for (int i = 0; i < paths.size(); i++) {
+            boolean rename = false;
+            if(paths.get(i).startsWith("Rename_")){
+                rename = true;
+                String rightPath = paths.get(i).replace("Rename_", "");
+                paths.set(i, rightPath);
+            }
+            File original = new File(paths.get(i));
+            String copyPath = paths.get(i).replace(originalPath, "");
+            File copied = new File(toCopyPath + copyPath);
+            if (original.isFile()) {
+                int j = 0;
+                while (copied.exists() && copied.isDirectory()) {
+                    copied = new File(toCopyPath + copyPath + "(" + j + ")");
+                    j++;
+                }
+                String extension = null;
+                if(copied.getName().contains(".")) {
+                    extension = copied.getName().substring(copied.getName().lastIndexOf("."));
+                }
+                while (rename && copied.exists() && copied.isFile()){
+                    copied = new File(copied.getPath().replace(extension, "") + "(" + j + ")" + extension);
+                }
+                if (copied.exists() && copied.isFile() && !rename) copied.delete();
+                if (!original.getPath().matches(copied.getPath())) {
+                    if (original.canRead() && original.canWrite()) {
+                        copied.getParentFile().mkdirs();
+                        int errorCountBefore = errorCount;
+                        try (InputStream in = new BufferedInputStream(new FileInputStream(original)); OutputStream out = new BufferedOutputStream(new FileOutputStream(copied))) {
+                            byte[] buffer = new byte[256*1024];
+                            int lengthRead;
+                            while ((lengthRead = in.read(buffer)) > 0) {
+                                out.write(buffer, 0, lengthRead);
+                                out.flush();
+                            }
+                            copiedCount++;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            errorCount++;
+                        } finally {
+                            if (cut && errorCountBefore == errorCount) original.delete();
+                        }
+                    }
+                }
+            } else {
+                try {
+                    copied.mkdirs();
+                } catch (Exception e){
+
+                }
+            }
+            if(cut)builder.setContentTitle("Moving " + copiedCount + " files");
+            else builder.setContentTitle("Copying " + copiedCount + " files");
+            builder.setProgress(pathsSize, i, false);
+            manager.notify(operationID, builder.build());
+        }
+        if (cut && originalPaths != null && !originalPaths.isEmpty()) {
+            for (int i = 0; i < originalPaths.size(); i++) {
+                File file = new File(originalPaths.get(i));
+                if(file.exists() && file.isDirectory())deleteFiles(originalPaths.get(i));
+            }
+        }
+        if(cut)builder.setContentTitle("Successfully moved " + copiedCount + " files");
+        else builder.setContentTitle("Successfully copied " + copiedCount + " files");
+        if(errorCount > 0)builder.setContentText("Errors occured during process:" + errorCount);
+        builder.setOngoing(false);
+        builder.setProgress(0,0,false);
+        manager.notify(operationID, builder.build());
+        isRunning.remove(true);
+        if (!isRunning.contains(true)) stopSelf();
+    }
+
+    private void deleteFiles(ArrayList<String> paths) {
+        for (int i = 0; i < paths.size(); i++) {
+            File file = new File(paths.get(i));
+            if (!file.isFile()) {
+                File[] files = file.listFiles();
+                if (files != null && files.length > 0) {
+                    ArrayList<String> subPaths = new ArrayList<>();
+                    for (int j = 0; j < files.length; j++) {
+                        subPaths.add(files[j].getPath());
+                    }
+                    deleteFiles(subPaths);
+                }
+            }
+            file.delete();
+        }
+    }
+
+    private void deleteFiles(String path) {
+        File file = new File(path);
+        if (!file.isFile()) {
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0) {
+                ArrayList<String> subPaths = new ArrayList<>();
+                for (int j = 0; j < files.length; j++) {
+                    subPaths.add(files[j].getPath());
+                }
+                deleteFiles(subPaths);
+            }
+        }
+        file.delete();
     }
 
     private void uploadFilesInFolder(String folderID, DriveServiceHelper mDriveServiceHelper, ArrayList<String> filePaths) throws Exception {
@@ -982,13 +1188,14 @@ public class EncryptorService extends Service {
         }
         return downloadedFiles;
     }
-    private ArrayList<String> constructFilePaths(ArrayList<String> paths){
+
+    private ArrayList<String> constructFilePaths(ArrayList<String> paths) {
         ArrayList<String> pathsWithFolders = new ArrayList<>();
-        for(int i=0;i<paths.size();i++){
-            if(new File(paths.get(i)).isDirectory()){
+        for (int i = 0; i < paths.size(); i++) {
+            if (new File(paths.get(i)).isDirectory()) {
                 File[] files = new File(paths.get(i)).listFiles();
                 ArrayList<String> subPaths = new ArrayList<>();
-                for(int j=0;j<files.length;j++){
+                for (int j = 0; j < files.length; j++) {
                     subPaths.add(files[j].getPath());
                 }
                 pathsWithFolders.addAll(constructFilePaths(subPaths));

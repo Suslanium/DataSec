@@ -2,6 +2,7 @@ package com.suslanium.encryptor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.FileUtils;
 import android.preference.PreferenceManager;
 
 import net.sqlcipher.Cursor;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.security.KeyPair;
@@ -20,6 +22,7 @@ import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
@@ -55,7 +58,8 @@ public final class Encryptor {
     //TODO: add buffered encryption/decryption instead of cipher.doFinal(input);(look into MainActivity encrypting/decrypting methods
     public static byte[] encryptBytesAES256(byte[] input, String password) {
         try {
-            SecureRandom secureRandom = SecureRandom.getInstanceStrong();
+            //SecureRandom secureRandom = SecureRandom.getInstanceStrong();
+            SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "AndroidOpenSSL");
             // Derive the key, given password and salt
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             // A salt is a unique, randomly generated string
@@ -134,7 +138,12 @@ public final class Encryptor {
                 encryptedSplit.get(i).delete();
             }
         } else {
-            byte[] originalBytes = Files.readAllBytes(original.toPath());
+            //byte[] originalBytes = Files.readAllBytes(original.toPath());
+            int size = (int) original.length();
+            byte[] originalBytes = new byte[size];
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(original));
+            buf.read(originalBytes, 0, originalBytes.length);
+            buf.close();
             byte[] encryptedBytes = encryptBytesAES256(originalBytes, password);
             FileOutputStream fileOutputStream = new FileOutputStream(fileToSave);
             fileOutputStream.write(encryptedBytes);
@@ -158,7 +167,12 @@ public final class Encryptor {
                 decryptedSplit.get(i).delete();
             }
         } else {
-            byte[] originalBytes = Files.readAllBytes(original.toPath());
+            //byte[] originalBytes = Files.readAllBytes(original.toPath());
+            int size = (int) original.length();
+            byte[] originalBytes = new byte[size];
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(original));
+            buf.read(originalBytes, 0, originalBytes.length);
+            buf.close();
             byte[] decryptedBytes = decryptBytesAES256(originalBytes, password);
             FileOutputStream fileOutputStream = new FileOutputStream(fileToSave);
             fileOutputStream.write(decryptedBytes);
@@ -301,7 +315,13 @@ public final class Encryptor {
     private static void mergeFiles(List<File> files, File into) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(into); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
             for (int i = 0; i < files.size(); i++) {
-                Files.copy(files.get(i).toPath(), mergingStream);
+                InputStream in = new FileInputStream(files.get(i));
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    mergingStream.write(buf, 0, len);
+                }
+                //Files.copy(files.get(i).toPath(), mergingStream);
             }
         }
     }

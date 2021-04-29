@@ -1,0 +1,393 @@
+
+g
+java:S1301ÿ	"KReplace this "switch" statement by "if" statements to increase readability.(×ö³–úÿÿÿÿ
+i
+java:S2095Ğ"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(¨Ãœ¶ıÿÿÿÿ
+i
+java:S2095ä"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(¾¡½ßÿÿÿÿÿ
+j
+java:S2095"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(¸ìïÅøÿÿÿÿ
+i
+java:S2095È"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(¾¡½ßÿÿÿÿÿ
+j
+java:S2095É"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(¸ìïÅøÿÿÿÿ
+e
+java:S2095Ì"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(»Ê®É
+g
+java:S2095’"PUse try-with-resources or close this "CipherOutputStream" in a "finally" clause.(ªİ¤æ
+j
+java:S2095à	"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(ìÆœùÿÿÿÿ
+j
+java:S2095³"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(¸ìïÅøÿÿÿÿ
+j
+java:S2095å"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(¸ìïÅøÿÿÿÿ
+k
+java:S2095¸"OUse try-with-resources or close this "CipherInputStream" in a "finally" clause.(Î·‡üûÿÿÿÿ
+k
+java:S2095Ô"OUse try-with-resources or close this "CipherInputStream" in a "finally" clause.(ğ¶®›úÿÿÿÿ
+g
+java:S2095é"PUse try-with-resources or close this "CipherOutputStream" in a "finally" clause.(ªİ¤æ
+j
+java:S2095ö"NUse try-with-resources or close this "FileOutputStream" in a "finally" clause.(¼ÚáŸÿÿÿÿÿ
+i
+java:S2095²"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(¾¡½ßÿÿÿÿÿ
+i
+java:S2095Œ"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(¾¡½ßÿÿÿÿÿ
+g
+java:S1192Q"RDefine a constant instead of duplicating this literal "EncryptedKey.enc" 30 times.(¢øº0
+­
+java:S1192"•Define a constant instead of duplicating this literal "Key does not exist or the path to file is incorrect. Try generating or importing key" 4 times.(ØíÍ
+n
+java:S1192î"RDefine a constant instead of duplicating this literal "Exporting error: " 4 times.(Ä¾Äüÿÿÿÿ
+l
+java:S1192“"VDefine a constant instead of duplicating this literal "Importing successful!" 4 times.(€‘ë
+f
+java:S1192h"PDefine a constant instead of duplicating this literal "DecryptedIV.enc" 3 times.(İ‰È‡
+p
+java:S1192ƒ"TDefine a constant instead of duplicating this literal " decryption error: " 5 times.(ã¢±¼øÿÿÿÿ
+k
+java:S1192ù"TDefine a constant instead of duplicating this literal " encryption error: " 5 times.(ÚåŠú
+c
+java:S1192w"HDefine a constant instead of duplicating this literal ".Base64" 5 times.(‘¢ü€üÿÿÿÿ
+d
+java:S1192Í"HDefine a constant instead of duplicating this literal "key.enc" 3 times.(ôÚ¾Ãÿÿÿÿÿ
+c
+java:S1192^"HDefine a constant instead of duplicating this literal "SHA-256" 3 times.(‹¼ÑŸùÿÿÿÿ
+‚
+java:S1192ñ"kDefine a constant instead of duplicating this literal "Please, create keys before exporting them." 4 times.(”¬¦Ê
+_
+java:S1192¥"HDefine a constant instead of duplicating this literal "Cancel" 11 times.(¿äñ´
+g
+java:S1192Q"RDefine a constant instead of duplicating this literal "EncryptedKIV.enc" 29 times.(¢øº0
+c
+java:S1192Í"GDefine a constant instead of duplicating this literal "iv.enc" 3 times.(ôÚ¾Ãÿÿÿÿÿ
+
+java:S1192”"€Define a constant instead of duplicating this literal "Keys have been changed. Please enter password for the new keys." 4 times.(òÂüÕıÿÿÿÿ
+g
+java:S1192c"QDefine a constant instead of duplicating this literal "DecryptedKey.enc" 3 times.(šßßÆ
+n
+java:S1192—"RDefine a constant instead of duplicating this literal "Importing error: " 4 times.(şùÛüÿÿÿÿ
+
+java:S1192"yDefine a constant instead of duplicating this literal "The specified path does not exist or is not a directory." 4 times.(ö×ÀØ
+p
+java:S1192ì"TDefine a constant instead of duplicating this literal "Exporting finished." 4 times.(–¶Üùÿÿÿÿ
+I
+java:S1199€
+"-Extract this nested code block into a method.(·ÿ½äûÿÿÿÿ
+D
+java:S1066Q"/Merge this if statement with the enclosing one.(¢øº0
+Q	java:S110>"<This class has 9 parents which is greater than 5 authorized.(²Ú±
+\	java:S112Ç"FDefine and throw a dedicated exception instead of using a generic one.(„·¡Ã
+a	java:S112ã"FDefine and throw a dedicated exception instead of using a generic one.(¿ÏÀèüÿÿÿÿ
+a	java:S112"FDefine and throw a dedicated exception instead of using a generic one.(ÁÌ¼ƒúÿÿÿÿ
+\	java:S112Ã"FDefine and throw a dedicated exception instead of using a generic one.(ˆºòå
+a	java:S112Î	"FDefine and throw a dedicated exception instead of using a generic one.(éŒîàıÿÿÿÿ
+\	java:S112Ø	"FDefine and throw a dedicated exception instead of using a generic one.(ªŒ½Â
+k	java:S117["QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ˆÇ½¥ÿÿÿÿÿ
+k	java:S117i"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(şˆûÿÿÿÿ
+e	java:S117j"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(–Áä
+k	java:S117t"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(şˆûÿÿÿÿ
+g	java:S117Û"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(µè±¹
+>
+java:S1604W"(Make this anonymous inner class a lambda(Õä
+?
+java:S1604–"(Make this anonymous inner class a lambda(®æÚœ
+?
+java:S1604¥"(Make this anonymous inner class a lambda(¿äñ´
+?
+java:S1604‹"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604²"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+?
+java:S1604Ì"(Make this anonymous inner class a lambda(ÕÛùç
+?
+java:S1604Ú"(Make this anonymous inner class a lambda(¿äñ´
+?
+java:S1604Á"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604æ"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+?
+java:S1604"(Make this anonymous inner class a lambda(ÕÛùç
+?
+java:S1604"(Make this anonymous inner class a lambda(¿äñ´
+?
+java:S1604ö"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604›"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+?
+java:S1604¶"(Make this anonymous inner class a lambda(®æÚœ
+?
+java:S1604Å"(Make this anonymous inner class a lambda(¿äñ´
+?
+java:S1604«"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604Ñ"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+D
+java:S1604á"(Make this anonymous inner class a lambda(úñ¿Ùùÿÿÿÿ
+D
+java:S1604ì"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+?
+java:S1604ü"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604ƒ"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+?
+java:S1604“"(Make this anonymous inner class a lambda(Õä
+D
+java:S1604š"(Make this anonymous inner class a lambda(çÄİöøÿÿÿÿ
+D
+java:S1604ë"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604÷"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604‚"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604•"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604›"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604¢"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604­"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604¹"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604Ä"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604×"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604İ"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+>
+java:S1604ä"(Make this anonymous inner class a lambda(ô§ê
+D
+java:S1604ñ"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604£"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604©"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604°"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604»"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604Ë"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604Ú"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604í"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604ó"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+>
+java:S1604ê"(Make this anonymous inner class a lambda(ô§ê
+D
+java:S1604…"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604‹"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604‘"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604˜"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+>
+java:S1604€"(Make this anonymous inner class a lambda(ô§ê
+D
+java:S1604©"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604¯"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604µ"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604¼"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+>
+java:S1604¤"(Make this anonymous inner class a lambda(ô§ê
+D
+java:S1604ì"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+D
+java:S1604ò"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
+>
+java:S1604Ê"(Make this anonymous inner class a lambda(ô§ê
+D
+java:S1604‰"(Make this anonymous inner class a lambda(ÙÃ“ªúÿÿÿÿ
+?
+java:S1604›"(Make this anonymous inner class a lambda(’±ÿ’
+D
+java:S1604·"(Make this anonymous inner class a lambda(ÙÃ“ªúÿÿÿÿ
+?
+java:S1604É"(Make this anonymous inner class a lambda(’±ÿ’
+M
+java:S1128"7Remove this unused import 'android.view.WindowManager'.(Ü³‹Å
+R
+java:S1128'"<Remove this unused import 'java.security.KeyStoreException'.(Ë¾¬œ
+O
+java:S1128"9Remove this unused import 'androidx.annotation.ColorInt'.(ÿ®ìÏ
+M
+java:S1128"2Remove this unused import 'android.widget.Button'.(²òıÿÿÿÿ
+H
+java:S1128&"3Remove this unused import 'java.security.KeyStore'.(ïººW
+U
+java:S1128":Remove this unused import 'java.io.FileNotFoundException'.(·î™ùÿÿÿÿ
+^
+java:S1128)"CRemove this unused import 'java.security.NoSuchAlgorithmException'.(ŒòÍ¾şÿÿÿÿ
+Y
+java:S1128%">Remove this unused import 'java.security.InvalidKeyException'.(ì£ğ»ÿÿÿÿÿ
+K
+java:S1128"0Remove this unused import 'android.view.Window'.(¿è™÷úÿÿÿÿ
+Z
+java:S1128"?Remove this unused import 'androidx.appcompat.app.AlertDialog'.(¼Ìï¨üÿÿÿÿ
+[
+java:S11287"@Remove this unused import 'javax.crypto.NoSuchPaddingException'.(âÆ×øÿÿÿÿÿ
+_
+java:S1128+"DRemove this unused import 'java.security.cert.CertificateException'.(èÙ¿ùÿÿÿÿ
+N
+java:S1128"3Remove this unused import 'android.graphics.Color'.(øãíòşÿÿÿÿ
+Y
+java:S1874B"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ØÔØÿ
+Q	java:S125b"<This block of commented-out lines of code should be removed.(Š“ƒñ
+c
+java:S4042l"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(Æô´,
+O	java:S899l";Do something with the "boolean" value returned by "delete".(Æô´,
+i
+java:S4042m"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(üÒ±‹ùÿÿÿÿ
+U	java:S899m";Do something with the "boolean" value returned by "delete".(üÒ±‹ùÿÿÿÿ
+c
+java:S4042u"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(Æô´,
+O	java:S899u";Do something with the "boolean" value returned by "delete".(Æô´,
+i
+java:S4042v"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(üÒ±‹ùÿÿÿÿ
+U	java:S899v";Do something with the "boolean" value returned by "delete".(üÒ±‹ùÿÿÿÿ
+c
+java:S4042x"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(±Ü‹
+O	java:S899x";Do something with the "boolean" value returned by "delete".(±Ü‹
+c
+java:S4042z"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(±Ü‹
+O	java:S899z";Do something with the "boolean" value returned by "delete".(±Ü‹
+d	java:S100„"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(â›·Ì
+Z
+java:S1874‰"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+Z
+java:S1874”"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ã¼Í
+D	java:S108 ")Either remove or fill this block of code.(Æ¸Û‚øÿÿÿÿ
+i	java:S100º"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ùå©”ÿÿÿÿÿ
+Z
+java:S1874¿"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+Z
+java:S1874Ê"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ÆîŞ°
+D	java:S108Ó")Either remove or fill this block of code.(Æ¸Û‚øÿÿÿÿ
+d	java:S100ï"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÈÄı
+Z
+java:S1874ô"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+Z
+java:S1874ÿ"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ÆîŞ°
+D	java:S108ˆ")Either remove or fill this block of code.(Æ¸Û‚øÿÿÿÿ
+i	java:S100¤"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¶éËúÿÿÿÿ
+Z
+java:S1874©"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+Z
+java:S1874´"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ã¼Í
+D	java:S108À")Either remove or fill this block of code.(Æ¸Û‚øÿÿÿÿ
+d	java:S100Ú"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨îı›
+d	java:S100õ"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(îê¹ë
+Z
+java:S1874ú"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+d	java:S100Œ"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ß½ñš
+Z
+java:S1874‘"CRemove this use of "getExternalStorageDirectory"; it is deprecated.(ı¬ 
+?
+java:S1172£"(Remove this unused method parameter "v".(ÀŠ×ä
+D
+java:S1172¬"(Remove this unused method parameter "v".(´†ŸÅşÿÿÿÿ
+D
+java:S1172µ"(Remove this unused method parameter "v".(ûš¨­ÿÿÿÿÿ
+?
+java:S1172¾"(Remove this unused method parameter "v".(Ô¦ä
+?
+java:S1172È"(Remove this unused method parameter "v".(¯ãî¢
+?
+java:S1172Ñ"(Remove this unused method parameter "v".(æªúÍ
+?
+java:S1172Ú"(Remove this unused method parameter "v".(¦´òí
+i	java:S100ã"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ºı·øûÿÿÿÿ
+o
+java:S3776ã"SRefactor this method to reduce its Cognitive Complexity from 100 to the 15 allowed.(ºı·øûÿÿÿÿ
+i	java:S100é"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(“„Ë’úÿÿÿÿ
+o
+java:S3776é"SRefactor this method to reduce its Cognitive Complexity from 134 to the 15 allowed.(“„Ë’úÿÿÿÿ
+i	java:S100ÿ"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(—¿ªáıÿÿÿÿ
+i	java:S100£"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(üÄÜıùÿÿÿÿ
+d	java:S100Ç"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(„·¡Ã
+S
+java:S1854È"7Remove this useless assignment to local variable "fis".(¾¡½ßÿÿÿÿÿ
+?
+java:S5542Ò"#Use secure mode and padding scheme.(÷Èİÿøÿÿÿÿ
+R	java:S125Ø"<This block of commented-out lines of code should be removed.(ïÒ·õ
+d
+java:S4042à"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(±Ü‹
+P	java:S899à";Do something with the "boolean" value returned by "delete".(±Ü‹
+i	java:S100ã"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¿ÏÀèüÿÿÿÿ
+?
+java:S5542ç"#Use secure mode and padding scheme.(÷Èİÿøÿÿÿÿ
+R	java:S125í"<This block of commented-out lines of code should be removed.( ÅŠÆ
+j
+java:S4042õ"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(«ÌîÊıÿÿÿÿ
+V	java:S899õ";Do something with the "boolean" value returned by "delete".(«ÌîÊıÿÿÿÿ
+d	java:S100ü"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¿½¬Ã
+u
+java:S2293"YReplace the type specification in this constructor call with the diamond operator ("<>").(°€¡¶ıÿÿÿÿ
+e
+java:S4042ˆ"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(÷Ë”Î
+Q	java:S899ˆ";Do something with the "boolean" value returned by "delete".(÷Ë”Î
+e
+java:S4042‰"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(ßğ³õ
+Q	java:S899‰";Do something with the "boolean" value returned by "delete".(ßğ³õ
+i	java:S100¡"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(·øŞÿÿÿÿÿ
+o
+java:S2293¥"YReplace the type specification in this constructor call with the diamond operator ("<>").(š’–d
+u
+java:S2293§"YReplace the type specification in this constructor call with the diamond operator ("<>").(“•şÿÿÿÿ
+e
+java:S4042®"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(÷Ë”Î
+Q	java:S899®";Do something with the "boolean" value returned by "delete".(÷Ë”Î
+e
+java:S4042¯"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(•¦•ı
+Q	java:S899¯";Do something with the "boolean" value returned by "delete".(•¦•ı
+d	java:S100Ç"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(½á‚Ê
+d
+java:S4042é"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(Æô´,
+P	java:S899é";Do something with the "boolean" value returned by "delete".(Æô´,
+j
+java:S4042ë"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(–¹ßˆúÿÿÿÿ
+V	java:S899ë";Do something with the "boolean" value returned by "delete".(–¹ßˆúÿÿÿÿ
+i	java:S100€"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Âî°‡üÿÿÿÿ
+n
+java:S3776€"RRefactor this method to reduce its Cognitive Complexity from 50 to the 15 allowed.(Âî°‡üÿÿÿÿ
+j
+java:S4042"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(Ø¨’ùÿÿÿÿ
+V	java:S899";Do something with the "boolean" value returned by "delete".(Ø¨’ùÿÿÿÿ
+j
+java:S4042"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(ÏİÙáşÿÿÿÿ
+V	java:S899";Do something with the "boolean" value returned by "delete".(ÏİÙáşÿÿÿÿ
+j
+java:S4042¼"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(Ø¨’ùÿÿÿÿ
+V	java:S899¼";Do something with the "boolean" value returned by "delete".(Ø¨’ùÿÿÿÿ
+j
+java:S4042½"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(ÏİÙáşÿÿÿÿ
+V	java:S899½";Do something with the "boolean" value returned by "delete".(ÏİÙáşÿÿÿÿ
+d	java:S100ä"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(æ‘ÊÃ
+i
+java:S3776ä"RRefactor this method to reduce its Cognitive Complexity from 55 to the 15 allowed.(æ‘ÊÃ
+p
+java:S2293¶	"YReplace the type specification in this constructor call with the diamond operator ("<>").(Õ¸Ì
+2
+java:S3626†
+"Remove this redundant jump.(ûÁİ…
+O
+java:S1197ş	"8Move the array designator from the variable to the type.(¯ÜÑñ
+=	java:S131ÿ	""Add a default case to this switch.(×ö³–úÿÿÿÿ
+?	java:S108
+")Either remove or fill this block of code.(©§¹
+@
+java:S1481y"*Remove this unused "file2" local variable.(ûü“Û
+D
+java:S1481È"(Remove this unused "fis" local variable.(¾¡½ßÿÿÿÿÿ

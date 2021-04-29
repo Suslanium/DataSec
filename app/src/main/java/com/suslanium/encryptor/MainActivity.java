@@ -60,7 +60,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class MainActivity extends AppCompatActivity {
-
+/*
     public static final int GCM_IV_LENGTH = 12;
     public static final int GCM_TAG_LENGTH = 16;
     private final String pathToStorage = Environment.getExternalStorageDirectory().getPath() + File.separator;
@@ -1286,5 +1286,5 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-    }
+    }*/
 }

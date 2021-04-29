@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_deleteFiles"
+        android:icon="@android:drawable/ic_delete"
+        android:title="Delete" />
+    <item
+        android:id="@+id/action_shareFiles"
+        android:icon="?attr/actionModeShareDrawable"
+        android:title="Share" />
+    <item
+        android:id="@+id/action_encryptFiles"
+        android:icon="@drawable/locked"
+        android:title="Encrypt" />
+    <item
+        android:id="@+id/action_copyFiles"
+        android:icon="?attr/actionModeCopyDrawable"
+        android:title="Copy" />
+    <item
+        android:id="@+id/action_moveFiles"
+        android:icon="?attr/actionModeCutDrawable"
+        android:title="Move" />
+</menu>

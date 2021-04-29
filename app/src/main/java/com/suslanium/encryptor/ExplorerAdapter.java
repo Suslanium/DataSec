@@ -1,7 +1,10 @@
 package com.suslanium.encryptor;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,10 +13,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.text.DateFormat;
-import android.icu.text.SimpleDateFormat;
+
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+
 import android.icu.util.Calendar;
-import android.icu.util.TimeZone;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
@@ -35,9 +43,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.dialog.MaterialDialogs;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +55,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static com.suslanium.encryptor.ui.home.HomeFragment.sortFiles;
 
@@ -56,9 +70,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private Activity activity;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
     private ArrayList<String> CheckedId = new ArrayList<>();
-    private DateFormat format;
+    private SimpleDateFormat format;
     private Date date;
     public boolean isSearching = false;
+    private int thumbnailLoadingCount = 0;
+    private ExecutorService service;
+    private BottomNavigationView bottomBar;
+    private boolean isDoingFileOperations = false;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -75,6 +93,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         private final ImageView isEncrypted;
         public boolean encrypted = false;
         public String realPath;
+        public int loadingCount = 0;
 
         //TODO: add progress bar on encryption/decryption
         //TODO: add option to store encrypted/decrypted files in separate folder(ex. /storage/emulated/0/EncryptedFiles/)(на будущее)
@@ -92,12 +111,16 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             checkBoxButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (fileCheckbox.isChecked()) {
-                        fileCheckbox.setChecked(false);
-                        CheckedId.remove(realPath);
-                    } else {
-                        fileCheckbox.setChecked(true);
-                        CheckedId.add(realPath);
+                    if(!isDoingFileOperations) {
+                        if (fileCheckbox.isChecked()) {
+                            fileCheckbox.setChecked(false);
+                            CheckedId.remove(realPath);
+                            closeBottomBar();
+                        } else {
+                            openBottomBar();
+                            fileCheckbox.setChecked(true);
+                            CheckedId.add(realPath);
+                        }
                     }
                 }
             });
@@ -137,6 +160,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             }
                                             CheckedId.clear();
                                             holders.clear();
+                                            closeBottomBar();
                                             int position = getAdapterPosition();
                                             localDataSet = fileNames;
                                             path = path + File.separator + realPath;
@@ -200,7 +224,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             paths.add(path + File.separator + realPath);
                                                             Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                             intent.putExtra("actionType", "E");
-                                                            intent.putExtra("paths", paths);
+                                                            EncryptorService.uniqueID++;
+                                                            int i = EncryptorService.uniqueID;
+                                                            EncryptorService.paths.put(i, paths);
+                                                            intent.putExtra("index", i);
                                                             intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                             ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                         }
@@ -218,7 +245,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     paths.add(path + File.separator + realPath);
                                                     Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                     intent.putExtra("actionType", "E");
-                                                    intent.putExtra("paths", paths);
+                                                    EncryptorService.uniqueID++;
+                                                    int i = EncryptorService.uniqueID;
+                                                    EncryptorService.paths.put(i, paths);
+                                                    intent.putExtra("index", i);
                                                     intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                 }
@@ -235,7 +265,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             paths.add(path + File.separator + realPath);
                                                             Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                             intent.putExtra("actionType", "D");
-                                                            intent.putExtra("paths", paths);
+                                                            EncryptorService.uniqueID++;
+                                                            int i = EncryptorService.uniqueID;
+                                                            EncryptorService.paths.put(i, paths);
+                                                            intent.putExtra("index", i);
                                                             intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                             ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                         }
@@ -253,7 +286,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     paths.add(path + File.separator + realPath);
                                                     Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
                                                     intent.putExtra("actionType", "D");
-                                                    intent.putExtra("paths", paths);
+                                                    EncryptorService.uniqueID++;
+                                                    int i = EncryptorService.uniqueID;
+                                                    EncryptorService.paths.put(i, paths);
+                                                    intent.putExtra("index", i);
                                                     intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                 }
@@ -309,6 +345,65 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         public void setFile(int id) {
             fileImage.setImageResource(id);
         }
+
+        public void setBitMap(Bitmap bitMap) {
+            fileImage.setImageBitmap(bitMap);
+        }
+
+        public void deselectCheckbox() {
+            fileCheckbox.setChecked(false);
+        }
+    }
+
+    public void closeBottomBar() {
+        if (CheckedId.isEmpty()) {
+            //Log.d("Call","nonempty");
+            if (bottomBar.getVisibility() == View.VISIBLE) {
+                bottomBar.animate()
+                        .alpha(0f)
+                        .setDuration(200)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                super.onAnimationEnd(animation);
+                                bottomBar.setVisibility(View.GONE);
+                            }
+                        });
+            }
+        }
+    }
+
+    public void setDoingFileOperations(boolean doingFileOperations){
+        isDoingFileOperations = doingFileOperations;
+    }
+
+    public void openBottomBar() {
+        if (CheckedId.isEmpty()) {
+            //Log.d("Call","empty");
+            if (bottomBar.getVisibility() == View.GONE) {
+                bottomBar.setVisibility(View.VISIBLE);
+                bottomBar.bringToFront();
+                bottomBar.animate()
+                        .alpha(1f)
+                        .setDuration(200)
+                        .setListener(null);
+                bottomBar.getMenu().setGroupCheckable(0, true, false);
+                for (int i = 0; i < bottomBar.getMenu().size(); i++) {
+                    bottomBar.getMenu().getItem(i).setChecked(false);
+                }
+                bottomBar.getMenu().setGroupCheckable(0, true, true);
+                //Log.d("Call","empty2");
+            }
+        }
+    }
+
+    public void deselectAll() {
+        CheckedId.clear();
+        if (!holders.isEmpty()) {
+            for (int i = 0; i < holders.size(); i++) {
+                holders.get(i).deselectCheckbox();
+            }
+        }
     }
 
     /**
@@ -317,7 +412,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity) {
+    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar) {
         localDataSet = dataSet;
         this.path = path;
         Recview = view;
@@ -325,6 +420,8 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         format.setTimeZone(TimeZone.getDefault());
         date = new Date();
+        service = Executors.newCachedThreadPool();
+        this.bottomBar = bottomBar;
     }
 
     // Create new views (invoked by the layout manager)
@@ -354,12 +451,21 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             viewHolder.getTextView().setText(localDataSet.get(position));
             viewHolder.realPath = localDataSet.get(position);
         }
-        Thread thread = new Thread(new Runnable() {
+        service.submit(new Runnable() {
             @Override
             public void run() {
                 // Get element from your dataset at this position and replace the
                 // contents of the view with that element
                 File file = new File(path + File.separator + localDataSet.get(position));
+                long lastModified = file.lastModified();
+                date.setTime(lastModified);
+                String formattedDate = format.format(date);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        viewHolder.getDateView().setText(formattedDate);
+                    }
+                });
                 if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -442,6 +548,35 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             }
                         }
                     });
+                    if (type.contains("image")) {
+                        viewHolder.loadingCount++;
+                        final int loadingNum = viewHolder.loadingCount;
+                        while (thumbnailLoadingCount > 0) {
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (loadingNum == viewHolder.loadingCount) {
+                            thumbnailLoadingCount++;
+                            try {
+                                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getPath()), 128, 128);
+                                if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            viewHolder.setBitMap(thumbnail);
+                                        }
+                                    });
+                                }
+                                thumbnailLoadingCount--;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                thumbnailLoadingCount--;
+                            }
+                        }
+                    }
                 } else {
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -458,17 +593,15 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         }
                     });
                 }
-                long lastModified = file.lastModified();
-                date.setTime(lastModified);
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        viewHolder.getDateView().setText(format.format(date));
-                    }
-                });
             }
         });
-        thread.start();
+    }
+
+    private ActivityManager.MemoryInfo getAvailableMemory() {
+        ActivityManager activityManager = (ActivityManager) activity.getSystemService(ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+        return memoryInfo;
     }
 
     public ArrayList<String> getCheckedFiles() {
@@ -508,6 +641,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         }
         holders.clear();
         CheckedId.clear();
+        closeBottomBar();
         localDataSet = fileNames;
         this.path = path;
         notifyDataSetChanged();

@@ -9,8 +9,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.icu.text.DateFormat;
-import android.icu.text.SimpleDateFormat;
-import android.icu.util.TimeZone;
+
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
@@ -42,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static com.suslanium.encryptor.ui.home.HomeFragment.sortFiles;
@@ -53,7 +56,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private Activity activity;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
     private ArrayList<String> CheckedId = new ArrayList<>();
-    private DateFormat format;
+    private SimpleDateFormat format;
     private Date date;
 
     /**
@@ -178,7 +181,10 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                         paths.add(path + File.separator + textView.getText());
                                         Intent intent = new Intent(activity, EncryptorService.class);
                                         intent.putExtra("actionType", "gDriveE");
-                                        intent.putExtra("paths", paths);
+                                        EncryptorService.uniqueID++;
+                                        int i = EncryptorService.uniqueID;
+                                        EncryptorService.paths.put(i, paths);
+                                        intent.putExtra("index", i);
                                         intent.putExtra("pass", activity.getIntent().getByteArrayExtra("pass"));
                                         intent.putExtra("gDriveFolder", activity.getIntent().getStringExtra("gDriveFolder"));
                                         ContextCompat.startForegroundService(activity, intent);
