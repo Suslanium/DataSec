@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -70,8 +71,10 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.regex.Pattern;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
@@ -81,6 +84,9 @@ public class HomeFragment extends Fragment {
     //private HomeViewModel homeViewModel;
     public FloatingActionButton upFolder;
     private View.OnClickListener upFolderAction;
+    private FloatingActionButton newFolder;
+    public boolean isLookingForLocation = false;
+    private Drawable cancelDrawable;
     //private IPicker mPicker;
     //private String ONEDRIVE_APP_ID = "4a85af0e-df80-4f4f-a172-625d168df915";
     //private ArrayList<DocumentFile> sdCards = new ArrayList<>();
@@ -139,6 +145,18 @@ public class HomeFragment extends Fragment {
             fileNames.add(filesSorted.get(i).getName());
         }
         fileList.addAll(fileNames);
+        Drawable createDrawable = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            createDrawable = getContext().getDrawable(android.R.drawable.ic_input_add);
+        } else {
+            createDrawable = getResources().getDrawable(android.R.drawable.ic_input_add);
+        }
+        cancelDrawable = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            cancelDrawable = getContext().getDrawable(android.R.drawable.ic_delete);
+        } else {
+            cancelDrawable = getResources().getDrawable(android.R.drawable.ic_delete);
+        }
         Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
         if (((Explorer) getActivity()).searchButton != null)
             t.removeView(((Explorer) getActivity()).searchButton);
@@ -162,12 +180,14 @@ public class HomeFragment extends Fragment {
         b1.setLayoutParams(l3);
         ((Explorer) getActivity()).searchButton = b1;
         t.addView(b1);
+        b1.setImageDrawable(drawable);
+        b1.setBackgroundColor(Color.parseColor("#00000000"));
         final TextView[] search = {getActivity().findViewById(R.id.searchText)};
         final ProgressBar[] bar = {getActivity().findViewById(R.id.progressBarSearch)};
         search[0].setVisibility(View.INVISIBLE);
         bar[0].setVisibility(View.INVISIBLE);
         //-------------
-        ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, getActivity(), bottomBar);
+        ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, getActivity(), bottomBar, this);
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setSmoothScrollbarEnabled(true);
         fileView.setLayoutManager(manager);
@@ -182,6 +202,7 @@ public class HomeFragment extends Fragment {
                 switch (item.getItemId()) {
                     case R.id.action_deleteFiles:
                         ArrayList<String> paths = adapter.getCheckedFiles();
+                        HashMap<Integer, String> checkedFileNames = adapter.getCheckedNames();
                         if (paths.isEmpty()) {
                             Snackbar.make(getView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
                         } else {
@@ -201,11 +222,23 @@ public class HomeFragment extends Fragment {
                                             .setTitle("Deleting files...")
                                             .setView(bar)
                                             .setCancelable(false)
+                                            .setPositiveButton("Background", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                    //adapter.deselectAll();
+                                                    //adapter.closeBottomBar();
+                                                }
+                                            })
                                             .create();
                                     builder1[0].show();
+                                    adapter.deselectAll();
+                                    adapter.closeBottomBar();
+                                    showAddButton(true);
                                     Thread thread = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            String pathBefore = adapter.getPath();
                                             Intent intent = new Intent(getContext(), EncryptorService.class);
                                             intent.putExtra("actionType", "delete");
                                             EncryptorService.uniqueID++;
@@ -214,18 +247,47 @@ public class HomeFragment extends Fragment {
                                             intent.putExtra("index", i);
                                             intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                             ContextCompat.startForegroundService(getContext(), intent);
-                                            SharedPreferences editor1 = PreferenceManager.getDefaultSharedPreferences(getContext());
-                                            while (editor1.getBoolean("deletingFiles", true)) {
+                                            adapter.addAllDeletedFiles(paths);
+                                            while (EncryptorService.deletingFiles.get(i) == null) {
+                                                try {
+                                                    Thread.sleep(1);
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            while (EncryptorService.deletingFiles.get(i) != null) {
                                                 try {
                                                     Thread.sleep(100);
                                                 } catch (InterruptedException e) {
                                                     e.printStackTrace();
                                                 }
                                             }
+                                            String pathAfter = adapter.getPath();
+                                            boolean match = false;
+                                            ArrayList<String> localDataSet = null;
+                                            if (pathBefore.matches(Pattern.quote(pathAfter))) {
+                                                localDataSet = adapter.getLocalDataSet();
+                                                ArrayList<String> listToRemove = new ArrayList<>();
+                                                if (!localDataSet.isEmpty()) {
+                                                    for (int j = 0; j < paths.size(); j++) {
+                                                        listToRemove.add(paths.get(j).substring(paths.get(j).lastIndexOf(File.separator) + 1));
+                                                    }
+                                                    localDataSet.removeAll(listToRemove);
+                                                }
+                                                fileList = localDataSet;
+                                                match = true;
+                                            }
+                                            adapter.removeAllDeletedFiles(paths);
+                                            boolean finalMatch = match;
                                             getActivity().runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     builder1[0].dismiss();
+                                                    if (finalMatch) {
+                                                        Log.d("Adapter", "Call3");
+                                                        adapter.setNewData(pathAfter, fileList);
+                                                        fileView.smoothScrollToPosition(0);
+                                                    }
                                                 }
                                             });
                                         }
@@ -254,6 +316,9 @@ public class HomeFragment extends Fragment {
                         } else {
                             Snackbar.make(getView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
                         }
+                        adapter.deselectAll();
+                        adapter.closeBottomBar();
+                        showAddButton(true);
                         break;
                     case R.id.action_encryptFiles:
                         ArrayList<String> checkedFiles = adapter.getCheckedFiles();
@@ -295,6 +360,9 @@ public class HomeFragment extends Fragment {
                                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                                 ContextCompat.startForegroundService(getContext(), intent);
                                                                 Snackbar.make(getView(), "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                                adapter.deselectAll();
+                                                                adapter.closeBottomBar();
+                                                                showAddButton(true);
                                                             }
                                                         });
                                                         dialogBuilder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
@@ -313,6 +381,9 @@ public class HomeFragment extends Fragment {
                                                         intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                         ContextCompat.startForegroundService(getContext(), intent);
                                                         Snackbar.make(getView(), "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                        adapter.deselectAll();
+                                                        adapter.closeBottomBar();
+                                                        showAddButton(true);
                                                     }
                                                     break;
                                                 case 1:
@@ -345,6 +416,9 @@ public class HomeFragment extends Fragment {
                                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                                 ContextCompat.startForegroundService(getContext(), intent);
                                                                 Snackbar.make(getView(), "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                                adapter.deselectAll();
+                                                                adapter.closeBottomBar();
+                                                                showAddButton(true);
                                                             }
                                                         });
                                                         dialogBuilder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
@@ -364,6 +438,9 @@ public class HomeFragment extends Fragment {
                                                         intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                         ContextCompat.startForegroundService(getContext(), intent);
                                                         Snackbar.make(getView(), "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                        adapter.deselectAll();
+                                                        adapter.closeBottomBar();
+                                                        showAddButton(true);
                                                     }
                                                     break;
                                                 default:
@@ -372,7 +449,6 @@ public class HomeFragment extends Fragment {
                                         }
                                     });
                             builder.show();
-
                         } else {
                             Snackbar.make(getView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
                         }
@@ -479,7 +555,7 @@ public class HomeFragment extends Fragment {
                 File parent = new File(path).getParentFile();
                 boolean matches = false;
                 for (int i = 0; i < storagePaths.size(); i++) {
-                    if (path.matches(storagePaths.get(i))) matches = true;
+                    if (path.matches(Pattern.quote(storagePaths.get(i)))) matches = true;
                 }
                 if (matches) {
                     Snackbar snackbar = Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG);
@@ -556,6 +632,78 @@ public class HomeFragment extends Fragment {
 
             }
         });
+        newFolder = getActivity().findViewById(R.id.addNewFolder);
+        View.OnClickListener newFolderListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditText input = new EditText(getContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setSingleLine(true);
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle("Create new folder")
+                        .setView(input)
+                        .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String newName = input.getText().toString();
+                        if (newName.matches("")) {
+                            Snackbar.make(v, "Please enter name", Snackbar.LENGTH_LONG).show();
+                        } else if (newName.contains(File.separator)) {
+                            Snackbar.make(v, "Please enter valid name", Snackbar.LENGTH_LONG).show();
+                        } else if(adapter.getLocalDataSet().contains(newName)){
+                            Snackbar.make(v, "File/folder with same name already exists", Snackbar.LENGTH_LONG).show();
+                        } else {
+                            Thread thread = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        File testing = new File(adapter.getPath() + File.separator + newName);
+                                        testing.mkdirs();
+                                        //file.renameTo(testing);
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                dialog.dismiss();
+                                                ArrayList<String> currentSet = adapter.getLocalDataSet();
+                                                currentSet.add(newName);
+                                                fileList = currentSet;
+                                                adapter.setNewData(adapter.getPath(), fileList);
+                                            }
+                                        });
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Snackbar.make(v, "Please enter valid name", Snackbar.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                            thread.start();
+                        }
+                    }
+                });
+            }
+        };
+        newFolder.setOnClickListener(newFolderListener);
+        Drawable finalCancelDrawable = cancelDrawable;
+        Drawable finalCreateDrawable = createDrawable;
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -582,6 +730,7 @@ public class HomeFragment extends Fragment {
                         encryptButton.setEnabled(false);
                         sdcardButton.setEnabled(false);
                         upFolder.setEnabled(false);
+                        newFolder.setEnabled(false);
                         adapter.isSearching = true;
                         if (((Explorer) getActivity()).searchBar != null) {
                             t.removeView(((Explorer) getActivity()).searchBar);
@@ -665,6 +814,71 @@ public class HomeFragment extends Fragment {
                                         sdcardButton.setEnabled(true);
                                         upFolder.setEnabled(true);
                                         b1.setEnabled(true);
+                                        newFolder.setImageDrawable(finalCancelDrawable);
+                                        newFolder.setEnabled(true);
+                                        newFolder.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                File parent = new File(adapter.getPath());
+                                                if (((Explorer) getActivity()).currentOperationNumber == 0) {
+                                                    fileView.stopScroll();
+                                                    ((Explorer) getActivity()).currentOperationNumber++;
+                                                    Animation fadeIn = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_out_right);
+                                                    fadeIn.setDuration(200);
+                                                    fadeIn.setFillAfter(true);
+                                                    fileView.startAnimation(fadeIn);
+                                                    Thread thread = new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            File[] files2 = parent.listFiles();
+                                                            ArrayList<String> paths = new ArrayList<>();
+                                                            for (int i = 0; i < files2.length; i++) {
+                                                                paths.add(files2[i].getPath());
+                                                            }
+                                                            ArrayList<String> sorted = sortFiles(paths);
+                                                            ArrayList<File> filesSorted = new ArrayList<>();
+                                                            for (int i = 0; i < sorted.size(); i++) {
+                                                                filesSorted.add(new File(sorted.get(i)));
+                                                            }
+                                                            ArrayList<String> fileNames2 = new ArrayList<>();
+                                                            for (int i = 0; i < filesSorted.size(); i++) {
+                                                                fileNames2.add(filesSorted.get(i).getName());
+                                                            }
+                                                            fileList.clear();
+                                                            fileList.addAll(fileNames2);
+                                                            while (!fadeIn.hasEnded()) {
+                                                                try {
+                                                                    Thread.sleep(10);
+                                                                } catch (InterruptedException e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+                                                            Animation fadeOut = AnimationUtils.loadAnimation(getContext(), android.R.anim.slide_in_left);
+                                                            fadeOut.setDuration(200);
+                                                            getActivity().runOnUiThread(new Runnable() {
+                                                                @Override
+                                                                public void run() {
+                                                                    adapter.setNewData(parent.getPath(), fileList);
+                                                                    fileView.scrollToPosition(0);
+                                                                    fileView.startAnimation(fadeOut);
+                                                                }
+                                                            });
+                                                            while (!fadeOut.hasEnded()) {
+                                                                try {
+                                                                    Thread.sleep(10);
+                                                                } catch (InterruptedException e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+                                                            newFolder.setImageDrawable(finalCreateDrawable);
+                                                            newFolder.setOnClickListener(newFolderListener);
+                                                            ((Explorer) getActivity()).currentOperationNumber--;
+                                                        }
+                                                    });
+                                                    thread.start();
+                                                }
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -677,6 +891,18 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+    }
+
+    public void showAddButton(boolean show){
+        if(show){
+            FadeOut(newFolder);
+        } else {
+            FadeIn(newFolder);
+        }
+    }
+
+    public int getAddButtonState(){
+        return newFolder.getVisibility();
     }
 
     private void FadeIn(@NonNull View view) {
@@ -718,6 +944,7 @@ public class HomeFragment extends Fragment {
         ArrayList<String> checkedFiles2 = adapter.getCheckedFiles();
         String originalPath = adapter.getPath();
         if (!checkedFiles2.isEmpty()) {
+            if(newFolder.getDrawable() == cancelDrawable) newFolder.performClick();
             if (!cut) t.setTitle("Copy " + checkedFiles2.size() + " items");
             else t.setTitle("Move " + checkedFiles2.size() + " items");
             adapter.setDoingFileOperations(true);
@@ -734,6 +961,9 @@ public class HomeFragment extends Fragment {
                     FadeIn(confirm);
                     FadeIn(cancel);
                     b1.setEnabled(true);
+                    adapter.deselectAll();
+                    adapter.closeBottomBar();
+                    showAddButton(true);
                 }
             });
             confirm.setOnClickListener(v -> {
@@ -753,9 +983,52 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void run() {
                         ArrayList<String> originalSelected = null;
-                        if(cut) {
+                        if (cut) {
                             originalSelected = new ArrayList<>(checkedFiles2);
                         }
+                        ArrayList<String> whiteList = new ArrayList<>();
+                        ArrayList<String> toRemove = new ArrayList<>();
+                        HashMap<String, String> folderRenamings = new HashMap<>();
+                        for (int i = 0; i < checkedFiles2.size(); i++) {
+                            File origin = new File(checkedFiles2.get(i));
+                            if (origin.isDirectory()) {
+                                File copy = new File(path + File.separator + origin.getName());
+                                if (copy.exists()) {
+                                    int j = 0;
+                                    String copyPath = copy.getPath();
+                                    while (copy.exists() && copy.isFile()) {
+                                        copy = new File(copyPath + "(" + j + ")");
+                                        j++;
+                                    }
+                                    if (copy.exists()) {
+                                        int result = showFolderReplacementDialog(origin.getName(), path.substring(path.lastIndexOf(File.separator) + 1), lp);
+                                        //Log.d("copyFile", String.valueOf(result));
+                                        switch (result) {
+                                            case 1:
+                                                //Merge
+                                                break;
+                                            case 2:
+                                                //Skip
+                                                toRemove.add(checkedFiles2.get(i));
+                                                break;
+                                            case 3:
+                                                //Rename
+                                                //Log.d("copyFile1", copy.getName());
+                                                while (copy.exists()) {
+                                                    copy = new File(copyPath + "(" + j + ")");
+                                                    j++;
+                                                }
+                                                //Log.d("copyFile2", copy.getName());
+                                                folderRenamings.put(origin.getName(), copy.getName());
+                                                whiteList.add(origin.getPath());
+                                                break;
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                        checkedFiles2.removeAll(toRemove);
                         final Integer[] skip = {0};
                         ArrayList<String> tempArrayList = new ArrayList<>();
                         ArrayList<String> toRemoveList = new ArrayList<>();
@@ -797,7 +1070,7 @@ public class HomeFragment extends Fragment {
                                         }
                                     }
                                 } else if (skip[0] == 2) {
-                                    if (file.getParent().matches(originalPath)) {
+                                    if (file.getParent().matches(Pattern.quote(originalPath))) {
                                         int j = 0;
                                         while (copyInto.exists() && copyInto.isDirectory()) {
                                             copyInto = new File(copyPath + "(" + j + ")");
@@ -807,8 +1080,8 @@ public class HomeFragment extends Fragment {
                                             toRemoveList.add(checkedFiles2.get(i));
                                         }
                                     }
-                                } else if(skip[0] == 5){
-                                    if (file.getParent().matches(originalPath)) {
+                                } else if (skip[0] == 5) {
+                                    if (file.getParent().matches(Pattern.quote(originalPath))) {
                                         int j = 0;
                                         while (copyInto.exists() && copyInto.isDirectory()) {
                                             copyInto = new File(copyPath + "(" + j + ")");
@@ -827,7 +1100,7 @@ public class HomeFragment extends Fragment {
                                     copyInto = new File(copyPath + "(" + j + ")");
                                     j++;
                                 }
-                                if (copyInto.exists()) {
+                                if (copyInto.exists() && !whiteList.contains(file.getPath())) {
                                     tempArrayList.addAll(checkReplacements(copyPath, file.getPath(), skip, lp));
                                 } else {
                                     tempArrayList.addAll(getSubFiles(file));
@@ -848,27 +1121,68 @@ public class HomeFragment extends Fragment {
                         for (int i = 0; i < checkedFiles2.size(); i++) {
                             Log.d("Result", checkedFiles2.get(i));
                         }
-                        Intent intent = new Intent(getContext(), EncryptorService.class);
-                        EncryptorService.uniqueID++;
-                        int i = EncryptorService.uniqueID;
-                        EncryptorService.paths.put(i,checkedFiles2);
-                        EncryptorService.path.put(i, path);
-                        EncryptorService.originalPath.put(i,originalPath);
-                        if (!cut) intent.putExtra("actionType", "copyFiles");
-                        else {
-                            intent.putExtra("actionType", "moveFiles");
-                            EncryptorService.originalPaths.put(i,originalSelected);
+                        if (!checkedFiles2.isEmpty()) {
+                            Intent intent = new Intent(getContext(), EncryptorService.class);
+                            EncryptorService.uniqueID++;
+                            int i = EncryptorService.uniqueID;
+                            EncryptorService.paths.put(i, checkedFiles2);
+                            EncryptorService.path.put(i, path);
+                            EncryptorService.originalPath.put(i, originalPath);
+                            EncryptorService.folderReplacements.put(i, folderRenamings);
+                            if (!cut) intent.putExtra("actionType", "copyFiles");
+                            else {
+                                intent.putExtra("actionType", "moveFiles");
+                                EncryptorService.originalPaths.put(i, originalSelected);
+                            }
+                            intent.putExtra("index", i);
+                            ContextCompat.startForegroundService(getContext(), intent);
                         }
-                        //intent.putExtra("paths", checkedFiles2);
-                        //intent.putExtra("toCopyPath", path);
-                        //intent.putExtra("originalPath", originalPath);
-                        intent.putExtra("index", i);
-                        ContextCompat.startForegroundService(getContext(), intent);
                     }
                 });
                 thread.start();
             });
         }
+    }
+
+    private int showFolderReplacementDialog(String name, String substring, LinearLayout.LayoutParams lp) {
+        final int[] result = {0};
+        final boolean[] dialogVisible = {true};
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle("Warning")
+                        .setCancelable(false)
+                        .setMessage("Folder " + name + " already exists in " + substring + ". Do you want to merge folder contents, rename or skip it?")
+                        .setPositiveButton("Merge", (dialog, which) -> {
+                            result[0] = 1;
+                            dialogVisible[0] = false;
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton("Skip", (dialog, which) -> {
+                            result[0] = 2;
+                            dialogVisible[0] = false;
+                            dialog.dismiss();
+                        })
+                        .setNeutralButton("Rename", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                result[0] = 3;
+                                dialogVisible[0] = false;
+                                dialog.dismiss();
+                            }
+                        });
+                builder.show();
+            }
+        });
+        while (dialogVisible[0]) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return result[0];
     }
 
     private ArrayList<String> getSubFiles(File file) {
@@ -940,7 +1254,7 @@ public class HomeFragment extends Fragment {
                             }
                         } else if (sk[0] == 2) {
                             toRemoveList.add(checkedFiles2.get(i));
-                        } else if(sk[0] == 5){
+                        } else if (sk[0] == 5) {
                             toRemoveList.add(checkedFiles2.get(i));
                             tempArrayLists.add("Rename_" + checkedFiles2.get(i));
                         }

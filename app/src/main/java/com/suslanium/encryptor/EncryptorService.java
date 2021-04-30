@@ -49,6 +49,8 @@ import com.microsoft.onedrivesdk.saver.Saver;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
+//import org.apache.commons.codec.binary.StringUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -62,6 +64,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EncryptorService extends Service {
     private final String CHANNEL_ID = "Encryptor";
@@ -74,6 +79,9 @@ public class EncryptorService extends Service {
     public static HashMap<Integer, String> originalPath = new HashMap<>();
     public static HashMap<Integer, ArrayList<String>> originalPaths = new HashMap<>();
     public static HashMap<Integer, ArrayList<String>> names = new HashMap<>();
+    public static HashMap<Integer, HashMap<String, String>> folderReplacements = new HashMap<>();
+    public static HashMap<Integer, Boolean> deletingFiles = new HashMap<>();
+    public static boolean changingPassword = false;
     public static Integer uniqueID = 0;
 
     @Override
@@ -115,8 +123,8 @@ public class EncryptorService extends Service {
         startForeground(++id, builder.build());
         String actionType = intent.getStringExtra("actionType");
         int index = intent.getIntExtra("index", 0);
-        ArrayList<String> paths = EncryptorService.paths.get(index);
-        ArrayList<String> names = EncryptorService.names.get(index);
+        ArrayList<String> paths = EncryptorService.paths.remove(index);
+        ArrayList<String> names = EncryptorService.names.remove(index);
         byte[] pass = intent.getByteArrayExtra("pass");
         String currentFolderID = intent.getStringExtra("gDriveFolder");
         Boolean running = true;
@@ -840,9 +848,7 @@ public class EncryptorService extends Service {
                 @Override
                 public void run() {
                     try {
-                        SharedPreferences.Editor editor1 = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
-                        editor1.putBoolean("changingPassword", true);
-                        editor1.apply();
+                        EncryptorService.changingPassword = true;
                         String password = Encryptor.RSADecrypt(pass);
                         SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
                         String newPass = Encryptor.RSADecrypt(newPassEnc);
@@ -863,8 +869,7 @@ public class EncryptorService extends Service {
                         SharedPreferences.Editor edit = editor.edit();
                         edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                         edit.apply();
-                        editor1.putBoolean("changingPassword", false);
-                        editor1.apply();
+                        EncryptorService.changingPassword = false;
                         isRunning.remove(running);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
@@ -879,9 +884,7 @@ public class EncryptorService extends Service {
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    SharedPreferences.Editor editor1 = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
-                    editor1.putBoolean("deletingFiles", true);
-                    editor1.apply();
+                    EncryptorService.deletingFiles.put(index, true);
                     NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                             .setSmallIcon(R.drawable.locked)
                             .setContentTitle("Deleting file(s)...")
@@ -892,16 +895,16 @@ public class EncryptorService extends Service {
                     notificationManager3.notify(operationID, builder3.build());
                     deleteFiles(paths);
                     notificationManager3.cancel(operationID);
-                    editor1.putBoolean("deletingFiles", false);
-                    editor1.apply();
+                    EncryptorService.deletingFiles.remove(index);
                     isRunning.remove(running);
                     if (!isRunning.contains(true)) stopSelf();
                 }
             });
             thread.start();
         } else if (actionType.equals("copyFiles")) {
-            String path = EncryptorService.path.get(index);
-            String originalPath = EncryptorService.originalPath.get(index);
+            String path = EncryptorService.path.remove(index);
+            String originalPath = EncryptorService.originalPath.remove(index);
+            HashMap<String, String> pathsToReplace = EncryptorService.folderReplacements.remove(index);
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -913,14 +916,15 @@ public class EncryptorService extends Service {
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                     NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
                     notificationManager3.notify(operationID, builder3.build());
-                    copyFiles(paths, path, originalPath, false, null, operationID);
+                    copyFiles(paths, path, originalPath, false, null, operationID, pathsToReplace, index);
                 }
             });
             thread.start();
         } else if (actionType.equals("moveFiles")) {
-            String path = EncryptorService.path.get(index);
-            String originalPath = EncryptorService.originalPath.get(index);
-            ArrayList<String> originalPaths = EncryptorService.originalPaths.get(index);
+            String path = EncryptorService.path.remove(index);
+            String originalPath = EncryptorService.originalPath.remove(index);
+            HashMap<String, String> pathsToReplace = EncryptorService.folderReplacements.remove(index);
+            ArrayList<String> originalPaths = EncryptorService.originalPaths.remove(index);
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -932,7 +936,7 @@ public class EncryptorService extends Service {
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                     NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
                     notificationManager3.notify(operationID, builder3.build());
-                    copyFiles(paths, path, originalPath, true, originalPaths, operationID);
+                    copyFiles(paths, path, originalPath, true, originalPaths, operationID, pathsToReplace, index);
                 }
             });
             thread.start();
@@ -940,7 +944,7 @@ public class EncryptorService extends Service {
         return START_REDELIVER_INTENT;
     }
 
-    private void copyFiles(ArrayList<String> paths, String toCopyPath, String originalPath, boolean cut, ArrayList<String> originalPaths, int operationID) {
+    private void copyFiles(ArrayList<String> paths, String toCopyPath, String originalPath, boolean cut, ArrayList<String> originalPaths, int operationID, HashMap<String, String> pathsToReplace, int index) {
         int errorCount = 0;
         int pathsSize = paths.size();
         NotificationManagerCompat manager = NotificationManagerCompat.from(EncryptorService.this);
@@ -950,24 +954,34 @@ public class EncryptorService extends Service {
                 .setOngoing(true)
                 .setProgress(paths.size(), 0, false)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        String storagePath = Environment.getExternalStorageDirectory().getPath();
-        File[] dir = getBaseContext().getExternalFilesDirs(null);
-        for (int i = 0; i < dir.length; i++) {
-            String currPath = dir[i].getPath().substring(0, dir[i].getPath().length() - 43);
-            if(originalPath.contains(currPath)){
-                storagePath = currPath;
-            }
+        Set<String> keys = null;
+        if (pathsToReplace != null && !pathsToReplace.isEmpty()) {
+            keys = pathsToReplace.keySet();
         }
         int copiedCount = 0;
+        ArrayList<String> doNotDelete = new ArrayList<>();
         for (int i = 0; i < paths.size(); i++) {
             boolean rename = false;
-            if(paths.get(i).startsWith("Rename_")){
+            if (paths.get(i).startsWith("Rename_")) {
                 rename = true;
-                String rightPath = paths.get(i).replace("Rename_", "");
+                String rightPath = paths.get(i).replaceFirst(Pattern.quote("Rename_"), Matcher.quoteReplacement(""));
                 paths.set(i, rightPath);
             }
             File original = new File(paths.get(i));
-            String copyPath = paths.get(i).replace(originalPath, "");
+            String copyPath = paths.get(i).replaceFirst(Pattern.quote(originalPath), Matcher.quoteReplacement(""));
+            //Log.d("firstFolder1", copyPath);
+            String firstFolder = copyPath.substring(1);
+            if (firstFolder.contains(File.separator)) {
+                firstFolder = firstFolder.substring(0, firstFolder.indexOf(File.separator));
+                Log.d("firstFolder2", firstFolder);
+            }
+            //Log.d("firstFolder3", firstFolder);
+            //firstFolder = firstFolder.substring(0, firstFolder.indexOf(File.separator));
+            if (keys != null && keys.contains(firstFolder)) {
+                //Log.d("firstFolder4_1", pathsToReplace.get(firstFolder));
+                copyPath = copyPath.replaceFirst(Pattern.quote(firstFolder), Matcher.quoteReplacement(pathsToReplace.get(firstFolder)));
+                //Log.d("firstFolder4", copyPath);
+            }
             File copied = new File(toCopyPath + copyPath);
             if (original.isFile()) {
                 int j = 0;
@@ -976,19 +990,20 @@ public class EncryptorService extends Service {
                     j++;
                 }
                 String extension = null;
-                if(copied.getName().contains(".")) {
+                if (copied.getName().contains(".")) {
                     extension = copied.getName().substring(copied.getName().lastIndexOf("."));
                 }
-                while (rename && copied.exists() && copied.isFile()){
+                while (rename && copied.exists()) {
                     copied = new File(copied.getPath().replace(extension, "") + "(" + j + ")" + extension);
                 }
-                if (copied.exists() && copied.isFile() && !rename) copied.delete();
-                if (!original.getPath().matches(copied.getPath())) {
+                //Log.d("Paths", original.getPath() + " " + copied.getPath());
+                if (!original.getPath().matches(Pattern.quote(copied.getPath()))) {
+                    if (copied.exists() && copied.isFile() && !rename) copied.delete();
                     if (original.canRead() && original.canWrite()) {
                         copied.getParentFile().mkdirs();
                         int errorCountBefore = errorCount;
                         try (InputStream in = new BufferedInputStream(new FileInputStream(original)); OutputStream out = new BufferedOutputStream(new FileOutputStream(copied))) {
-                            byte[] buffer = new byte[256*1024];
+                            byte[] buffer = new byte[256 * 1024];
                             int lengthRead;
                             while ((lengthRead = in.read(buffer)) > 0) {
                                 out.write(buffer, 0, lengthRead);
@@ -1002,30 +1017,39 @@ public class EncryptorService extends Service {
                             if (cut && errorCountBefore == errorCount) original.delete();
                         }
                     }
+                } else {
+                    copiedCount++;
                 }
             } else {
                 try {
+                    if (original.getPath().matches(Pattern.quote(copied.getPath()))) {
+                        doNotDelete.add(original.getPath());
+                    }
                     copied.mkdirs();
-                } catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
-            if(cut)builder.setContentTitle("Moving " + copiedCount + " files");
+            if (cut) builder.setContentTitle("Moving " + copiedCount + " files");
             else builder.setContentTitle("Copying " + copiedCount + " files");
             builder.setProgress(pathsSize, i, false);
             manager.notify(operationID, builder.build());
         }
         if (cut && originalPaths != null && !originalPaths.isEmpty()) {
+            //Log.d("Paths", "Match");
             for (int i = 0; i < originalPaths.size(); i++) {
-                File file = new File(originalPaths.get(i));
-                if(file.exists() && file.isDirectory())deleteFiles(originalPaths.get(i));
+                if (!doNotDelete.contains(originalPaths.get(i))) {
+                    File file = new File(originalPaths.get(i));
+                    if (file.exists() && file.isDirectory()) deleteFiles(originalPaths.get(i));
+                }
             }
         }
-        if(cut)builder.setContentTitle("Successfully moved " + copiedCount + " files");
+        manager.cancel(operationID);
+        if (cut) builder.setContentTitle("Successfully moved " + copiedCount + " files");
         else builder.setContentTitle("Successfully copied " + copiedCount + " files");
-        if(errorCount > 0)builder.setContentText("Errors occured during process:" + errorCount);
+        if (errorCount > 0) builder.setContentText("Errors occured during process:" + errorCount);
         builder.setOngoing(false);
-        builder.setProgress(0,0,false);
+        builder.setProgress(0, 0, false);
         manager.notify(operationID, builder.build());
         isRunning.remove(true);
         if (!isRunning.contains(true)) stopSelf();

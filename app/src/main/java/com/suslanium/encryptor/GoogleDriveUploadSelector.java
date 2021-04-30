@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.regex.Pattern;
 
 import static com.suslanium.encryptor.ui.home.HomeFragment.sortFiles;
 
@@ -156,7 +157,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     File parent = new File(path).getParentFile();
                     boolean matches = false;
                     for (int i = 0; i < storagePaths.size(); i++) {
-                        if (path.matches(storagePaths.get(i))) matches = true;
+                        if (path.matches(Pattern.quote(storagePaths.get(i)))) matches = true;
                     }
                     if (matches) {
                         Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG).show();

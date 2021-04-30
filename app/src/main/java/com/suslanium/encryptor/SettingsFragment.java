@@ -193,8 +193,11 @@ public class SettingsFragment extends Fragment {
                                                 intent.putExtra("pass", ((Explorer) getActivity()).getIntent2().getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(getContext(), intent);
                                                 SharedPreferences editor1 = PreferenceManager.getDefaultSharedPreferences(getContext());
-                                                while(editor1.getBoolean("changingPassword", true)){
-                                                    Thread.sleep(1000);
+                                                while(!EncryptorService.changingPassword){
+                                                    Thread.sleep(100);
+                                                }
+                                                while(EncryptorService.changingPassword){
+                                                    Thread.sleep(100);
                                                 }
                                                 getActivity().runOnUiThread(new Runnable() {
                                                     @Override

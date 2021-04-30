@@ -69,6 +69,11 @@ dependencies {
             {
                 exclude group: 'org.apache.httpcomponents'
             }
-    implementation group: 'com.yandex.android', name: 'disk-restapi-sdk', version: '1.03'
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+}
+configurations {
+    all {
+        exclude module: 'httpclient'
+        exclude module: 'commons-logging'
+    }
 }
