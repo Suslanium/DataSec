@@ -46,6 +46,7 @@ public class Explorer extends AppCompatActivity {
     public boolean messageCryptVisible = false;
     public boolean settingsVisible = false;
     private View navExplorer;
+    private int backPressedCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,37 +95,34 @@ public class Explorer extends AppCompatActivity {
                                 navHost.setVisibility(View.GONE);
                             }
                         });
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        switch (itemID) {
-                            case R.id.nav_explorer:
-                                if (!explorerVisible) navController.navigate(R.id.nav_explorer);
-                                break;
-                            case R.id.nav_datavault:
-                                if (!passwordVaultVisible)
-                                    navController.navigate(R.id.nav_datavault);
-                                break;
-                            case R.id.nav_keyexchange:
-                                navController.navigate(R.id.nav_keyexchange);
-                                break;
-                            case R.id.nav_messagecrypt:
-                                if (!messageCryptVisible)
-                                    navController.navigate(R.id.nav_messagecrypt);
-                                break;
-                            case R.id.nav_settings:
-                                if (!settingsVisible) navController.navigate(R.id.nav_settings);
-                                break;
-                            default:
-                                break;
-                        }
-                        navHost.setVisibility(View.VISIBLE);
-                        navHost.bringToFront();
-                        navHost.animate()
-                                .alpha(1f)
-                                .setDuration(200)
-                                .setListener(null);
+                new Handler().postDelayed(() -> {
+                    switch (itemID) {
+                        case R.id.nav_explorer:
+                            if (!explorerVisible) navController.navigate(R.id.nav_explorer);
+                            break;
+                        case R.id.nav_datavault:
+                            if (!passwordVaultVisible)
+                                navController.navigate(R.id.nav_datavault);
+                            break;
+                        case R.id.nav_keyexchange:
+                            navController.navigate(R.id.nav_keyexchange);
+                            break;
+                        case R.id.nav_messagecrypt:
+                            if (!messageCryptVisible)
+                                navController.navigate(R.id.nav_messagecrypt);
+                            break;
+                        case R.id.nav_settings:
+                            if (!settingsVisible) navController.navigate(R.id.nav_settings);
+                            break;
+                        default:
+                            break;
                     }
+                    navHost.setVisibility(View.VISIBLE);
+                    navHost.bringToFront();
+                    navHost.animate()
+                            .alpha(1f)
+                            .setDuration(200)
+                            .setListener(null);
                 }, millis);
                 drawer.closeDrawer(GravityCompat.START);
                 return true;
@@ -137,6 +135,24 @@ public class Explorer extends AppCompatActivity {
     public void onBackPressed() {
         if (fragment != null && fragment.isVisible()) {
             fragment.getUpFolderAction().onClick(navExplorer);
+        }
+    }
+
+    public void incrementBackPressedCount() {
+        backPressedCount++;
+        if (backPressedCount > 1) {
+            moveTaskToBack(true);
+            finishAffinity();
+        } else {
+            Thread thread = new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                backPressedCount--;
+            });
+            thread.start();
         }
     }
 

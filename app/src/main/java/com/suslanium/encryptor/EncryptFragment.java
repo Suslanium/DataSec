@@ -40,7 +40,6 @@ public class EncryptFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
-        assert args != null;
         int position = args.getInt(ARG_OBJECT);
         TextInputEditText plain = view.findViewById(R.id.plainEditText);
         plain.setSingleLine(true);
@@ -66,7 +65,7 @@ public class EncryptFragment extends Fragment {
         FloatingActionButton copy = view.findViewById(R.id.copyButton);
         copy.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Encryptor", Objects.requireNonNull(cipher.getText()).toString());
+            ClipData clip = ClipData.newPlainText("Encryptor", cipher.getText().toString());
             if (clipboard == null || clip == null) return;
             clipboard.setPrimaryClip(clip);
             Snackbar.make(view, "Copied to clipboard!", Snackbar.LENGTH_LONG).show();
@@ -74,9 +73,9 @@ public class EncryptFragment extends Fragment {
         switch (position){
             case 1:
                 encryptButton.setOnClickListener(v -> {
-                    String plainText = Objects.requireNonNull(plain.getText()).toString();
+                    String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
-                        String keyText = Objects.requireNonNull(key.getText()).toString();
+                        String keyText = key.getText().toString();
                         if(!keyText.matches("")){
                             if(!isLoading) {
                                 bar.setVisibility(View.VISIBLE);
@@ -120,9 +119,9 @@ public class EncryptFragment extends Fragment {
                 cipherT.setHint("Plain text");
                 encryptButton.setText("Decrypt");
                 encryptButton.setOnClickListener(v -> {
-                    String plainText = Objects.requireNonNull(plain.getText()).toString();
+                    String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
-                        String keyText = Objects.requireNonNull(key.getText()).toString();
+                        String keyText = key.getText().toString();
                         if(!keyText.matches("")){
                             if(!isLoading) {
                                 isLoading = true;
@@ -176,7 +175,7 @@ public class EncryptFragment extends Fragment {
                 });
                 encryptButton.setText("Calculate hash");
                 encryptButton.setOnClickListener(v -> {
-                    String plainText = Objects.requireNonNull(plain.getText()).toString();
+                    String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
                         String s = Encryptor.calculateHash(plainText, hashFunction[0]);
                         cipher.setText(s);

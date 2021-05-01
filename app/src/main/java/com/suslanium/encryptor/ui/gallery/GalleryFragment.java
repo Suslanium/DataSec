@@ -64,7 +64,7 @@ public class GalleryFragment extends Fragment {
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-        ImageButton b1=new ImageButton(getContext());
+        ImageButton b1=new ImageButton(requireContext());
         Drawable drawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             drawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_search);
@@ -80,7 +80,7 @@ public class GalleryFragment extends Fragment {
         t.addView(b1);
         b1.setOnClickListener(v -> {
             if(((Explorer) requireActivity()).searchBar == null) {
-                EditText layout = new EditText(getContext());
+                EditText layout = new EditText(requireContext());
                 Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layoutParams.gravity = Gravity.START;
                 layout.setLayoutParams(l3);
@@ -106,7 +106,7 @@ public class GalleryFragment extends Fragment {
 
     public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id){
         RecyclerView recyclerView = requireView().findViewById(R.id.passwords);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         PasswordAdapter adapter = new PasswordAdapter(strings2, id, intent2);
         recyclerView.setAdapter(adapter);
     }
@@ -115,7 +115,7 @@ public class GalleryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if(isOnResume) {
-            updateView(getView());
+            updateView(requireView());
         }
         else {
             isOnResume = true;
@@ -129,12 +129,11 @@ public class GalleryFragment extends Fragment {
             try {
                 byte[] pass = intent2.getByteArrayExtra("pass");
                 String password = Encryptor.rsadecrypt(pass);
-                SQLiteDatabase database = Encryptor.initDataBase(getContext(), password);
+                SQLiteDatabase database = Encryptor.initDataBase(requireContext(), password);
                 HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
                 Set<Integer> integers = listHashMap.keySet();
                 for (Integer i : integers) {
                     ArrayList<String> strings = listHashMap.get(i);
-                    assert strings != null;
                     String s = strings.get(0);
                     strings3.add(s);
                     ids.add(i);

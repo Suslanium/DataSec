@@ -1,37 +1,10 @@
 
-D
-java:S1604ß"(Make this anonymous inner class a lambda(’æ‡‘ùÿÿÿÿ
-Q	java:S110"<This class has 9 parents which is greater than 5 authorized.(¼õò°
-}
-java:S1104"bMake currentOperationNumber a static final constant or non-public and provide accessors if needed.(äà…ÿÿÿÿÿ
-]
-java:S2142‹"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
-C
-java:S1604G"(Make this anonymous inner class a lambda(‘¢×øÿÿÿÿ
-U
-java:S1155ã">Use isEmpty() to check whether the collection is empty or not.(êÇÖ™
-e	java:S117$"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¨•Ù
-D
-java:S1604€"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
-\
-java:S2142z"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
-M
-java:S2696æ"6Make the enclosing method "static" or remove this set.(Ï«Ş 
 o
-java:S1104"TMake upFolder a static final constant or non-public and provide accessors if needed.(Ïä¹Çùÿÿÿÿ
+java:S1104"TMake upFolder a static final constant or non-public and provide accessors if needed.(Ïä¹Çùÿÿÿÿ
+L
+java:S1066Z"/Merge this if statement with the enclosing one.(è¸Á°8ı½Æ¿’/
+Q	java:S110"<This class has 9 parents which is greater than 5 authorized.(¼õò°
 n
-java:S3776""SRefactor this method to reduce its Cognitive Complexity from 125 to the 15 allowed.(¨Œşÿÿÿÿ
-E
-java:S1066]"/Merge this if statement with the enclosing one.(è¸Á°
-=
-java:S1604d"(Make this anonymous inner class a lambda(ô§ê
-D
-java:S1604Ç"(Make this anonymous inner class a lambda(˜ã¯şÿÿÿÿ
-?
-java:S1604˜"(Make this anonymous inner class a lambda(Àˆİ¯
->
-java:S1604«"(Make this anonymous inner class a lambda(ô§ê
-]
-java:S2142Á"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
-]
-java:S2142Ò"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+java:S3776!"SRefactor this method to reduce its Cognitive Complexity from 149 to the 15 allowed.(¨Œşÿÿÿÿ
+}
+java:S1104"bMake currentOperationNumber a static final constant or non-public and provide accessors if needed.(äà…ÿÿÿÿÿ

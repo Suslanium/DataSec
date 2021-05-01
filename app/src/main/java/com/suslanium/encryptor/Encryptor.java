@@ -161,13 +161,15 @@ public final class Encryptor {
         folderToSave.mkdirs();
         if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
             File[] filesInFolder = folder.listFiles();
-            for (int i = 0; i < Objects.requireNonNull(filesInFolder).length; i++) {
-                if (filesInFolder[i].isFile()) {
-                    encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
-                    if (autoDelete) filesInFolder[i].delete();
-                } else if (filesInFolder[i].isDirectory()) {
-                    encryptFolderAESGCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
-                    if (autoDelete) filesInFolder[i].delete();
+            if(filesInFolder != null) {
+                for (int i = 0; i < filesInFolder.length; i++) {
+                    if (filesInFolder[i].isFile()) {
+                        encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
+                        if (autoDelete) filesInFolder[i].delete();
+                    } else if (filesInFolder[i].isDirectory()) {
+                        encryptFolderAESGCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
+                        if (autoDelete) filesInFolder[i].delete();
+                    }
                 }
             }
         }
@@ -182,13 +184,15 @@ public final class Encryptor {
         folderToSave.mkdirs();
         if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
             File[] filesInFolder = folder.listFiles();
-            for (int i = 0; i < Objects.requireNonNull(filesInFolder).length; i++) {
-                if (filesInFolder[i].isFile()) {
-                    decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
-                    if (autoDelete2 || gDrive) filesInFolder[i].delete();
-                } else if (filesInFolder[i].isDirectory()) {
-                    decryptFolderAESGCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
-                    if (autoDelete2 || gDrive) filesInFolder[i].delete();
+            if(filesInFolder != null) {
+                for (int i = 0; i < filesInFolder.length; i++) {
+                    if (filesInFolder[i].isFile()) {
+                        decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
+                        if (autoDelete2 || gDrive) filesInFolder[i].delete();
+                    } else if (filesInFolder[i].isDirectory()) {
+                        decryptFolderAESGCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
+                        if (autoDelete2 || gDrive) filesInFolder[i].delete();
+                    }
                 }
             }
         }
@@ -243,7 +247,7 @@ public final class Encryptor {
 
     private static void unZip(File input, List<File> output) throws Exception {
         String fileZip = input.getPath();
-        File destDir = new File(Objects.requireNonNull(input.getParent()));
+        File destDir = new File(input.getParent());
         byte[] buffer = new byte[512];
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip))) {
             ZipEntry zipEntry = zis.getNextEntry();

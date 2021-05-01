@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -39,7 +39,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                 }
             });
 
-            textView = (TextView) view.findViewById(R.id.serviceName);
+            textView = view.findViewById(R.id.serviceName);
         }
 
         public TextView getTextView() {
@@ -60,6 +60,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     }
 
     // Create new views (invoked by the layout manager)
+    @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

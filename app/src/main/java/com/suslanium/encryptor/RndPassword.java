@@ -12,8 +12,7 @@ public final class RndPassword {
         for(int i = 0; i < length; i++){
             result[i] = alphabet.charAt(random.nextInt(alphabet.length()));
         }
-        String password = new String(result);
-        return password;
+        return new String(result);
     }
     public static char[] generateRandomPasswordCharArray(int length){
         Random random = new Random();

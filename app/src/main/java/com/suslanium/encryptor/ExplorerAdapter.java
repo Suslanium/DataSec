@@ -4,7 +4,6 @@ package com.suslanium.encryptor;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -71,6 +70,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private HomeFragment fragment;
     private static final String ACTIONTYPE = "actionType";
     private static final String INDEX = "index";
+    private boolean searchEnded = false;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -220,6 +220,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             }
                                             CheckedId.clear();
                                             holders.clear();
+                                            if(searchEnded){
+                                                fragment.cancelSearch();
+                                                searchEnded = false;
+                                            }
                                             closeBottomBar();
                                             if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
                                                 activity.runOnUiThread(() -> fragment.showAddButton(true));
@@ -227,6 +231,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             int position = getAdapterPosition();
                                             localDataSet = fileNames;
                                             path = filePath;
+                                            fragment.setStoragePath(path);
                                             while (!fadeIn.hasEnded()) {
                                                 try {
                                                     Thread.sleep(10);
@@ -423,6 +428,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
 
     public void removeAllDeletedFiles(ArrayList<String> paths) {
         deletedFilePaths.removeAll(paths);
+    }
+
+    public void setSearchEnded(){
+        searchEnded=true;
     }
 
     public void closeBottomBar() {
@@ -635,7 +644,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     viewHolder.setFile(R.drawable.folder);
                     viewHolder.getSizeView().setText("Calculating...");
                 });
-                int itemCount = file.list() != null ? Objects.requireNonNull(file.list()).length : 0;
+                int itemCount = file.list() != null ? file.list().length : 0;
                 activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " items"));
             }
         });

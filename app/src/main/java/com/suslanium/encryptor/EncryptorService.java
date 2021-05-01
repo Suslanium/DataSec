@@ -395,7 +395,7 @@ public class EncryptorService extends Service {
                             for (int i = 0; i < encryptedFiles.size(); i++) {
                                 if (encryptedFiles.get(i).isFile()) {
                                     if (driveFileNames.contains(encryptedFiles.get(i).getName())) {
-                                        for (int j = 0; j < Objects.requireNonNull(driveFiles).size(); j++) {
+                                        for (int j = 0; j < driveFiles.size(); j++) {
                                             if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())) {
                                                 mDriveServiceHelper.deleteFolderFile(driveFiles.get(j).getId());
                                                 mDriveServiceHelper.uploadFile(encryptedFiles.get(i), currentFolderID);
@@ -414,7 +414,7 @@ public class EncryptorService extends Service {
                                         }
                                     }
                                     if (driveFileNames.contains(encryptedFiles.get(i).getName())) {
-                                        for (int j = 0; j < Objects.requireNonNull(driveFiles).size(); j++) {
+                                        for (int j = 0; j < driveFiles.size(); j++) {
                                             if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())) {
                                                 String folderID = driveFiles.get(j).getId();
                                                 uploadFilesInFolder(folderID, mDriveServiceHelper, filePaths);
@@ -612,7 +612,7 @@ public class EncryptorService extends Service {
                             }
                             Drive googleDriveService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).setApplicationName(CHANNEL_ID).build();
                             DriveServiceHelper mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-                            for (int i = 0; i < Objects.requireNonNull(pathsList).size(); i++) {
+                            for (int i = 0; i < pathsList.size(); i++) {
                                 mDriveServiceHelper.deleteFolderFile(pathsList.get(i));
                             }
                         }
@@ -776,7 +776,7 @@ public class EncryptorService extends Service {
                 firstFolder = firstFolder.substring(0, firstFolder.indexOf(File.separator));
             }
             if (keys != null && keys.contains(firstFolder)) {
-                copyPath = copyPath.replaceFirst(Pattern.quote(firstFolder), Matcher.quoteReplacement(Objects.requireNonNull(pathsToReplace.get(firstFolder))));
+                copyPath = copyPath.replaceFirst(Pattern.quote(firstFolder), Matcher.quoteReplacement(pathsToReplace.get(firstFolder)));
             }
             File copied = new File(toCopyPath + copyPath);
             if (original.isFile()) {

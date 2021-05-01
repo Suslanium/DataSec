@@ -8,14 +8,17 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StatFs;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -55,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
@@ -63,9 +67,17 @@ public class HomeFragment extends Fragment {
     private View.OnClickListener upFolderAction;
     private FloatingActionButton newFolder;
     private Drawable cancelDrawable;
+    private View.OnClickListener newFolderListener;
+    private Drawable createDrawable;
     private static final String RENAME = "Rename_";
     private static final String INDEX = "index";
     private static final String ACTIONTYPE = "actionType";
+    private View.OnClickListener changeStorageListener;
+    private TextView storagePath;
+    private TextView freeSpace;
+    private ArrayList<String> storagePaths;
+    private String currentStorageName;
+    private String currentStoragePath;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -88,6 +100,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        storagePath = requireActivity().findViewById(R.id.storagePath);
+        freeSpace = requireActivity().findViewById(R.id.freeSpace);
         BottomNavigationView bottomBar = requireActivity().findViewById(R.id.bottomBar);
         bottomBar.getMenu().setGroupCheckable(0, true, false);
         for (int i = 0; i < bottomBar.getMenu().size(); i++) {
@@ -97,12 +111,24 @@ public class HomeFragment extends Fragment {
         ((Explorer) requireActivity()).explorerVisible = true;
         ListIterator<String> pathIterator;
         RecyclerView fileView = requireActivity().findViewById(R.id.fileView);
-        ArrayList<String> storagePaths = new ArrayList<>();
+        storagePaths = new ArrayList<>();
         File[] dir = requireContext().getExternalFilesDirs(null);
         for (int i = 0; i < dir.length; i++) {
-            //Recalculate substring end index after changing package name
             storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
         }
+        currentStorageName = "Internal Storage";
+        currentStoragePath = Environment.getExternalStorageDirectory().getPath();
+        final ViewTreeObserver vto = view.getViewTreeObserver();
+        if (vto.isAlive()) {
+            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    setStoragePath(Environment.getExternalStorageDirectory().getPath());
+                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
+        }
+        calculateFreeSpace(Environment.getExternalStorageDirectory().getPath());
         pathIterator = storagePaths.listIterator();
         pathIterator.next();
         File internalStorageDir = Environment.getExternalStorageDirectory();
@@ -121,7 +147,6 @@ public class HomeFragment extends Fragment {
             fileNames.add(filesSorted.get(i).getName());
         }
         fileList.addAll(fileNames);
-        Drawable createDrawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
         } else {
@@ -313,7 +338,8 @@ public class HomeFragment extends Fragment {
                                                     adapter.closeBottomBar();
                                                     showAddButton(true);
                                                 });
-                                                dialogBuilder.setNegativeButton("Stop", (dialog14, which14) -> {});
+                                                dialogBuilder.setNegativeButton("Stop", (dialog14, which14) -> {
+                                                });
                                                 dialogBuilder.show();
                                             } else {
                                                 Intent intent = new Intent(requireContext(), EncryptorService.class);
@@ -401,14 +427,17 @@ public class HomeFragment extends Fragment {
             return false;
         });
         upFolder = requireActivity().findViewById(R.id.upFolder);
-        FloatingActionButton sdcardButton = requireActivity().findViewById(R.id.sdCardButton);
-        sdcardButton.setOnClickListener(v -> {
+        changeStorageListener = v -> {
             if (storagePaths.size() > 1) {
                 String path;
                 if (pathIterator.hasNext()) {
                     path = pathIterator.next();
                     if (new File(path).canWrite()) {
                         Snackbar.make(v, "Switched to External Storage " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                        currentStorageName = "External Storage " + (pathIterator.previousIndex());
+                        currentStoragePath = path;
+                        setStoragePath(path);
+                        calculateFreeSpace(path);
                     } else {
                         Snackbar.make(v, "Sorry, this app cannot access your external storage due to system restrictions.", Snackbar.LENGTH_LONG).show();
                         path = pathIterator.previous();
@@ -418,6 +447,10 @@ public class HomeFragment extends Fragment {
                         pathIterator.previous();
                     }
                     path = pathIterator.next();
+                    currentStorageName = "Internal Storage";
+                    currentStoragePath = path;
+                    setStoragePath(path);
+                    calculateFreeSpace(path);
                     Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();
                 }
                 File parent = new File(path);
@@ -425,7 +458,7 @@ public class HomeFragment extends Fragment {
                     updateUI(adapter, fileView, parent);
                 }
             }
-        });
+        };
         upFolderAction = v -> {
             if (((Explorer) requireActivity()).currentOperationNumber == 0) {
                 fileView.stopScroll();
@@ -436,14 +469,15 @@ public class HomeFragment extends Fragment {
                     if (path.matches(Pattern.quote(storagePaths.get(i)))) matches = true;
                 }
                 if (matches) {
-                    Snackbar snackbar = Snackbar.make(v, "Sorry, this is the root.", Snackbar.LENGTH_LONG);
-                    snackbar.setAction("Exit app", v1 -> {
-                        requireActivity().moveTaskToBack(true);
-                        requireActivity().finishAffinity();
+                    ((Explorer) requireActivity()).incrementBackPressedCount();
+                    Snackbar snackbar = Snackbar.make(v, "Press one more time to exit", Snackbar.LENGTH_LONG);
+                    snackbar.setAction("Switch storage", v1 -> {
+                        changeStorageListener.onClick(requireView());
                     });
                     snackbar.show();
                 } else {
                     updateUI(adapter, fileView, parent);
+                    setStoragePath(parent.getPath());
                 }
             }
         };
@@ -451,7 +485,7 @@ public class HomeFragment extends Fragment {
         shareButton.setOnClickListener(v -> {
         });
         newFolder = requireActivity().findViewById(R.id.addNewFolder);
-        View.OnClickListener newFolderListener = v -> {
+        newFolderListener = v -> {
             final EditText input = new EditText(requireContext());
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             input.setSingleLine(true);
@@ -606,7 +640,12 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    public void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent){
+    public void cancelSearch() {
+        newFolder.setOnClickListener(newFolderListener);
+        newFolder.setImageDrawable(createDrawable);
+    }
+
+    public void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
         if (((Explorer) requireActivity()).currentOperationNumber == 0) {
             fileView.stopScroll();
             ((Explorer) requireActivity()).currentOperationNumber++;
@@ -1124,6 +1163,53 @@ public class HomeFragment extends Fragment {
             sortedFiles.addAll(originFiles);
         }
         return sortedFiles;
+    }
+    private String fitString (TextView text, String newText) {
+        float textWidth = text.getPaint().measureText(newText);
+        int startIndex = 1;
+        while (textWidth >= text.getMeasuredWidth()){
+            Log.d(String.valueOf(textWidth), String.valueOf(text.getMeasuredWidth()));
+            newText = newText.substring(startIndex);
+            textWidth = text.getPaint().measureText(newText);
+            startIndex++;
+        }
+        return newText;
+    }
+
+    public void setStoragePath(String path){
+        String pathToShow = path.replace(currentStoragePath, currentStorageName);
+        pathToShow = fitString(storagePath, pathToShow);
+        storagePath.setText(pathToShow);
+    }
+
+    private void calculateFreeSpace(String path){
+        StatFs fs = new StatFs(path);
+        double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
+        int spaceDivisonCount = 0;
+        while (freeSpace > 1024){
+            freeSpace = freeSpace/1024;
+            spaceDivisonCount++;
+        }
+        freeSpace = (double) Math.round(freeSpace * 100) / 100;
+        switch (spaceDivisonCount){
+            case 0:
+                this.freeSpace.setText(freeSpace + " B free");
+                break;
+            case 1:
+                this.freeSpace.setText(freeSpace + " KB free");
+                break;
+            case 2:
+                this.freeSpace.setText(freeSpace + " MB free");
+                break;
+            case 3:
+                this.freeSpace.setText(freeSpace + " GB free");
+                break;
+            case 4:
+                this.freeSpace.setText(freeSpace + " TB free");
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
