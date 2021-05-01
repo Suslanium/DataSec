@@ -1,134 +1,180 @@
 
-X
-java:S1128"6Remove this unused import 'android.icu.util.Calendar'.(èÔ°–úÿÿÿÿ8âù»Ä/
-?
-java:S1604Ï"(Make this anonymous inner class a lambda(É”Ìç
-?
-java:S1604ÿ"(Make this anonymous inner class a lambda(É”Ìç
-I
-java:S1481Œ"-Remove this unused "position" local variable.(à±™¾ÿÿÿÿÿ
-i
-java:S1192Ë"FDefine a constant instead of duplicating this literal "paths" 4 times.(ğ÷¤ñøÿÿÿÿ8„Ì¸¿/
-Q
-java:S1128"5Remove this unused import 'android.app.Notification'.(¸Ó†98âù»Ä/
-D
-java:S1604¹"(Make this anonymous inner class a lambda(çæ”¬ÿÿÿÿÿ
-V	java:S125y"<This block of commented-out lines of code should be removed.(ƒ¬™³ùÿÿÿÿ
-
-java:S1319À"rThe type of the "dataSet" object should be an interface such as "List" rather than the implementation "ArrayList".(èÌÌ¡ûÿÿÿÿ
-S
-java:S1128"1Remove this unused import 'android.widget.Toast'.(©›ïÍúÿÿÿÿ8âù»Ä/
-W
-java:S1128":Remove this unused import 'android.content.ComponentName'.(½‹æŠ8âù»Ä/
-n
-java:S3776Ö"RRefactor this method to reduce its Cognitive Complexity from 37 to the 15 allowed.(›§©Ÿùÿÿÿÿ
-Š
-java:S3252“"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(…¼‰«úÿÿÿÿ8ÊÙØ¿/
-[
-java:S1128">Remove this unused import 'android.content.ServiceConnection'.(¾ÄãÛ8âù»Ä/
-]
-java:S2142¤"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
-}
-java:S3252®"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(¶ÍÈY
-…
-java:S3252Æ"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ßİÃã8„Ì¸¿/
-i
-java:S1192Ê"KDefine a constant instead of duplicating this literal "actionType" 4 times.(™ğé²8„Ì¸¿/
-…
-java:S3252Ø"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ßİÃã8„Ì¸¿/
-?
-java:S1604ô"(Make this anonymous inner class a lambda(É”Ìç
-O
-java:S1128"-Remove this unused import 'android.util.Log'.(Ô¦Ø²øÿÿÿÿ8âù»Ä/
-M
-java:S1135O"2Complete the task associated to this TODO comment.(‰Ş‡¼øÿÿÿÿ
-=	java:S131¥""Add a default case to this switch.(ëÆ–‰ıÿÿÿÿ
-?
-java:S1604Æ"(Make this anonymous inner class a lambda(É”Ìç
-W
-java:S1128":Remove this unused import 'android.widget.CompoundButton'.(®½¤Ş8âù»Ä/
-?
-java:S1604ì"(Make this anonymous inner class a lambda(É”Ìç
-‹
-java:S1319ö"tThe type of the "fileNames" object should be an interface such as "List" rather than the implementation "ArrayList".(Å°
-S
-java:S1854ø"<Remove this useless assignment to local variable "position".(ıí©¡
-I
-java:S1481÷"-Remove this unused "position" local variable.(—¬æéşÿÿÿÿ
 U
-java:S1155ø">Use isEmpty() to check whether the collection is empty or not.(ıí©¡
-‡
-java:S1319Ú"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(ÁøúĞ
-?
-java:S1604¢"(Make this anonymous inner class a lambda(É”Ìç
->
-java:S1604å"(Make this anonymous inner class a lambda(ô§ê
-^
-java:S1128"<Remove this unused import 'android.app.NotificationManager'.(¸˜ùÑûÿÿÿÿ8âù»Ä/
-a
-java:S1128 "?Remove this unused import 'androidx.appcompat.app.AlertDialog'.(¼Ìï¨üÿÿÿÿ8âù»Ä/
-‰
-java:S1319â"mThe return type of this method should be an interface such as "Map" rather than the implementation "HashMap".(‘€—½ÿÿÿÿÿ
-F
-java:S1604Ã"(Make this anonymous inner class a lambda(ï¸áµ8„Ì¸¿/
-?
-java:S1604™"(Make this anonymous inner class a lambda(É”Ìç
-^
-java:S1128!"ARemove this unused import 'androidx.core.app.NotificationCompat'.(œéÔã8âù»Ä/
-C
-java:S1604\"(Make this anonymous inner class a lambda(ø†òšûÿÿÿÿ
-=
-java:S1604u"(Make this anonymous inner class a lambda(ô§ê
->
-java:S1604h"(Make this anonymous inner class a lambda(¦ºÄ
-i
-java:S3776R"SRefactor this method to reduce its Cognitive Complexity from 116 to the 15 allowed.(ÊÈå
-^
-java:S1128"<Remove this unused import 'android.app.NotificationChannel'.(ÒÒ…·ıÿÿÿÿ8âù»Ä/
-?
-java:S1604¾"(Make this anonymous inner class a lambda(É”Ìç
-r
-java:S1104L"UMake encrypted a static final constant or non-public and provide accessors if needed.(¤êœí8“­¿/
-l	java:S1167"RRename this field "Recview" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ü‘ÓØúÿÿÿÿ
+java:S1155–">Use isEmpty() to check whether the collection is empty or not.(ıí©¡
+n	java:S116M"TRename this field "CheckedId" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÏÚÅöÿÿÿÿÿ
 S
-java:S1854ù"<Remove this useless assignment to local variable "position".(ı²‘Š
-t
-java:S1104="WMake isSearching a static final constant or non-public and provide accessors if needed.(Ğ•§é8ÍÔƒÅ/
-l
-java:S1128'"ORemove this unused import 'com.google.android.material.dialog.MaterialDialogs'.(è©¢8âù»Ä/
-F
-java:S1604æ"(Make this anonymous inner class a lambda(ï¸áµ8À®º¿/
-n	java:S116:"TRename this field "CheckedId" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÏÚÅöÿÿÿÿÿ
+java:S1128"8Remove this unused import 'android.icu.text.DateFormat'.(äÛ¤¹ùÿÿÿÿ
+]	java:S899¿"BDo something with the "boolean" value returned by "createNewFile".(°æ»›şÿÿÿÿ
+?
+java:S1604Û"(Make this anonymous inner class a lambda(ğá„°
+‡
+java:S1319ø"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(ÁøúĞ
+W	java:S125•"<This block of commented-out lines of code should be removed.(í—ÇÉúÿÿÿÿ
+W
+java:S1128	"<Remove this unused import 'android.app.NotificationChannel'.(ÒÒ…·ıÿÿÿÿ
+o
+java:S1104f"TMake realPath a static final constant or non-public and provide accessors if needed.(»ÃÍøÿÿÿÿ
+D
+java:S1604¢"(Make this anonymous inner class a lambda(òİŸ÷ıÿÿÿÿ
+T
+java:S2696ë"6Make the enclosing method "static" or remove this set.(Ï«Ş 8Ûİï»’/
+?
+java:S1604¡"(Make this anonymous inner class a lambda(É”Ìç
+m
+java:S1104g"XMake loadingCount a static final constant or non-public and provide accessors if needed.(à’`
+?
+java:S1604ç"(Make this anonymous inner class a lambda(¦ºÄ
+˜
+java:S1186"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢
+S
+java:S1854–"<Remove this useless assignment to local variable "position".(ıí©¡
+C
+java:S1604v"(Make this anonymous inner class a lambda(ø†òšûÿÿÿÿ
+?
+java:S1604"(Make this anonymous inner class a lambda(É”Ìç
+R	java:S125½"<This block of commented-out lines of code should be removed.(Ğ§È
+
+java:S1319«"rThe type of the "dataSet" object should be an interface such as "List" rather than the implementation "ArrayList".(Î÷Ö­üÿÿÿÿ
+Q
+java:S1128"6Remove this unused import 'android.icu.util.Calendar'.(èÔ°–úÿÿÿÿ
 X
-java:S1854Œ"<Remove this useless assignment to local variable "position".(à±™¾ÿÿÿÿÿ
-]
-java:S2142“"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
-Ÿ
-java:S1186Ò"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢8„Ì¸¿/
-…
-java:S3252û"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÁÚó¨8À®º¿/
-…
-java:S3252é"gUse static access with "com.google.android.material.snackbar.BaseTransientBottomBar" for "LENGTH_LONG".(ÁÚó¨8À®º¿/
-K
-java:S1604Ğ"(Make this anonymous inner class a lambda(ôçõÕÿÿÿÿÿ8„Ì¸¿/
-v
-java:S1104M"TMake realPath a static final constant or non-public and provide accessors if needed.(»ÃÍøÿÿÿÿ8Ü¨¼Ä/
-M
-java:S1135P"2Complete the task associated to this TODO comment.(È…îüøÿÿÿÿ
-K
-java:S1604ó"(Make this anonymous inner class a lambda(ôçõÕÿÿÿÿÿ8À®º¿/
-Ÿ
-java:S1186õ"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢8À®º¿/
+java:S1854–"<Remove this useless assignment to local variable "position".(à±™¾ÿÿÿÿÿ
 e
-java:S11281"IRemove this unused import 'android.content.Context.NOTIFICATION_SERVICE'.(ÿæ—(8âù»Ä/
-L
-java:S1128/"*Remove this unused import 'java.util.Set'.(ö²„¤şÿÿÿÿ8âù»Ä/
+java:S11282"ORemove this unused import 'com.google.android.material.dialog.MaterialDialogs'.(è©¢
+?
+java:S1604Ú"(Make this anonymous inner class a lambda(É”Ìç
+k
+java:S1104e"UMake encrypted a static final constant or non-public and provide accessors if needed.(¤êœí
+‹
+java:S1319”"tThe type of the "fileNames" object should be an interface such as "List" rather than the implementation "ArrayList".(Å°
+b
+java:S1192Õ"KDefine a constant instead of duplicating this literal "actionType" 4 times.(™ğé²
+T
+java:S2696Ö"6Make the enclosing method "static" or remove this set.(Ï«Ş 8Ûİï»’/
+‰
+java:S1319€"mThe return type of this method should be an interface such as "Map" rather than the implementation "HashMap".(‘€—½ÿÿÿÿÿ
 G
-java:S1135Q"2Complete the task associated to this TODO comment.(˜Ö™P
-Q
-java:S1128	"4Remove this unused import 'android.content.Context'.(©Ê‰è8âù»Ä/
-W	java:S125"<This block of commented-out lines of code should be removed.(Ø²Ïûÿÿÿÿ
+java:S1135k"2Complete the task associated to this TODO comment.(˜Ö™P
+?
+java:S1604£"(Make this anonymous inner class a lambda(É”Ìç
+m
+java:S1104P"WMake isSearching a static final constant or non-public and provide accessors if needed.(Ğ•§é
+M
+java:S1135i"2Complete the task associated to this TODO comment.(‰Ş‡¼øÿÿÿÿ
+I
+java:S1481–"-Remove this unused "position" local variable.(à±™¾ÿÿÿÿÿ
+?
+java:S1604Ò"(Make this anonymous inner class a lambda(É”Ìç
+?
+java:S1604ä"(Make this anonymous inner class a lambda(É”Ìç
+?
+java:S1604Œ"(Make this anonymous inner class a lambda(¤çî†
+T
+java:S1128">Remove this unused import 'android.content.ServiceConnection'.(¾ÄãÛ
+J
+java:S1128"4Remove this unused import 'android.content.Context'.(©Ê‰è
+˜
+java:S1186à"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢
+e
+java:S4042À"NUse "java.nio.file.Files#delete" here for better messages on error conditions.(éÇºØ
+D
+java:S1604Ş"(Make this anonymous inner class a lambda(ôçõÕÿÿÿÿÿ
+Œ
+java:S1319ä"pThe type of the "paths" object should be an interface such as "List" rather than the implementation "ArrayList".(ö¢œùÿÿÿÿ
+i
+java:S3776l"SRefactor this method to reduce its Cognitive Complexity from 219 to the 15 allowed.(ÊÈå
+D
+java:S1604Ä"(Make this anonymous inner class a lambda(çæ”¬ÿÿÿÿÿ
+J
+java:S1128"5Remove this unused import 'android.app.Notification'.(¸Ó†9
+=	java:S131¤""Add a default case to this switch.(ëÆ–‰ıÿÿÿÿ
+N
+java:S1144í"7Remove this unused private "getAvailableMemory" method.(åÏÇ¦
+?
+java:S1604Â"(Make this anonymous inner class a lambda(É”Ìç
+?
+java:S1604Ë"(Make this anonymous inner class a lambda(É”Ìç
+l	java:S116J"RRename this field "Recview" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ü‘ÓØúÿÿÿÿ
+]
+java:S2142"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+?
+java:S1604ë"(Make this anonymous inner class a lambda(É”Ìç
+F
+java:S1066‰"/Merge this if statement with the enclosing one.(²£‚
+J
+java:S1128"/Remove this unused import 'android.os.IBinder'.(Ñğôˆùÿÿÿÿ
+T
+java:S2696ÿ"6Make the enclosing method "static" or remove this set.(Ï«Ş 8Ûİï»’/
+D
+java:S1604ª"(Make this anonymous inner class a lambda(†·©ôûÿÿÿÿ
+P
+java:S1128":Remove this unused import 'android.content.ComponentName'.(½‹æŠ
+n
+java:S3776Ä"RRefactor this method to reduce its Cognitive Complexity from 65 to the 15 allowed.(›§©Ÿùÿÿÿÿ
+Œ
+java:S1319ì"pThe type of the "paths" object should be an interface such as "List" rather than the implementation "ArrayList".(—èÜÏøÿÿÿÿ
+i
+java:S11284"SRemove this unused import 'com.google.common.util.concurrent.ThreadFactoryBuilder'.(Òä˜¥
+W	java:S125ú"<This block of commented-out lines of code should be removed.(ƒ¬™³ùÿÿÿÿ
+E
+java:S1128"*Remove this unused import 'java.sql.Time'.(Üå»‰şÿÿÿÿ
+?
+java:S1604ş"(Make this anonymous inner class a lambda(É”Ìç
+L
+java:S1128("1Remove this unused import 'android.widget.Toast'.(©›ïÍúÿÿÿÿ
+S	java:S899Á"=Do something with the "boolean" value returned by "renameTo".(ôËó³
+]
+java:S2142®"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€
+S
+java:S1854—"<Remove this useless assignment to local variable "position".(ı²‘Š
+b
+java:S1192Ù"FDefine a constant instead of duplicating this literal "index" 4 times.(“¶µ¨şÿÿÿÿ
 Y
-java:S1126Ù"BReplace this if-then-else statement by a single method invocation.(ÏÖÈ˜
-Q
-java:S1128"/Remove this unused import 'android.os.IBinder'.(Ñğôˆùÿÿÿÿ8âù»Ä/
+java:S1126Ç"BReplace this if-then-else statement by a single method invocation.(ÏÖÈ˜
+J
+java:S1066{"/Merge this if statement with the enclosing one.(äçÕøÿÿÿÿ
+M
+java:S1135j"2Complete the task associated to this TODO comment.(È…îüøÿÿÿÿ
+>
+java:S1604ö"(Make this anonymous inner class a lambda(ô§ê
+T
+java:S2696”"6Make the enclosing method "static" or remove this set.(Ï«Ş 8Ûİï»’/
+‡
+java:S1319ô"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(”‹è„
+˜
+java:S1186‰"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(¦Œœ¢
+P
+java:S1128$":Remove this unused import 'android.widget.CompoundButton'.(®½¤Ş
+D
+java:S1604‡"(Make this anonymous inner class a lambda(ôçõÕÿÿÿÿÿ
+E
+java:S1128="*Remove this unused import 'java.util.Set'.(ö²„¤şÿÿÿÿ
+R	java:S125ˆ"<This block of commented-out lines of code should be removed.(†üÛ·
+K
+java:S1066ó"/Merge this if statement with the enclosing one.(«Íè…øÿÿÿÿ
+?
+java:S1604÷"(Make this anonymous inner class a lambda(ï¸áµ
+?
+java:S1604ó"(Make this anonymous inner class a lambda(É”Ìç
+W
+java:S1128+"ARemove this unused import 'androidx.core.app.NotificationCompat'.(œéÔã
+D
+java:S1604œ"(Make this anonymous inner class a lambda(…˜Îùÿÿÿÿ
+Q	java:S899À";Do something with the "boolean" value returned by "delete".(éÇºØ
+I
+java:S1481•"-Remove this unused "position" local variable.(—¬æéşÿÿÿÿ
+?
+java:S1604Î"(Make this anonymous inner class a lambda(ï¸áµ
+^
+java:S1128D"IRemove this unused import 'android.content.Context.NOTIFICATION_SERVICE'.(ÿæ—(
+Q	java:S125ò"<This block of commented-out lines of code should be removed.(ï–Œ[
+W
+java:S1128
+"<Remove this unused import 'android.app.NotificationManager'.(¸˜ùÑûÿÿÿÿ
+?
+java:S1604â"(Make this anonymous inner class a lambda(É”Ìç
+W	java:S125™"<This block of commented-out lines of code should be removed.(Ø²Ïûÿÿÿÿ
+>
+java:S1604¸"(Make this anonymous inner class a lambda(ô§ê
+]
+java:S2142Â"FEither re-interrupt this method or rethrow the "InterruptedException".(ä ¹€

@@ -34,39 +34,36 @@ public class MessageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((Explorer) getActivity()).messageCryptVisible = true;
-        Toolbar t = (Toolbar) getActivity().findViewById(R.id.toolbar);
-        if(((Explorer) getActivity()).searchButton != null)t.removeView(((Explorer) getActivity()).searchButton);
-        if(((Explorer) getActivity()).searchBar != null) {
-            t.removeView(((Explorer) getActivity()).searchBar);
-            ((Explorer) getActivity()).searchBar = null;
-            final InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        ((Explorer) requireActivity()).messageCryptVisible = true;
+        Toolbar t = requireActivity().findViewById(R.id.toolbar);
+        if(((Explorer) requireActivity()).searchButton != null)t.removeView(((Explorer) requireActivity()).searchButton);
+        if(((Explorer) requireActivity()).searchBar != null) {
+            t.removeView(((Explorer) requireActivity()).searchBar);
+            ((Explorer) requireActivity()).searchBar = null;
+            final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         messageCryptCollectionAdapter = new MessageCryptCollectionAdapter(this);
         viewPager = view.findViewById(R.id.pager);
         viewPager.setAdapter(messageCryptCollectionAdapter);
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
-        new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                switch (position+1){
-                    case 1:tab.setText("Encrypt");
-                    break;
-                    case 2:tab.setText("Decrypt");
-                    break;
-                    case 3:tab.setText("Hash");
-                    break;
-                    default:tab.setText("");
-                    break;
-                }
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position+1){
+                case 1:tab.setText("Encrypt");
+                break;
+                case 2:tab.setText("Decrypt");
+                break;
+                case 3:tab.setText("Hash");
+                break;
+                default:tab.setText("");
+                break;
             }
         }).attach();
     }
 
     @Override
     public void onDestroyView() {
-        ((Explorer) getActivity()).messageCryptVisible = false;
+        ((Explorer) requireActivity()).messageCryptVisible = false;
         super.onDestroyView();
     }
 }

@@ -12,11 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
-import androidx.navigation.Navigation;
-import androidx.security.crypto.EncryptedSharedPreferences;
-import androidx.security.crypto.MasterKeys;
 
 import android.preference.PreferenceManager;
 import android.text.InputType;
@@ -25,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -34,11 +28,6 @@ import android.widget.Switch;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-
-import net.sqlcipher.database.SQLiteDatabase;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class SettingsFragment extends Fragment {
 
@@ -187,7 +176,7 @@ public class SettingsFragment extends Fragment {
                                         @Override
                                         public void run() {
                                             try {
-                                                byte[] newPassEnc = Encryptor.RSAEncrypt(newPass);
+                                                byte[] newPassEnc = Encryptor.rsaencrypt(newPass);
                                                 intent.putExtra("actionType", "changePass");
                                                 intent.putExtra("newPass", newPassEnc);
                                                 intent.putExtra("pass", ((Explorer) getActivity()).getIntent2().getByteArrayExtra("pass"));

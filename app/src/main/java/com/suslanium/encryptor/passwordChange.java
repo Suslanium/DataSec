@@ -40,7 +40,7 @@ public class passwordChange extends AppCompatActivity {
                 try {
                     Intent intent = getIntent();
                     byte[] passEnc = intent.getByteArrayExtra("pass");
-                    String password = Encryptor.RSADecrypt(passEnc);
+                    String password = Encryptor.rsadecrypt(passEnc);
                     SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
                     HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
                     ArrayList<String> strings = listHashMap.get(id);
@@ -72,7 +72,7 @@ public class passwordChange extends AppCompatActivity {
                             try {
                                 Intent intent = getIntent();
                                 byte[] passEnc = intent.getByteArrayExtra("pass");
-                                String password = Encryptor.RSADecrypt(passEnc);
+                                String password = Encryptor.rsadecrypt(passEnc);
                                 SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
                                 Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString());
                                 Encryptor.closeDataBase(database);
@@ -138,7 +138,7 @@ public class passwordChange extends AppCompatActivity {
                                         try {
                                             Intent intent = getIntent();
                                             byte[] passEnc = intent.getByteArrayExtra("pass");
-                                            String password = Encryptor.RSADecrypt(passEnc);
+                                            String password = Encryptor.rsadecrypt(passEnc);
                                             SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
                                             Encryptor.deleteDataFromPasswordTable(database, id);
                                             Encryptor.closeDataBase(database);

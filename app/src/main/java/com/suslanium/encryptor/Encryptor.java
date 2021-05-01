@@ -2,7 +2,6 @@ package com.suslanium.encryptor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.FileUtils;
 import android.preference.PreferenceManager;
 
 import net.sqlcipher.Cursor;
@@ -16,13 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
@@ -30,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -45,50 +43,28 @@ import javax.crypto.spec.SecretKeySpec;
 public final class Encryptor {
     //region File or folder encryption
     private static final int PBKDF2_ITERATION_COUNT = 300_000;
-    private static final int PBKDF2_SALT_LENGTH = 16; //128 bits
-    private static final int AES_KEY_LENGTH = 256; //in bits
-    // An initialization vector size
-    private static final int GCM_NONCE_LENGTH = 12; //96 bits
-    // An authentication tag size
-    private static final int GCM_TAG_LENGTH = 128; //in bits
-    private static final String alias = "encryptorKey";
+    private static final int PBKDF2_SALT_LENGTH = 16;
+    private static final int AES_KEY_LENGTH = 256;
+    private static final int GCM_NONCE_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 128;
     private static PublicKey publicKey = null;
     private static PrivateKey privateKey = null;
 
-    //TODO: add buffered encryption/decryption instead of cipher.doFinal(input);(look into MainActivity encrypting/decrypting methods
     public static byte[] encryptBytesAES256(byte[] input, String password) {
         try {
-            //SecureRandom secureRandom = SecureRandom.getInstanceStrong();
             SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "AndroidOpenSSL");
-            // Derive the key, given password and salt
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-            // A salt is a unique, randomly generated string
-            // that is added to each password as part of the hashing process
             byte[] salt = new byte[PBKDF2_SALT_LENGTH];
             secureRandom.nextBytes(salt);
             KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATION_COUNT, AES_KEY_LENGTH);
             byte[] secret = factory.generateSecret(keySpec).getEncoded();
             SecretKey key = new SecretKeySpec(secret, "AES");
-            // AES-GCM encryption
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            // A nonce or an initialization vector is a random value chosen at encryption time
-            // and meant to be used only once
             byte[] nonce = new byte[GCM_NONCE_LENGTH];
             secureRandom.nextBytes(nonce);
-            // An authentication tag
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
             cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec);
             byte[] encrypted = cipher.doFinal(input);
-            /*ByteArrayInputStream inputStream = new ByteArrayInputStream(encrypted);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            CipherOutputStream cos = new CipherOutputStream(outputStream, cipher);
-            int b;
-            byte[] d = new byte[10 * 1024 * 1024];
-            while ((b = inputStream.read(d)) != -1) {
-                cos.write(d, 0, b);
-            }*/
-            // Salt and nonce can be stored together with the encrypted data
-            // Both salt and nonce have fixed length, so can be prefixed to the encrypted data
             ByteBuffer byteBuffer = ByteBuffer.allocate(salt.length + nonce.length + encrypted.length);
             byteBuffer.put(salt);
             byteBuffer.put(nonce);
@@ -101,7 +77,6 @@ public final class Encryptor {
 
     public static byte[] decryptBytesAES256(byte[] encrypted, String password) {
         try {
-            // Salt and nonce have to be extracted
             ByteBuffer byteBuffer = ByteBuffer.wrap(encrypted);
             byte[] salt = new byte[PBKDF2_SALT_LENGTH];
             byteBuffer.get(salt);
@@ -114,8 +89,6 @@ public final class Encryptor {
             byte[] secret = factory.generateSecret(keySpec).getEncoded();
             SecretKey key = new SecretKeySpec(secret, "AES");
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            // If encrypted data is altered, during decryption authentication tag verification will fail
-            // resulting in AEADBadTagException
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
             cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec);
             return cipher.doFinal(cipherBytes);
@@ -127,7 +100,7 @@ public final class Encryptor {
     public static void encryptFileAES256(File original, String password, File fileToSave) throws Exception {
         if (original.length() > 15 * 1024 * 1024) {
             List<File> split = splitFile(original);
-            List<File> encryptedSplit = new LinkedList<File>();
+            List<File> encryptedSplit = new LinkedList<>();
             for (int i = 0; i < split.size(); i++) {
                 encryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + ".enc"));
                 encryptedSplit.add(new File(split.get(i).getPath() + ".enc"));
@@ -138,7 +111,6 @@ public final class Encryptor {
                 encryptedSplit.get(i).delete();
             }
         } else {
-            //byte[] originalBytes = Files.readAllBytes(original.toPath());
             int size = (int) original.length();
             byte[] originalBytes = new byte[size];
             BufferedInputStream buf = new BufferedInputStream(new FileInputStream(original));
@@ -154,9 +126,9 @@ public final class Encryptor {
 
     public static void decryptFileAES256(File original, String password, File fileToSave) throws Exception {
         if (original.length() > 15 * 1024 * 1024) {
-            List<File> split = new LinkedList<File>();
+            List<File> split = new LinkedList<>();
             unZip(original, split);
-            List<File> decryptedSplit = new LinkedList<File>();
+            List<File> decryptedSplit = new LinkedList<>();
             for (int i = 0; i < split.size(); i++) {
                 decryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + "dec"));
                 decryptedSplit.add(new File(split.get(i).getPath() + "dec"));
@@ -167,7 +139,6 @@ public final class Encryptor {
                 decryptedSplit.get(i).delete();
             }
         } else {
-            //byte[] originalBytes = Files.readAllBytes(original.toPath());
             int size = (int) original.length();
             byte[] originalBytes = new byte[size];
             BufferedInputStream buf = new BufferedInputStream(new FileInputStream(original));
@@ -181,114 +152,46 @@ public final class Encryptor {
         }
     }
 
-    public static void encryptFolderAES_GCM(File folder, String password, File folderToSave, Context context) throws Exception {
-        boolean auto_delete = false;
-        if(context != null) {
+    public static void encryptFolderAESGCM(File folder, String password, File folderToSave, Context context) throws Exception {
+        boolean autoDelete = false;
+        if (context != null) {
             SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
-            auto_delete = editor.getBoolean("auto_Delete", false);
+            autoDelete = editor.getBoolean("auto_Delete", false);
         }
-        if (folderToSave.exists()) {
-            if (folderToSave.isDirectory()) {
-                if (folder.exists() && folder.isDirectory()) {
-                    File[] filesInFolder = folder.listFiles();
-                    for (int i = 0; i < filesInFolder.length; i++) {
-                        if (filesInFolder[i].isFile()) {
-                            encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
-                            if(auto_delete)filesInFolder[i].delete();
-                        } else if (filesInFolder[i].isDirectory()) {
-                            encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
-                            if(auto_delete)filesInFolder[i].delete();
-                        }
-                    }
-                }
-            }
-        } else {
-            File file = new File(folderToSave.getPath());
-            file.mkdir();
-            if (folder.exists() && folder.isDirectory()) {
-                File[] filesInFolder = folder.listFiles();
-                for (int i = 0; i < filesInFolder.length; i++) {
-                    if (filesInFolder[i].isFile()) {
-                        encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
-                        if(auto_delete)filesInFolder[i].delete();
-                    } else if (filesInFolder[i].isDirectory()) {
-                        encryptFolderAES_GCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
-                        if(auto_delete)filesInFolder[i].delete();
-                    }
+        folderToSave.mkdirs();
+        if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
+            File[] filesInFolder = folder.listFiles();
+            for (int i = 0; i < Objects.requireNonNull(filesInFolder).length; i++) {
+                if (filesInFolder[i].isFile()) {
+                    encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
+                    if (autoDelete) filesInFolder[i].delete();
+                } else if (filesInFolder[i].isDirectory()) {
+                    encryptFolderAESGCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
+                    if (autoDelete) filesInFolder[i].delete();
                 }
             }
         }
     }
 
-    public static void decryptFolderAES_GCM(File folder, String password, File folderToSave, Context context, boolean gDrive) throws Exception {
-        boolean auto_delete2 = false;
-        if(context != null) {
+    public static void decryptFolderAESGCM(File folder, String password, File folderToSave, Context context, boolean gDrive) throws Exception {
+        boolean autoDelete2 = false;
+        if (context != null) {
             SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
-            auto_delete2 = editor.getBoolean("auto_Delete2", false);
+            autoDelete2 = editor.getBoolean("auto_Delete2", false);
         }
-        if (folderToSave.exists()) {
-            if (folderToSave.isDirectory()) {
-                if (folder.exists() && folder.isDirectory()) {
-                    File[] filesInFolder = folder.listFiles();
-                    for (int i = 0; i < filesInFolder.length; i++) {
-                        if (filesInFolder[i].isFile()) {
-                            decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
-                            if(auto_delete2 || gDrive)filesInFolder[i].delete();
-                        } else if (filesInFolder[i].isDirectory()) {
-                            decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
-                            if(auto_delete2 || gDrive)filesInFolder[i].delete();
-                        }
-                    }
-                }
-            }
-        } else {
-            File file = new File(folderToSave.getPath());
-            file.mkdir();
-            if (folder.exists() && folder.isDirectory()) {
-                File[] filesInFolder = folder.listFiles();
-                for (int i = 0; i < filesInFolder.length; i++) {
-                    if (filesInFolder[i].isFile()) {
-                        decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
-                        if(auto_delete2 || gDrive)filesInFolder[i].delete();
-                    } else if (filesInFolder[i].isDirectory()) {
-                        decryptFolderAES_GCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
-                        if(auto_delete2 || gDrive)filesInFolder[i].delete();
-                    }
+        folderToSave.mkdirs();
+        if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
+            File[] filesInFolder = folder.listFiles();
+            for (int i = 0; i < Objects.requireNonNull(filesInFolder).length; i++) {
+                if (filesInFolder[i].isFile()) {
+                    decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
+                    if (autoDelete2 || gDrive) filesInFolder[i].delete();
+                } else if (filesInFolder[i].isDirectory()) {
+                    decryptFolderAESGCM(filesInFolder[i], password, new File((folderToSave.getPath() + File.separator + filesInFolder[i].getName()).substring(0, (folderToSave.getPath() + File.separator + filesInFolder[i].getName()).length() - 3)), context, gDrive);
+                    if (autoDelete2 || gDrive) filesInFolder[i].delete();
                 }
             }
         }
-    }
-
-    public static void encryptFileThreadAES_GCM(File file, String password, File fileToSave) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (file.exists() && file.isFile()) {
-                    try {
-                        encryptFileAES256(file, password, fileToSave);
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-        });
-        thread.start();
-    }
-
-    public static void decryptFileThreadAES_GCM(File file, String password, File fileToSave) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (file.exists() && file.isFile()) {
-                    try {
-                        decryptFileAES256(file, password, fileToSave);
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-        });
-        thread.start();
     }
 
     private static List<File> splitFile(File f) throws IOException {
@@ -296,7 +199,7 @@ public final class Encryptor {
         int sizeOfFiles = 10 * 1024 * 1024;
         byte[] buffer = new byte[sizeOfFiles];
         String fileName = f.getName();
-        List<File> splittedFiles = new LinkedList<File>();
+        List<File> splittedFiles = new LinkedList<>();
         try (FileInputStream fis = new FileInputStream(f); BufferedInputStream bis = new BufferedInputStream(fis)) {
             int bytesAmount = 0;
             while ((bytesAmount = bis.read(buffer)) > 0) {
@@ -315,13 +218,15 @@ public final class Encryptor {
     private static void mergeFiles(List<File> files, File into) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(into); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
             for (int i = 0; i < files.size(); i++) {
-                InputStream in = new FileInputStream(files.get(i));
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    mergingStream.write(buf, 0, len);
+                try (InputStream in = new FileInputStream(files.get(i))) {
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        mergingStream.write(buf, 0, len);
+                    }
+                } catch (IOException e) {
+                    throw new IOException(e);
                 }
-                //Files.copy(files.get(i).toPath(), mergingStream);
             }
         }
     }
@@ -338,20 +243,22 @@ public final class Encryptor {
 
     private static void unZip(File input, List<File> output) throws Exception {
         String fileZip = input.getPath();
-        File destDir = new File(input.getParent());
+        File destDir = new File(Objects.requireNonNull(input.getParent()));
         byte[] buffer = new byte[512];
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip))) {
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
                 File destFile = new File(destDir, zipEntry.getName());
-                FileOutputStream fos = new FileOutputStream(destFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
+                try (FileOutputStream fos = new FileOutputStream(destFile)) {
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                    output.add(destFile);
+                    //fos.close();
+                } finally {
+                    zipEntry = zis.getNextEntry();
                 }
-                output.add(destFile);
-                fos.close();
-                zipEntry = zis.getNextEntry();
             }
             zis.closeEntry();
         }
@@ -368,17 +275,17 @@ public final class Encryptor {
         }
         zos.closeEntry();
     }
+
     public static String calculateHash(final String s, String function) {
         try {
             MessageDigest digest = java.security.MessageDigest
                     .getInstance(function);
             digest.update(s.getBytes());
-            byte messageDigest[] = digest.digest();
+            byte[] messageDigest = digest.digest();
             StringBuilder hexString = new StringBuilder();
             for (byte aMessageDigest : messageDigest) {
-                String h = Integer.toHexString(0xFF & aMessageDigest);
-                while (h.length() < 2)
-                    h = "0" + h;
+                StringBuilder h = new StringBuilder(Integer.toHexString(0xFF & aMessageDigest));
+                while (h.length() < 2) h.insert(0, "0");
                 hexString.append(h);
             }
             return hexString.toString();
@@ -390,52 +297,12 @@ public final class Encryptor {
     }
     //endregion
     //region Password manager
-    /*public static void addDataToKeyStorage(String dataToSave, Context context, String fileName) throws Exception {
-        File path = context.getFilesDir();
-        String encryptedDataFilePath = path.getPath() + File.separator + fileName;
-        Cipher inCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-        inCipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
-        InputStream fis = new ByteArrayInputStream(dataToSave.getBytes("UTF-8"));
-        FileOutputStream fos = new FileOutputStream(new File(encryptedDataFilePath));
-        CipherOutputStream cos = new CipherOutputStream(fos, inCipher);
-        byte[] block = new byte[32];
-        int i;
-        while ((i = fis.read(block)) != -1) {
-            cos.write(block, 0, i);
-        }
-        cos.close();
-    }*/
-
-    /*public static void loadStorageData(HashMap<String,String> data, Context context) throws Exception {
-        Cipher outCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "AndroidOpenSSL");
-        outCipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
-        File[] files = new File(context.getFilesDir().getPath()).listFiles();
-        for(int i = 0; i < files.length; i++){
-            FileInputStream fis = new FileInputStream(files[i]);
-            CipherInputStream cis = new CipherInputStream(fis, outCipher);
-            //Unfinished
-        }
-        // Decrypt
-        String cleartextAgainFile = "cleartextAgainRSA.txt";
-
-        cipher.init(Cipher.DECRYPT_MODE, privKey);
-
-        fis = new FileInputStream(ciphertextFile);
-        CipherInputStream cis = new CipherInputStream(fis, cipher);
-        fos = new FileOutputStream(cleartextAgainFile);
-
-        while ((i = cis.read(block)) != -1) {
-            fos.write(block, 0, i);
-        }
-        fos.close();
-    }*/
 
     public static SQLiteDatabase initDataBase(Context context, String password) {
         SQLiteDatabase.loadLibs(context);
         boolean fileExisted = false;
         File databaseFile = new File(context.getApplicationInfo().dataDir + File.separator + "database.db");
         if (databaseFile.exists()) fileExisted = true;
-        //databaseFile.mkdirs();
         SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
         if (!fileExisted) createPasswordTable(database);
         return database;
@@ -482,7 +349,7 @@ public final class Encryptor {
         database.execSQL("DELETE FROM passwordTable WHERE id = " + id + ";");
     }
 
-    public static void deleteDatabase(Context context){
+    public static void deleteDatabase(Context context) {
         File databaseFile = new File(context.getApplicationInfo().dataDir + File.separator + "database.db");
         databaseFile.delete();
     }
@@ -491,70 +358,24 @@ public final class Encryptor {
         database.close();
     }
 
-    /*private static PublicKey getPublicKey() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        if (keyStore.containsAlias(alias)) {
-            KeyStore.Entry entry = keyStore.getEntry(alias, null);
-            PublicKey publicKey = keyStore.getCertificate(alias).getPublicKey();
-            return publicKey;
-        } else return null;
-    }
-
-    private static PrivateKey getPrivateKey() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        KeyStore.Entry entry = keyStore.getEntry(alias, null);
-        PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
-        return privateKey;
-    }
-
-    private static void generateKeyPair() throws Exception {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
-
-        kpg.initialize(new KeyGenParameterSpec.Builder(
-                alias,
-                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
-                .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-                .setKeySize(2048)
-                .build());
-
-        KeyPair keyPair = kpg.generateKeyPair();
-    }
-
-    private static void deleteKeyPair() {
-        try {
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-            keyStore.deleteEntry(alias);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    public static byte[] RSAEncrypt(final String plain) throws Exception {
-        if(publicKey == null || privateKey == null) {
+    public static byte[] rsaencrypt(final String plain) throws Exception {
+        if (publicKey == null || privateKey == null) {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
             KeyPair kp = kpg.genKeyPair();
             publicKey = kp.getPublic();
             privateKey = kp.getPrivate();
         }
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(plain.getBytes());
-        //System.out.println("EEncrypted?????" + new String(org.apache.commons.codec.binary.Hex.encodeHex(encryptedBytes)));
-        return encryptedBytes;
+        return cipher.doFinal(plain.getBytes());
     }
 
-    public static String RSADecrypt(final byte[] encryptedBytes) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA");
+    public static String rsadecrypt(final byte[] encryptedBytes) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-        String decrypted = new String(decryptedBytes);
-        //System.out.println("DDecrypted?????" + decrypted);
-        return decrypted;
+        return new String(decryptedBytes);
     }
     //endregion
 }

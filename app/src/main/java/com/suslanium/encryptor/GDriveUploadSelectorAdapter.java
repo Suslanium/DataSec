@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
@@ -119,7 +120,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                         for (int i = 0; i < files.length; i++) {
                                             paths.add(files[i].getPath());
                                         }
-                                        ArrayList<String> sorted = sortFiles(paths);
+                                        List<String> sorted = sortFiles(paths);
                                         ArrayList<File> filesSorted = new ArrayList<>();
                                         for (int i = 0; i < sorted.size(); i++) {
                                             filesSorted.add(new File(sorted.get(i)));

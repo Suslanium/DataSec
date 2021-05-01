@@ -68,7 +68,7 @@ public class passwordAdd extends AppCompatActivity {
                             try {
                                 Intent intent = getIntent();
                                 byte[] passEnc = intent.getByteArrayExtra("pass");
-                                String password = Encryptor.RSADecrypt(passEnc);
+                                String password = Encryptor.rsadecrypt(passEnc);
                                 SQLiteDatabase database = Encryptor.initDataBase(passwordAdd.this, password);
                                 Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString());
                                 Encryptor.closeDataBase(database);

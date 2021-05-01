@@ -50,8 +50,8 @@ public class Explorer extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if (dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
+        boolean darkTheme = preferences.getBoolean("dark_Theme", true);
+        if (darkTheme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
         else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
         super.onCreate(savedInstanceState);
         intent = getIntent();
@@ -81,54 +81,6 @@ public class Explorer extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                /*drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
-                    @Override
-                    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) { }
-
-                    @Override
-                    public void onDrawerOpened(@NonNull View drawerView) { }
-
-                    @Override
-                    public void onDrawerClosed(@NonNull View drawerView) {
-                        switch (item.getItemId()){
-                            case R.id.nav_explorer:
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.nav_host_fragment, new HomeFragment())
-                                        .addToBackStack(null)
-                                        .commit();
-                                break;
-                            case R.id.nav_datavault:
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.nav_host_fragment, new GalleryFragment())
-                                        .addToBackStack(null)
-                                        .commit();
-                                break;
-                            case R.id.nav_keyexchange:
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.nav_host_fragment, new SlideshowFragment())
-                                        .addToBackStack(null)
-                                        .commit();
-                                break;
-                            case R.id.nav_messagecrypt:
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.nav_host_fragment, new MessageFragment())
-                                        .addToBackStack(null)
-                                        .commit();
-                                 break;
-                            case R.id.nav_settings:
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.nav_host_fragment, new SettingsFragment())
-                                        .addToBackStack(null)
-                                        .commit();
-                                break;
-                        }
-                    }
-
-                    @Override
-                    public void onDrawerStateChanged(int newState) { }
-                });
-                drawer.closeDrawer(GravityCompat.START);
-                return true;*/
                 int millis = 400;
                 int itemID = item.getItemId();
                 View navHost = findViewById(R.id.nav_host_fragment);
@@ -148,7 +100,6 @@ public class Explorer extends AppCompatActivity {
                         switch (itemID) {
                             case R.id.nav_explorer:
                                 if (!explorerVisible) navController.navigate(R.id.nav_explorer);
-                                //Log.d("Call", getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount() - 1).getName());
                                 break;
                             case R.id.nav_datavault:
                                 if (!passwordVaultVisible)
@@ -163,6 +114,8 @@ public class Explorer extends AppCompatActivity {
                                 break;
                             case R.id.nav_settings:
                                 if (!settingsVisible) navController.navigate(R.id.nav_settings);
+                                break;
+                            default:
                                 break;
                         }
                         navHost.setVisibility(View.VISIBLE);
