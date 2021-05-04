@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/ubuntu_medium"
         android:singleLine="true"
-        android:text="/storage/emulated/0/Download//////////////"
+        android:text="/path/to/current/folder"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/freeSpace"
@@ -124,7 +124,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.41000003"
+        app:layout_constraintVertical_bias="0.39"
         tools:visibility="invisible" />
 
     <ProgressBar
@@ -137,7 +137,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.45"
         tools:visibility="invisible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

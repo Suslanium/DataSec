@@ -647,13 +647,14 @@ public class EncryptorService extends Service {
                         SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
                         String newPass = Encryptor.rsadecrypt(newPassEnc);
                         HashMap<Integer, ArrayList<String>> data = Encryptor.readPasswordData(database);
+                        HashMap<Integer, byte[]> icons = Encryptor.readPasswordIcons(database);
                         Encryptor.closeDataBase(database);
                         Encryptor.deleteDatabase(getBaseContext());
                         if (!data.isEmpty()) {
                             SQLiteDatabase newDatabase = Encryptor.initDataBase(getBaseContext(), newPass);
                             for (int i = 1; i <= data.size(); i++) {
                                 if (data.get(i) != null)
-                                    Encryptor.insertDataIntoPasswordTable(newDatabase, data.get(i).get(0), data.get(i).get(1), data.get(i).get(2));
+                                    Encryptor.insertDataIntoPasswordTable(newDatabase, data.get(i).get(0), data.get(i).get(1), data.get(i).get(2), icons.get(i), data.get(i).get(3),data.get(i).get(4));
                             }
                             Encryptor.closeDataBase(newDatabase);
                         }

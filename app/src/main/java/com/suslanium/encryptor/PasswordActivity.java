@@ -53,8 +53,7 @@ public class PasswordActivity extends AppCompatActivity {
             Intent intent = new Intent();
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            SharedPreferences editor1 = PreferenceManager.getDefaultSharedPreferences(this);
-            if(!editor1.getBoolean("changingPassword", false)) {
+            if(!EncryptorService.changingPassword) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (!pm.isIgnoringBatteryOptimizations(packageName)) {
                         intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);

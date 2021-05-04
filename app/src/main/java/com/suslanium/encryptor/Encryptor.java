@@ -1,5 +1,6 @@
 package com.suslanium.encryptor;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -24,6 +25,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -320,12 +322,23 @@ public final class Encryptor {
                 "\t\t\tprimary key autoincrement,\n" +
                 "\tname TEXT not null,\n" +
                 "\tlogin TEXT,\n" +
-                "\tpass TEXT\n" +
+                "\tpass TEXT,\n" +
+                "\timage BLOB,\n" +
+                "\twebsite TEXT,\n" +
+                "\tnotes TEXT\n" +
                 ");");
     }
 
-    public static void insertDataIntoPasswordTable(SQLiteDatabase database, String name, String login, String password) {
-        database.execSQL("INSERT INTO passwordTable (id, name, login, pass) VALUES ($next_id, '" + name + "', '" + login + "', '" + password + "');");
+    public static void insertDataIntoPasswordTable(SQLiteDatabase database, String name, String login, String password, byte[] image, String website, String notes) {
+        //database.execSQL("INSERT INTO passwordTable (id, name, login, pass, image) VALUES ($next_id, '" + name + "', '" + login + "', '" + password + "', '"+ image +"');");
+        ContentValues cv = new ContentValues();
+        cv.put("name", name);
+        cv.put("login", login);
+        cv.put("pass", password);
+        cv.put("image", image);
+        cv.put("website", website);
+        cv.put("notes", notes);
+        database.insert("passwordTable", null, cv);
     }
 
     public static HashMap<Integer, ArrayList<String>> readPasswordData(SQLiteDatabase database) {
@@ -337,6 +350,8 @@ public final class Encryptor {
                 strings.add(cursor.getString(1));
                 strings.add(cursor.getString(2));
                 strings.add(cursor.getString(3));
+                strings.add(cursor.getString(5));
+                strings.add(cursor.getString(6));
                 Integer id = cursor.getInt(0);
                 table.put(id, strings);
             } while (cursor.moveToNext());
@@ -345,8 +360,29 @@ public final class Encryptor {
         return table;
     }
 
-    public static void updateDataIntoPasswordTable(SQLiteDatabase database, int id, String name, String login, String password) {
-        database.execSQL("UPDATE passwordTable SET name = '" + name + "', login = '" + login + "', pass = '" + password + "' WHERE id = " + id + ";");
+    public static HashMap<Integer, byte[]> readPasswordIcons(SQLiteDatabase database){
+        HashMap<Integer, byte[]> table = new HashMap<>();
+        Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
+        if (cursor.moveToFirst()) {
+            do {
+                Integer id = cursor.getInt(0);
+                table.put(id, cursor.getBlob(4));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return table;
+    }
+
+    public static void updateDataIntoPasswordTable(SQLiteDatabase database, int id, String name, String login, String password, byte[] image, String website, String notes) {
+        //database.execSQL("UPDATE passwordTable SET name = '" + name + "', login = '" + login + "', pass = '" + password + "', image = '"+ image + "' WHERE id = " + id + ";");
+        ContentValues cv = new ContentValues();
+        cv.put("name", name);
+        cv.put("login", login);
+        cv.put("pass", password);
+        cv.put("image", image);
+        cv.put("website", website);
+        cv.put("notes", notes);
+        database.update("passwordTable", cv, "id = ?", new String[]{String.valueOf(id)});
     }
 
     public static void deleteDataFromPasswordTable(SQLiteDatabase database, int id) {

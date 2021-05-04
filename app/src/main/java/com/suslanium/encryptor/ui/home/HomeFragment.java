@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +22,6 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Adapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -57,8 +56,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
@@ -530,6 +527,98 @@ public class HomeFragment extends Fragment {
         newFolder.setOnClickListener(newFolderListener);
         Drawable finalCancelDrawable = cancelDrawable;
         Drawable finalCreateDrawable = createDrawable;
+        View.OnClickListener searchListener = v -> {
+            String fileName = ((Explorer) requireActivity()).searchBar.getText().toString();
+            if (!fileName.matches("")) {
+                b1.setEnabled(false);
+                newFolder.setEnabled(false);
+                adapter.isSearching = true;
+                if (((Explorer) requireActivity()).searchBar != null) {
+                    t.removeView(((Explorer) requireActivity()).searchBar);
+                    ((Explorer) requireActivity()).searchBar = null;
+                    final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                Animation fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_out);
+                Animation fadeOut = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in);
+                fadeOut.setDuration(200);
+                fadeIn.setDuration(200);
+                fadeIn.setFillAfter(true);
+                search[0].setText("Searching...");
+                fileView.startAnimation(fadeIn);
+                fileView.setEnabled(false);
+                search[0] = requireActivity().findViewById(R.id.searchText);
+                bar[0] = requireActivity().findViewById(R.id.progressBarSearch);
+                search[0].setVisibility(View.VISIBLE);
+                bar[0].setVisibility(View.VISIBLE);
+                search[0].startAnimation(fadeOut);
+                bar[0].startAnimation(fadeOut);
+                String path = adapter.getPath();
+                Thread thread = new Thread(() -> {
+                    ArrayList<File> searchResult = searchFiles(path, fileName);
+                    while (!fadeOut.hasEnded()) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    if (searchResult.isEmpty()) {
+                        requireActivity().runOnUiThread(() -> {
+                            try {
+                                fileView.startAnimation(fadeOut);
+                                search[0].startAnimation(fadeIn);
+                                bar[0].startAnimation(fadeIn);
+                                Snackbar.make(v, "No results", Snackbar.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    } else {
+                        ArrayList<String> fileNamesResult = new ArrayList<>();
+                        for (int i = 0; i < searchResult.size(); i++) {
+                            fileNamesResult.add(searchResult.get(i).getPath().substring(adapter.getPath().length() + 1));
+                        }
+                        fileList.clear();
+                        fileList.addAll(fileNamesResult);
+                        requireActivity().runOnUiThread(() -> {
+                            adapter.setNewData(adapter.getPath(), fileList);
+                            fileView.scrollToPosition(0);
+                            fileView.startAnimation(fadeOut);
+                            search[0].startAnimation(fadeIn);
+                            bar[0].startAnimation(fadeIn);
+                        });
+                    }
+                    while (!fadeIn.hasEnded()) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    requireActivity().runOnUiThread(() -> {
+                        search[0].setVisibility(View.INVISIBLE);
+                        bar[0].setVisibility(View.INVISIBLE);
+                        adapter.isSearching = false;
+                        adapter.setSearchEnded();
+                        b1.setEnabled(true);
+                        newFolder.setImageDrawable(finalCancelDrawable);
+                        newFolder.setEnabled(true);
+                        newFolder.setOnClickListener(v13 -> {
+                            File parent = new File(adapter.getPath());
+                            updateUI(adapter, fileView, parent);
+                            newFolder.setImageDrawable(finalCreateDrawable);
+                            newFolder.setOnClickListener(newFolderListener);
+                        });
+                    });
+                });
+                thread.start();
+            } else {
+                Snackbar.make(v, "Please enter file name", Snackbar.LENGTH_LONG).show();
+            }
+        };
         b1.setOnClickListener(v -> {
             if (((Explorer) requireActivity()).searchBar == null) {
                 EditText layout = new EditText(requireContext());
@@ -541,101 +630,20 @@ public class HomeFragment extends Fragment {
                 layout.setSingleLine(true);
                 t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layout.setFocusableInTouchMode(true);
+                layout.setOnKeyListener((v14, keyCode, event) -> {
+                    if(event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                        searchListener.onClick(v14);
+                        return true;
+                    }
+                    return false;
+                });
                 layout.requestFocus();
                 final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
                 ((Explorer) requireActivity()).searchBar = layout;
             } else {
                 //Search
-                String fileName = ((Explorer) requireActivity()).searchBar.getText().toString();
-                if (!fileName.matches("")) {
-                    b1.setEnabled(false);
-                    newFolder.setEnabled(false);
-                    adapter.isSearching = true;
-                    if (((Explorer) requireActivity()).searchBar != null) {
-                        t.removeView(((Explorer) requireActivity()).searchBar);
-                        ((Explorer) requireActivity()).searchBar = null;
-                        final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    }
-                    Animation fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_out);
-                    Animation fadeOut = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in);
-                    fadeOut.setDuration(200);
-                    fadeIn.setDuration(200);
-                    fadeIn.setFillAfter(true);
-                    search[0].setText("Searching...");
-                    fileView.startAnimation(fadeIn);
-                    fileView.setEnabled(false);
-                    search[0] = requireActivity().findViewById(R.id.searchText);
-                    bar[0] = requireActivity().findViewById(R.id.progressBarSearch);
-                    search[0].setVisibility(View.VISIBLE);
-                    bar[0].setVisibility(View.VISIBLE);
-                    search[0].startAnimation(fadeOut);
-                    bar[0].startAnimation(fadeOut);
-                    String path = adapter.getPath();
-                    Thread thread = new Thread(() -> {
-                        ArrayList<File> searchResult = searchFiles(path, fileName);
-                        while (!fadeOut.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                        if (searchResult.isEmpty()) {
-                            requireActivity().runOnUiThread(() -> {
-                                try {
-                                    fileView.startAnimation(fadeOut);
-                                    search[0].startAnimation(fadeIn);
-                                    bar[0].startAnimation(fadeIn);
-                                    Snackbar.make(v, "No results", Snackbar.LENGTH_LONG).show();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        } else {
-                            ArrayList<String> fileNamesResult = new ArrayList<>();
-                            for (int i = 0; i < searchResult.size(); i++) {
-                                fileNamesResult.add(searchResult.get(i).getPath().substring(adapter.getPath().length() + 1));
-                            }
-                            fileList.clear();
-                            fileList.addAll(fileNamesResult);
-                            requireActivity().runOnUiThread(() -> {
-                                adapter.setNewData(adapter.getPath(), fileList);
-                                fileView.scrollToPosition(0);
-                                fileView.startAnimation(fadeOut);
-                                search[0].startAnimation(fadeIn);
-                                bar[0].startAnimation(fadeIn);
-                            });
-                        }
-                        while (!fadeIn.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                        requireActivity().runOnUiThread(() -> {
-                            search[0].setVisibility(View.INVISIBLE);
-                            bar[0].setVisibility(View.INVISIBLE);
-                            adapter.isSearching = false;
-                            b1.setEnabled(true);
-                            newFolder.setImageDrawable(finalCancelDrawable);
-                            newFolder.setEnabled(true);
-                            newFolder.setOnClickListener(v13 -> {
-                                File parent = new File(adapter.getPath());
-                                updateUI(adapter, fileView, parent);
-                                newFolder.setImageDrawable(finalCreateDrawable);
-                                newFolder.setOnClickListener(newFolderListener);
-                            });
-                        });
-                    });
-                    thread.start();
-                } else {
-                    Snackbar.make(v, "Please enter file name", Snackbar.LENGTH_LONG).show();
-                }
+                searchListener.onClick(v);
             }
         });
     }
@@ -711,7 +719,7 @@ public class HomeFragment extends Fragment {
         return newFolder.getVisibility();
     }
 
-    private void fadeIn(@NonNull View view) {
+    public static void fadeIn(@NonNull View view) {
         view.animate()
                 .alpha(0f)
                 .setDuration(200)
@@ -724,13 +732,19 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    public void fadeOut(@NonNull View view) {
+    public static void fadeOut(@NonNull View view) {
         view.setVisibility(View.VISIBLE);
         view.bringToFront();
         view.animate()
                 .alpha(1f)
                 .setDuration(200)
-                .setListener(null);
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        view.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     private void shareFiles(ArrayList<Uri> filePaths) {
