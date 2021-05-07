@@ -30,12 +30,10 @@
                 android:resource="@xml/filepaths" />
         </provider>
 
-        <activity android:name=".YandexDiskSignIn" />
         <activity android:name=".GoogleDriveUploadSelector"
-            android:theme="@style/Theme.MaterialComponents"/>
+            android:theme="@style/Theme.MaterialComponents.NoActionBar"/>
         <activity android:name=".GoogleDriveManager"
             android:theme="@style/Theme.MaterialComponents"/>
-        <activity android:name=".oneDriveActivity" />
         <activity android:name=".passwordChange" />
         <activity android:name=".passwordAdd" />
         <activity

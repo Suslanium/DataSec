@@ -3,22 +3,34 @@ package com.suslanium.encryptor;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PathEffect;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.webkit.URLUtil;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -36,6 +48,7 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import static com.suslanium.encryptor.passwordAdd.PICK_IMAGE;
+import static com.suslanium.encryptor.passwordAdd.calculatePasswordStrength;
 
 public class passwordChange extends AppCompatActivity {
     private String service = "";
@@ -51,6 +64,7 @@ public class passwordChange extends AppCompatActivity {
     private TextInputEditText website;
     private TextInputEditText notes;
     private FloatingActionButton cancel;
+    private int colorFrom = Color.parseColor("#FF0000");
 
 
     @Override
@@ -244,6 +258,117 @@ public class passwordChange extends AppCompatActivity {
                 Snackbar.make(v, "Note copied to clipboard!", Snackbar.LENGTH_LONG).show();
             }
         });
+        ProgressBar strength = findViewById(R.id.passwordStrengthBar2);
+        strength.setMax(1000);
+        strength.setProgressTintList(ColorStateList.valueOf(colorFrom));
+        pass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                int passStrength = calculatePasswordStrength(s.toString());
+                setPassBarProgress(passStrength * 100, strength);
+                if (passStrength >= 8) {
+                    passLayout.setHelperTextEnabled(true);
+                    passLayout.setHelperText("Strong password");
+                    setPassBarColor(Color.parseColor("#00FF00"), strength);
+                } else if (passStrength >= 5) {
+                    passLayout.setHelperTextEnabled(true);
+                    passLayout.setHelperText("Medium password");
+                    setPassBarColor(Color.parseColor("#FFFF00"), strength);
+                } else if (passStrength <= 3) {
+                    passLayout.setHelperTextEnabled(true);
+                    passLayout.setHelperText("Weak password");
+                    setPassBarColor(Color.parseColor("#FF0000"), strength);
+                }
+            }
+        });
+        Button generatePassword = findViewById(R.id.generatePassword2);
+        generatePassword.setOnClickListener(v -> {
+            final EditText input = new EditText(passwordChange.this);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            input.setSingleLine(true);
+            input.setHint("Password length");
+            final String[] passwordAlphabetMode = {""};
+            CharSequence[] items = new CharSequence[]{"Uppercase letters", "Lowercase letters", "Numbers", "Special symbols"};
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordChange.this, R.style.MaterialAlertDialog_rounded)
+                    .setTitle("Generate password")
+                    .setMultiChoiceItems(items, null, (dialog, which, isChecked) -> {
+                        switch (which){
+                            case 0:
+                                if(isChecked){
+                                    if(!passwordAlphabetMode[0].contains("U")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0] +"U";
+                                    }
+                                } else {
+                                    if(passwordAlphabetMode[0].contains("U")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0].replace("U", "");
+                                    }
+                                }
+                                break;
+                            case 1:
+                                if(isChecked){
+                                    if(!passwordAlphabetMode[0].contains("L")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0] +"L";
+                                    }
+                                } else {
+                                    if(passwordAlphabetMode[0].contains("L")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0].replace("L", "");
+                                    }
+                                }
+                                break;
+                            case 2:
+                                if(isChecked){
+                                    if(!passwordAlphabetMode[0].contains("N")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0] +"N";
+                                    }
+                                } else {
+                                    if(passwordAlphabetMode[0].contains("N")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0].replace("N", "");
+                                    }
+                                }
+                                break;
+                            case 3:
+                                if(isChecked){
+                                    if(!passwordAlphabetMode[0].contains("S")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0] +"S";
+                                    }
+                                } else {
+                                    if(passwordAlphabetMode[0].contains("S")){
+                                        passwordAlphabetMode[0] = passwordAlphabetMode[0].replace("S", "");
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    })
+                    .setView(input)
+                    .setPositiveButton("Generate", (dialog, which) -> {
+                        try {
+                            String lengthString = input.getText().toString();
+                            if (!lengthString.matches("") && !passwordAlphabetMode[0].matches("")) {
+                                int length = Integer.parseInt(lengthString);
+                                String password = RndPassword.generateRandomPasswordStr(length, passwordAlphabetMode[0]);
+                                pass.setText(password);
+                            } else {
+                                Snackbar.make(v, "Select options for password generation first.", Snackbar.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e){
+                            Snackbar.make(v, "Length is too big.", Snackbar.LENGTH_LONG).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {});
+            builder.show();
+        });
     }
 
     private void onThreadDone(ArrayList<String> strings) {
@@ -262,5 +387,22 @@ public class passwordChange extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         cancel.performClick();
+    }
+
+    private void setPassBarProgress(int progress, ProgressBar strength) {
+        ObjectAnimator animation = ObjectAnimator.ofInt(strength, "progress", strength.getProgress(), progress);
+        animation.setDuration(400);
+        animation.setAutoCancel(true);
+        animation.setInterpolator(new DecelerateInterpolator());
+        animation.start();
+    }
+
+    private void setPassBarColor(int color, ProgressBar strength) {
+        int finalColorFrom = colorFrom;
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), finalColorFrom, color);
+        colorAnimation.setDuration(400);
+        colorAnimation.addUpdateListener(animator -> strength.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue())));
+        colorAnimation.start();
+        colorFrom = color;
     }
 }

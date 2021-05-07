@@ -60,6 +60,20 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/backUpDatabase"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:backgroundTint="#00FFFFFF"
+                android:fontFamily="sans-serif"
+                android:gravity="start|center_vertical"
+                android:letterSpacing="0"
+                android:stateListAnimator="@null"
+                android:text="Backup/restore passwords"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -177,7 +178,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                 });
                             }
                         } else {
-                            Snackbar.make(v, "Access denied(file/folder is being deleted", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(v, "Access denied(file/folder is being deleted)", Snackbar.LENGTH_LONG).show();
                         }
                     }
                     return true;
@@ -231,7 +232,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             int position = getAdapterPosition();
                                             localDataSet = fileNames;
                                             path = filePath;
-                                            fragment.setStoragePath(path);
                                             while (!fadeIn.hasEnded()) {
                                                 try {
                                                     Thread.sleep(10);
@@ -243,6 +243,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
                                             fadeOut.setDuration(200);
                                             activity.runOnUiThread(() -> {
+                                                fragment.setStoragePath(path);
                                                 notifyDataSetChanged();
                                                 recyclerView.scrollToPosition(0);
                                                 recyclerView.startAnimation(fadeOut);

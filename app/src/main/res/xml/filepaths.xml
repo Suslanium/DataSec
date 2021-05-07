@@ -2,4 +2,5 @@
 <paths>
     <external-path path="/" name="provider" />
     <root-path path="/storage/" name="providerSD"/>
+    <files-path name="privateFolderProvider" path="/" />
 </paths>

@@ -398,6 +398,25 @@ public final class Encryptor {
         database.close();
     }
 
+    public static boolean checkDatabase(File databaseFile, String password){
+        try {
+            SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
+            readPasswordData(database);
+            readPasswordIcons(database);
+            database.close();
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        } catch (Error e){
+            return false;
+        }
+    }
+
+    public static SQLiteDatabase openDownloadedTable(File databaseFile, String password){
+        return SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
+    }
+
     public static byte[] rsaencrypt(final String plain) throws Exception {
         if (publicKey == null || privateKey == null) {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
