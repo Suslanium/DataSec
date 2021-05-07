@@ -6,122 +6,134 @@
     android:layout_height="match_parent"
     tools:context=".MessageFragment">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/keyText"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/confirmEncrypt"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plainText"
-        app:layout_constraintVertical_bias="0.3">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/keyEditText"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Key"
-            android:singleLine="true" />
+            android:orientation="vertical" >
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/plainText"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="44dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/plainText"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/plainEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Plain Text"
+                    android:singleLine="true" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/plainEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Plain Text"
-            android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="44dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/cipherText"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plainText"
-        app:layout_constraintVertical_bias="0.7">
+                <ProgressBar
+                    android:id="@+id/encProgressBar"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/cipherEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusable="false"
-            android:hint="Ciphertext"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
+                <Button
+                    android:id="@+id/confirmEncrypt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Encrypt"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="1.0" />
 
-    <Button
-        android:id="@+id/confirmEncrypt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Encrypt"
-        app:layout_constraintBottom_toTopOf="@+id/cipherText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plainText" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/keyText"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0">
 
-    <RadioGroup
-        android:id="@+id/hashGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/confirmEncrypt"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plainText"
-        app:layout_constraintVertical_bias="0.35000002">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/keyEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Key"
+                        android:singleLine="true" />
 
-        <RadioButton
-            android:id="@+id/sha1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SHA-1" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <RadioButton
-            android:id="@+id/sha2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SHA-256" />
+                <RadioGroup
+                    android:id="@+id/hashGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0">
 
-        <RadioButton
-            android:id="@+id/sha3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="SHA-512" />
+                    <RadioButton
+                        android:id="@+id/sha1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="SHA-1" />
 
-        <RadioButton
-            android:id="@+id/md5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="MD5" />
-    </RadioGroup>
+                    <RadioButton
+                        android:id="@+id/sha2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="SHA-256" />
 
-    <ProgressBar
-        android:id="@+id/encProgressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/cipherText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmEncrypt" />
+                    <RadioButton
+                        android:id="@+id/sha3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="SHA-512" />
+
+                    <RadioButton
+                        android:id="@+id/md5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="MD5" />
+                </RadioGroup>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/cipherText"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_marginTop="66dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/cipherEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Ciphertext"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/copyButton"

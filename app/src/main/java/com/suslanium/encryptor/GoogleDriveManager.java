@@ -229,7 +229,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             builder.setPositiveButton("OK", (dialog, which) -> {
                 String name = input.getText().toString();
                 if (!name.equals("") && !name.contains(".")) {
-                    java.io.File file = new java.io.File(getFilesDir() + java.io.File.separator + name);
+                    java.io.File file = new java.io.File(getCacheDir() + java.io.File.separator + name);
                     try {
                         file.createNewFile();
                         file.delete();

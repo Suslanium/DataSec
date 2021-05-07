@@ -80,6 +80,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             //Recaclulate substring end index after changing package name
             storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
         }
+        storagePaths.add(this.getFilesDir().getPath());
         currentStorageName = "Internal Storage";
         currentStoragePath = Environment.getExternalStorageDirectory().getPath();
         calculateFreeSpace(currentStoragePath);
@@ -112,14 +113,29 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 if (pathIterator.hasNext()) {
                     path = pathIterator.next();
                     if (new File(path).canWrite()) {
-                        Snackbar.make(v, "Switched to External Storage " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
-                        currentStorageName = "External Storage " + (pathIterator.previousIndex());
+                        if(path.equals(this.getFilesDir().getPath())){
+                            currentStorageName = "Private Folder";
+                            Snackbar.make(v, "Switched to Private Folder", Snackbar.LENGTH_LONG).show();
+                        } else {
+                            currentStorageName = "External Storage " + (pathIterator.previousIndex());
+                            Snackbar.make(v, "Switched to External Storage " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                        }
                         currentStoragePath = path;
                         setStoragePath(path);
                         calculateFreeSpace(path);
                     } else {
-                        Snackbar.make(v, "Sorry, this app cannot access your external storage due to system restrictions.", Snackbar.LENGTH_LONG).show();
-                        path = pathIterator.previous();
+                        sdcardButton.performClick();
+                        /*while (pathIterator.hasPrevious()) {
+                            pathIterator.previous();
+                        }
+                        path = pathIterator.next();
+                        currentStorageName = "Internal Storage";
+                        currentStoragePath = path;
+                        setStoragePath(path);
+                        calculateFreeSpace(path);
+                        Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();*/
+                        //Snackbar.make(v, "Sorry, this app cannot access your external storage due to system restrictions.", Snackbar.LENGTH_LONG).show();
+                        //path = pathIterator.previous();
                     }
                 } else {
                     while (pathIterator.hasPrevious()) {

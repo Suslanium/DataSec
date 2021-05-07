@@ -315,7 +315,7 @@ public class EncryptorService extends Service {
                             for (String currPath : pathsList) {
                                 File file = new File(currPath);
                                 if (file.isDirectory()) {
-                                    File encdir = new File(getFilesDir() + File.separator + file.getName() + "Enc");
+                                    File encdir = new File(getCacheDir() + File.separator + file.getName() + "Enc");
                                     if (encdir.exists()) {
                                         File[] currNames = encdir.listFiles();
                                         for (int i = 0; i < currNames.length; i++) {
@@ -328,8 +328,8 @@ public class EncryptorService extends Service {
                                         }
                                     }
                                     try {
-                                        Encryptor.encryptFolderAESGCM(file, password, new File(getFilesDir() + File.separator + file.getName() + "Enc"), null);
-                                        encryptedFiles.add(new File(getFilesDir() + File.separator + file.getName() + "Enc"));
+                                        Encryptor.encryptFolderAESGCM(file, password, new File(getCacheDir() + File.separator + file.getName() + "Enc"), null);
+                                        encryptedFiles.add(new File(getCacheDir() + File.separator + file.getName() + "Enc"));
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
@@ -342,10 +342,10 @@ public class EncryptorService extends Service {
                                         errorsCount[0]++;
                                     }
                                 } else {
-                                    new File(getFilesDir() + File.separator + file.getName() + ".enc").delete();
+                                    new File(getCacheDir() + File.separator + file.getName() + ".enc").delete();
                                     try {
-                                        Encryptor.encryptFileAES256(file, password, new File(getFilesDir() + File.separator + file.getName() + ".enc"));
-                                        encryptedFiles.add(new File(getFilesDir() + File.separator + file.getName() + ".enc"));
+                                        Encryptor.encryptFileAES256(file, password, new File(getCacheDir() + File.separator + file.getName() + ".enc"));
+                                        encryptedFiles.add(new File(getCacheDir() + File.separator + file.getName() + ".enc"));
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
@@ -859,6 +859,7 @@ public class EncryptorService extends Service {
                                                 }
                                                 Encryptor.closeDataBase(database);
                                             }
+                                            toDownload.delete();
                                         }
                                     } else {
                                         toDownload.delete();
@@ -943,9 +944,7 @@ public class EncryptorService extends Service {
                     if (original.canRead() && original.canWrite()) {
                         try {
                             copied.getParentFile().mkdirs();
-                        } catch (Exception ignored) {
-
-                        }
+                        } catch (Exception ignored) { }
                         int errorCountBefore = errorCount;
                         try (InputStream in = new BufferedInputStream(new FileInputStream(original)); OutputStream out = new BufferedOutputStream(new FileOutputStream(copied))) {
                             byte[] buffer = new byte[256 * 1024];

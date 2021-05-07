@@ -51,6 +51,8 @@ import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 
 public class passwordAdd extends AppCompatActivity {
@@ -130,6 +132,22 @@ public class passwordAdd extends AppCompatActivity {
                         byte[] passEnc = intent.getByteArrayExtra("pass");
                         String password = Encryptor.rsadecrypt(passEnc);
                         SQLiteDatabase database = Encryptor.initDataBase(passwordAdd.this, password);
+                        if(image == null){
+                            try {
+                                URL imageURL = new URL("http://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
+                                HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
+                                connection.setDoInput(true);
+                                connection.connect();
+                                Bitmap imageBitmap = BitmapFactory.decodeStream(connection.getInputStream());
+                                Bitmap thumbnail = Bitmap.createScaledBitmap(imageBitmap, 256,256, false);
+                                ByteBuffer byteBuffer = ByteBuffer.allocate(thumbnail.getByteCount());
+                                thumbnail.copyPixelsToBuffer(byteBuffer);
+                                image = byteBuffer.array();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                image = null;
+                            }
+                        }
                         Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString());
                         Encryptor.closeDataBase(database);
                         finish();

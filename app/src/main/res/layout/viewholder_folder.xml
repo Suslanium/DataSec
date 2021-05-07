@@ -5,6 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="100dp">
 
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="5dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/cardView3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/list_selector_background" />
+
     <TextView
         android:id="@+id/modDate"
         android:layout_width="wrap_content"
@@ -13,9 +24,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/checkBoxButton"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/fileImage"
+        app:layout_constraintStart_toEndOf="@+id/imageView4"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.75" />
+        app:layout_constraintVertical_bias="0.65999997" />
 
     <Button
         android:id="@+id/checkBoxButton"
@@ -39,19 +50,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/fileImage"
-        android:layout_width="70dp"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/list_selector_background" />
-
     <TextView
         android:id="@+id/fileName"
         android:layout_width="0dp"
@@ -62,9 +60,9 @@
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/checkBoxButton"
-        app:layout_constraintStart_toEndOf="@+id/fileImage"
+        app:layout_constraintStart_toEndOf="@+id/imageView4"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintVertical_bias="0.16000003" />
 
     <CheckBox
         android:id="@+id/fileCheckbox"
@@ -88,19 +86,43 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/fileCheckbox"
         app:layout_constraintHorizontal_bias="0.9"
-        app:layout_constraintStart_toEndOf="@+id/fileImage"
+        app:layout_constraintStart_toEndOf="@+id/cardView3"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.75" />
+        app:layout_constraintVertical_bias="0.65999997" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView3"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#00FFFFFF"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:cardMaxElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.02"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35000002">
+
+        <ImageView
+            android:id="@+id/fileImage"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@android:drawable/list_selector_background" />
+    </androidx.cardview.widget.CardView>
 
     <ImageView
         android:id="@+id/isEncrypted"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        app:layout_constraintBottom_toBottomOf="@+id/fileImage"
-        app:layout_constraintEnd_toEndOf="@+id/fileImage"
+        app:layout_constraintBottom_toBottomOf="@+id/cardView3"
+        app:layout_constraintEnd_toEndOf="@+id/cardView3"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/fileImage"
+        app:layout_constraintTop_toTopOf="@+id/cardView3"
         app:layout_constraintVertical_bias="0.8"
         app:srcCompat="@drawable/encrypted" />
 
