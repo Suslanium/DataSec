@@ -398,8 +398,9 @@ public final class Encryptor {
         database.close();
     }
 
-    public static boolean checkDatabase(File databaseFile, String password){
+    public static boolean checkDatabase(File databaseFile, String password, Context context){
         try {
+            SQLiteDatabase.loadLibs(context);
             SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
             readPasswordData(database);
             readPasswordIcons(database);
@@ -409,11 +410,13 @@ public final class Encryptor {
             e.printStackTrace();
             return false;
         } catch (Error e){
+            e.printStackTrace();
             return false;
         }
     }
 
-    public static SQLiteDatabase openDownloadedTable(File databaseFile, String password){
+    public static SQLiteDatabase openDownloadedTable(File databaseFile, String password, Context context){
+        SQLiteDatabase.loadLibs(context);
         return SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
     }
 

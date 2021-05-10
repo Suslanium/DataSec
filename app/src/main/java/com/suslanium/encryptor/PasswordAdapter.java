@@ -21,6 +21,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
 
     private ArrayList<String> localDataSet;
     private ArrayList<Integer> localids;
+    private ArrayList<String> localLogins;
     private Intent intent;
     private ArrayList<Bitmap> icons = new ArrayList<>();
     private HashMap<Integer, ViewHolder> holders = new HashMap<>();
@@ -36,6 +37,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         protected int position = 0;
         protected Intent main_intent;
         private final ImageView iconView;
+        private final TextView loginView;
 
         public ViewHolder(View view) {
             super(view);
@@ -48,10 +50,15 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
 
             textView = view.findViewById(R.id.serviceName);
             iconView = view.findViewById(R.id.serviceIcon);
+            loginView = view.findViewById(R.id.loginText);
         }
 
         public TextView getTextView() {
             return textView;
+        }
+
+        public TextView getLoginView() {
+            return loginView;
         }
 
         public void setIconBitmap(Bitmap bitmap){
@@ -69,9 +76,10 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids, Intent intent, Activity activity) {
+    public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids,ArrayList<String> logins, Intent intent, Activity activity) {
         localDataSet = dataSet;
         localids = ids;
+        localLogins = logins;
         this.intent = intent;
         this.activity = activity;
     }
@@ -93,6 +101,11 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         viewHolder.getTextView().setText(localDataSet.get(position));
+        if(localLogins.get(position) != null){
+            viewHolder.getLoginView().setText(localLogins.get(position));
+        } else {
+            viewHolder.getLoginView().setText("");
+        }
         viewHolder.id = localids.get(position);
         viewHolder.main_intent = intent;
         viewHolder.position = position;
@@ -114,17 +127,18 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         return localDataSet.size();
     }
 
-    public void setNewData(ArrayList<String> dataSet, ArrayList<Integer> ids) {
+    public void setNewData(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins) {
         int position = 0;
         localDataSet = dataSet;
         localids = ids;
+        localLogins = logins;
         holders.clear();
         notifyDataSetChanged();
     }
 
     public void setIcons(ArrayList<Bitmap> icons){
         this.icons = icons;
-        activity.runOnUiThread(() ->setNewData(localDataSet, localids));
+        activity.runOnUiThread(() ->setNewData(localDataSet, localids, localLogins));
     }
 
     public HashMap<Integer, ViewHolder> getHolders(){

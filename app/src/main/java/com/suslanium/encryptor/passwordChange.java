@@ -42,6 +42,8 @@ import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -143,6 +145,22 @@ public class passwordChange extends AppCompatActivity {
                         byte[] passEnc = intent.getByteArrayExtra("pass");
                         String password = Encryptor.rsadecrypt(passEnc);
                         SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
+                        if(image == null){
+                            try {
+                                URL imageURL = new URL("http://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
+                                HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
+                                connection.setDoInput(true);
+                                connection.connect();
+                                Bitmap imageBitmap = BitmapFactory.decodeStream(connection.getInputStream());
+                                Bitmap thumbnail = Bitmap.createScaledBitmap(imageBitmap, 256,256, false);
+                                ByteBuffer byteBuffer = ByteBuffer.allocate(thumbnail.getByteCount());
+                                thumbnail.copyPixelsToBuffer(byteBuffer);
+                                image = byteBuffer.array();
+                            } catch (Exception e){
+                                e.printStackTrace();
+                                image = null;
+                            }
+                        }
                         Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image,website.getText().toString(),notes.getText().toString());
                         Encryptor.closeDataBase(database);
                         finish();
@@ -209,7 +227,7 @@ public class passwordChange extends AppCompatActivity {
             }
         });
         TextInputLayout passLayout = findViewById(R.id.pass1);
-        passLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
+        /*passLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         passLayout.setEndIconDrawable(R.drawable.copysmall);
         passLayout.setEndIconOnClickListener(v -> {
             if(!pass.getText().toString().matches("")) {
@@ -219,7 +237,7 @@ public class passwordChange extends AppCompatActivity {
                 clipboard.setPrimaryClip(clip);
                 Snackbar.make(v, "Password copied to clipboard!", Snackbar.LENGTH_LONG).show();
             }
-        });
+        });*/
         TextInputLayout loginLayout = findViewById(R.id.login1);
         loginLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         loginLayout.setEndIconDrawable(R.drawable.copysmall);

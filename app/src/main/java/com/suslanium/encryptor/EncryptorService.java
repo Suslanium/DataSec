@@ -30,6 +30,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 
+import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 
 
@@ -640,9 +641,63 @@ public class EncryptorService extends Service {
             case "changePass": {
                 byte[] newPassEnc = intent.getByteArrayExtra("newPass");
                 Thread thread = new Thread(() -> {
+                    File toDownload = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
+                    File origin = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
                     try {
                         EncryptorService.changingPassword = true;
                         String password = Encryptor.rsadecrypt(pass);
+                        String newPass = Encryptor.rsadecrypt(newPassEnc);
+                        deleteFiles(toDownload.getPath());
+                        try (InputStream in = new BufferedInputStream(new FileInputStream(origin)); OutputStream out = new BufferedOutputStream(new FileOutputStream(toDownload))) {
+                            byte[] buffer = new byte[256 * 1024];
+                            int lengthRead;
+                            while ((lengthRead = in.read(buffer)) > 0) {
+                                out.write(buffer, 0, lengthRead);
+                                out.flush();
+                            }
+                            in.close();
+                            origin.delete();
+                            SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
+                            SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), newPass);
+                            Cursor cursor = downloadedDatabase.rawQuery("SELECT * FROM passwordTable", null);
+                            if (cursor.moveToFirst()) {
+                                do {
+                                    Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6));
+                                } while (cursor.moveToNext());
+                            }
+                            cursor.close();
+                            Encryptor.closeDataBase(database);
+                            Encryptor.closeDataBase(downloadedDatabase);
+                            toDownload.delete();
+                            MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                    .build();
+                            SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                            SharedPreferences.Editor edit = editor.edit();
+                            edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
+                            edit.apply();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if(toDownload.exists() && !origin.exists()){
+                                try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(origin))) {
+                                    byte[] buffer = new byte[256 * 1024];
+                                    int lengthRead;
+                                    while ((lengthRead = in.read(buffer)) > 0) {
+                                        out.write(buffer, 0, lengthRead);
+                                        out.flush();
+                                    }
+                                    in.close();
+                                    toDownload.delete();
+                                } catch (Exception e0){
+                                    e0.printStackTrace();
+                                }
+                            }
+                        } finally {
+                            EncryptorService.changingPassword = false;
+                            isRunning.remove(true);
+                            if (!isRunning.contains(true)) stopSelf();
+                        }
+                        /*String password = Encryptor.rsadecrypt(pass);
                         SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
                         String newPass = Encryptor.rsadecrypt(newPassEnc);
                         HashMap<Integer, ArrayList<String>> data = Encryptor.readPasswordData(database);
@@ -666,7 +721,7 @@ public class EncryptorService extends Service {
                         edit.apply();
                         EncryptorService.changingPassword = false;
                         isRunning.remove(true);
-                        if (!isRunning.contains(true)) stopSelf();
+                        if (!isRunning.contains(true)) stopSelf();*/
                     } catch (Exception e) {
                         e.printStackTrace();
                         isRunning.remove(true);
@@ -831,7 +886,7 @@ public class EncryptorService extends Service {
                                 }
                                 if (toDownload.exists()) {
                                     String password = Encryptor.rsadecrypt(pass);
-                                    if (Encryptor.checkDatabase(toDownload, password)) {
+                                    if (Encryptor.checkDatabase(toDownload, password, getBaseContext())) {
                                         if(!mergeDatabases) {
                                             Encryptor.deleteDatabase(getBaseContext());
                                             try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db")))) {
@@ -847,8 +902,19 @@ public class EncryptorService extends Service {
                                                 e.printStackTrace();
                                             }
                                         } else {
-                                            SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password);
-                                            HashMap<Integer, ArrayList<String>> passwordData = Encryptor.readPasswordData(downloadedDatabase);
+                                            SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
+                                            SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
+                                            Cursor cursor = downloadedDatabase.rawQuery("SELECT * FROM passwordTable", null);
+                                            if (cursor.moveToFirst()) {
+                                                do {
+                                                    Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6));
+                                                } while (cursor.moveToNext());
+                                            }
+                                            cursor.close();
+                                            Encryptor.closeDataBase(database);
+                                            Encryptor.closeDataBase(downloadedDatabase);
+                                            toDownload.delete();
+                                            /*HashMap<Integer, ArrayList<String>> passwordData = Encryptor.readPasswordData(downloadedDatabase);
                                             HashMap<Integer, byte[]> passwordIcons = Encryptor.readPasswordIcons(downloadedDatabase);
                                             downloadedDatabase.close();
                                             if (!passwordData.isEmpty()) {
@@ -859,7 +925,7 @@ public class EncryptorService extends Service {
                                                 }
                                                 Encryptor.closeDataBase(database);
                                             }
-                                            toDownload.delete();
+                                            toDownload.delete();*/
                                         }
                                     } else {
                                         toDownload.delete();

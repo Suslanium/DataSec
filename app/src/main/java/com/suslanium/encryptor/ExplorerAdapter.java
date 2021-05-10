@@ -358,7 +358,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     Intent intent = new Intent();
                                                     intent.setAction(Intent.ACTION_VIEW);
                                                     intent.setDataAndType(uriForFile, type);
-                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                    //if(type.contains("vnd.android.package-archive")){
+                                                        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    //} else {
+                                                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                    //}
                                                     activity.startActivity(intent);
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -566,9 +570,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         viewHolder.setFile(R.drawable.image);
                     } else if (type.contains("video")) {
                         viewHolder.setFile(R.drawable.video);
-                    } else if (type.contains("x-msdos-program") || type.contains("vnd.android.package-archive")) {
+                    } else if (type.contains("x-msdos-program")) {
                         //EXE
                         viewHolder.setFile(R.drawable.app);
+                    } else if(type.contains("vnd.android.package-archive")){
+                        viewHolder.setFile(R.mipmap.ic_launcher);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
                         viewHolder.setFile(R.drawable.powerpoint);
                     } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {

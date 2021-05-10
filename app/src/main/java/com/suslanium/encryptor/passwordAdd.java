@@ -174,7 +174,7 @@ public class passwordAdd extends AppCompatActivity {
             }
         });
         TextInputLayout passLayout = findViewById(R.id.password);
-        passLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
+        /*passLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         passLayout.setEndIconDrawable(R.drawable.copysmall);
         passLayout.setEndIconOnClickListener(v -> {
             if (!pass.getText().toString().matches("")) {
@@ -184,7 +184,7 @@ public class passwordAdd extends AppCompatActivity {
                 clipboard.setPrimaryClip(clip);
                 Snackbar.make(v, "Password copied to clipboard!", Snackbar.LENGTH_LONG).show();
             }
-        });
+        });*/
         TextInputLayout loginLayout = findViewById(R.id.login);
         loginLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         loginLayout.setEndIconDrawable(R.drawable.copysmall);

@@ -170,12 +170,12 @@ public class GalleryFragment extends Fragment {
         updateView(view);
     }
 
-    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id){
+    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins){
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         if(adapter == null) {
-            adapter = new PasswordAdapter(strings2, id, intent2, requireActivity());
+            adapter = new PasswordAdapter(strings2, id,logins, intent2, requireActivity());
         } else {
-            adapter.setNewData(strings2, id);
+            adapter.setNewData(strings2, id,logins);
         }
         recyclerView.setAdapter(adapter);
         requireActivity().runOnUiThread(() -> {
@@ -209,6 +209,7 @@ public class GalleryFragment extends Fragment {
         fab.setEnabled(false);
         ArrayList<String> strings3 = new ArrayList<>();
         ArrayList<Integer> ids = new ArrayList<>();
+        ArrayList<String> logins = new ArrayList<>();
         Thread thread = new Thread(() -> {
             try {
                 byte[] pass = intent2.getByteArrayExtra("pass");
@@ -220,19 +221,22 @@ public class GalleryFragment extends Fragment {
                 for (Integer i : integers) {
                     ArrayList<String> strings = listHashMap.get(i);
                     String s = strings.get(0);
+                    String l = strings.get(1);
                     if(currentSearchQuery != null && !currentSearchQuery.matches("")) {
                         if(s.contains(currentSearchQuery)){
                             names.put(i,s);
                             strings3.add(s);
+                            logins.add(l);
                             ids.add(i);
                         }
                     } else {
                         names.put(i,s);
                         strings3.add(s);
+                        logins.add(l);
                         ids.add(i);
                     }
                 }
-                requireActivity().runOnUiThread(() -> onThreadDone(strings3, ids));
+                requireActivity().runOnUiThread(() -> onThreadDone(strings3, ids, logins));
                 HashMap<Integer, byte[]> iconsList = Encryptor.readPasswordIcons(database);
                 Set<Integer> integerSet = iconsList.keySet();
                 ArrayList<Bitmap> bitmapArrayList = new ArrayList<>();

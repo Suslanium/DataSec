@@ -9,16 +9,31 @@
     android:gravity="center_vertical">
 
     <TextView
+        android:id="@+id/loginText"
+        android:layout_width="0dp"
+        android:layout_height="25dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center|start"
+        android:text="Login"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/serviceName"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.75" />
+
+    <TextView
         android:id="@+id/serviceName"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="40dp"
         android:fontFamily="sans-serif"
         android:gravity="center|left"
+        android:singleLine="true"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/cardView"
+        app:layout_constraintStart_toEndOf="@+id/imageView5"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3"
         tools:text="Name" />
 
     <androidx.cardview.widget.CardView
@@ -43,5 +58,16 @@
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/managerkey" />
     </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="10dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/cardView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/list_selector_background" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
