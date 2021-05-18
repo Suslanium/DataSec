@@ -49,11 +49,11 @@ public class MessageFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             switch (position+1){
-                case 1:tab.setText("Encrypt");
+                case 1:tab.setText(R.string.encryptMsg);
                 break;
-                case 2:tab.setText("Decrypt");
+                case 2:tab.setText(R.string.decryptMsg);
                 break;
-                case 3:tab.setText("Hash");
+                case 3:tab.setText(R.string.hashMsg);
                 break;
                 default:tab.setText("");
                 break;

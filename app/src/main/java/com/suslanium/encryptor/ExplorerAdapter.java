@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -13,6 +14,7 @@ import java.text.SimpleDateFormat;
 
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -72,6 +74,14 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private static final String ACTIONTYPE = "actionType";
     private static final String INDEX = "index";
     private boolean searchEnded = false;
+    private boolean showPreviews = true;
+    private String B = "B";
+    private String KB = "KB";
+    private String MB = "MB";
+    private String GB = "GB";
+    private String TB = "TB";
+    private String Calc = "Calculating...";
+    private String items = "items";
 
     /**
      * Provide a reference to the type of views that you are using
@@ -130,25 +140,25 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                 input.setSingleLine(true);
                                 input.setText(file.getName());
                                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
-                                        .setTitle("Rename file/folder")
+                                        .setTitle(R.string.renameFileFolder)
                                         .setView(input)
                                         .setCancelable(false)
-                                        .setPositiveButton("Rename", (dialog, which) -> {
+                                        .setPositiveButton(R.string.rename, (dialog, which) -> {
                                         })
-                                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+                                        .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
                                 AlertDialog dialog = builder.create();
                                 dialog.show();
                                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v1 -> {
                                     String newName = input.getText().toString();
                                     String prevName = file.getName();
                                     if (newName.matches("")) {
-                                        Snackbar.make(v1, "Please enter name", Snackbar.LENGTH_LONG).show();
+                                        Snackbar.make(v1, R.string.enterAdapterNameErr, Snackbar.LENGTH_LONG).show();
                                     } else if (newName.contains(File.separator)) {
-                                        Snackbar.make(v1, "Please enter valid name", Snackbar.LENGTH_LONG).show();
+                                        Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
                                     } else if (newName.matches(Pattern.quote(prevName))) {
-                                        Snackbar.make(v1, "Please enter a NEW name", Snackbar.LENGTH_LONG).show();
+                                        Snackbar.make(v1, R.string.enterNewName, Snackbar.LENGTH_LONG).show();
                                     } else if (localDataSet.contains(newName)) {
-                                        Snackbar.make(v1, "File/folder with same name already exists", Snackbar.LENGTH_LONG).show();
+                                        Snackbar.make(v1, R.string.folderExistsErr, Snackbar.LENGTH_LONG).show();
                                     } else {
                                         Thread thread = new Thread(() -> {
                                             try {
@@ -170,7 +180,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                 });
                                             } catch (Exception e) {
                                                 e.printStackTrace();
-                                                activity.runOnUiThread(() -> Snackbar.make(v1, "Please enter valid name", Snackbar.LENGTH_LONG).show());
+                                                activity.runOnUiThread(() -> Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
                                             }
                                         });
                                         thread.start();
@@ -178,7 +188,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                 });
                             }
                         } else {
-                            Snackbar.make(v, "Access denied(file/folder is being deleted)", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(v, R.string.accessDeniedDelete, Snackbar.LENGTH_LONG).show();
                         }
                     }
                     return true;
@@ -210,7 +220,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             List<String> sorted = sortFiles(paths);
                                             ArrayList<File> filesSorted = new ArrayList<>();
                                             for (int i = 0; i < sorted.size(); i++) {
-                                                filesSorted.add(new File(sorted.get(i)));
+                                                File toAdd = new File(sorted.get(i));
+                                                if((fragment.showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                                                    filesSorted.add(toAdd);
+                                                }
                                             }
                                             ArrayList<String> fileNames = new ArrayList<>();
                                             for (int i = 0; i < filesSorted.size(); i++) {
@@ -262,18 +275,18 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                     thread.start();
                                 }
                             } else {
-                                Snackbar.make(v, "Access denied", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(v, R.string.accessDenied, Snackbar.LENGTH_LONG).show();
                             }
                         } else {
                             if (!isDoingFileOperations) {
                                 CharSequence[] items = null;
                                 if (encrypted) {
-                                    items = new CharSequence[]{"Decrypt file"};
+                                    items = new CharSequence[]{activity.getString(R.string.decryptFile)};
                                 } else {
-                                    items = new CharSequence[]{"Encrypt file", "Open file"};
+                                    items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile)};
                                 }
                                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                builder.setTitle("Choose action");
+                                builder.setTitle(R.string.choose);
                                 builder.setItems(items, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -282,10 +295,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                 if (!encrypted) {
                                                     if (new File(filePath + ".enc").exists()) {
                                                         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                                        dialogBuilder.setTitle("Warning");
-                                                        dialogBuilder.setMessage("Encrypted file already exists. Do you want to replace it?");
-                                                        dialogBuilder.setPositiveButton("Yes", (dialog1, which1) -> {
-                                                            Snackbar.make(v, "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                        dialogBuilder.setTitle(R.string.warning);
+                                                        dialogBuilder.setMessage(R.string.encFileExists);
+                                                        dialogBuilder.setPositiveButton(R.string.yes, (dialog1, which1) -> {
+                                                            Snackbar.make(v, R.string.encStarted, Snackbar.LENGTH_LONG).show();
                                                             ArrayList<String> paths = new ArrayList<>();
                                                             paths.add(filePath);
                                                             Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
@@ -297,12 +310,12 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                             ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                         });
-                                                        dialogBuilder.setNegativeButton("No", (dialog12, which12) -> {
+                                                        dialogBuilder.setNegativeButton(R.string.no, (dialog12, which12) -> {
 
                                                         });
                                                         dialogBuilder.show();
                                                     } else {
-                                                        Snackbar.make(v, "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                        Snackbar.make(v, R.string.encStarted, Snackbar.LENGTH_LONG).show();
                                                         ArrayList<String> paths = new ArrayList<>();
                                                         paths.add(filePath);
                                                         Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
@@ -317,10 +330,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                 } else {
                                                     if (new File((filePath).substring(0, (filePath).length() - 4)).exists()) {
                                                         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                                        dialogBuilder.setTitle("Warning");
-                                                        dialogBuilder.setMessage("Decrypted file already exists. Do you want to replace it?");
-                                                        dialogBuilder.setPositiveButton("Yes", (dialog13, which13) -> {
-                                                            Snackbar.make(v, "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                        dialogBuilder.setTitle(R.string.warning);
+                                                        dialogBuilder.setMessage(R.string.decFileExists);
+                                                        dialogBuilder.setPositiveButton(R.string.yes, (dialog13, which13) -> {
+                                                            Snackbar.make(v, R.string.decStarted, Snackbar.LENGTH_LONG).show();
                                                             ArrayList<String> paths = new ArrayList<>();
                                                             paths.add(filePath);
                                                             Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
@@ -332,11 +345,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                             ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                         });
-                                                        dialogBuilder.setNegativeButton("No", (dialog14, which14) -> {
+                                                        dialogBuilder.setNegativeButton(R.string.no, (dialog14, which14) -> {
                                                         });
                                                         dialogBuilder.show();
                                                     } else {
-                                                        Snackbar.make(v, "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                        Snackbar.make(v, R.string.decStarted, Snackbar.LENGTH_LONG).show();
                                                         ArrayList<String> paths = new ArrayList<>();
                                                         paths.add(filePath);
                                                         Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
@@ -366,7 +379,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     activity.startActivity(intent);
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
-                                                    Snackbar.make(v, "Failed to open file", Snackbar.LENGTH_LONG).show();
+                                                    Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
                                                 }
                                                 break;
                                             default:
@@ -378,7 +391,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             }
                         }
                     } else {
-                        Snackbar.make(v, "Access denied(file/folder is being deleted)", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(v, R.string.accessDeniedDelete, Snackbar.LENGTH_LONG).show();
                     }
                     //Move to next folder if clicked element is folder
                 }
@@ -501,6 +514,15 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         service = Executors.newCachedThreadPool();
         this.bottomBar = bottomBar;
         this.fragment = fragment;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext());
+        showPreviews = preferences.getBoolean("showPreviews", true);
+        B = activity.getString(R.string.b);
+        KB = activity.getString(R.string.kb);
+        MB = activity.getString(R.string.mb);
+        GB = activity.getString(R.string.gb);
+        TB = activity.getString(R.string.tb);
+        Calc = activity.getString(R.string.calculating);
+        items = activity.getString(R.string.items);
     }
 
     // Create new views (invoked by the layout manager)
@@ -598,30 +620,30 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 activity.runOnUiThread(() -> {
                     switch (finalUnit) {
                         case 0:
-                            viewHolder.getSizeView().setText(finalLength + " B");
+                            viewHolder.getSizeView().setText(finalLength + " "+B);
                             //B
                             break;
                         case 1:
-                            viewHolder.getSizeView().setText(finalLength + " KB");
+                            viewHolder.getSizeView().setText(finalLength + " "+KB);
                             //KB
                             break;
                         case 2:
-                            viewHolder.getSizeView().setText(finalLength + " MB");
+                            viewHolder.getSizeView().setText(finalLength + " "+MB);
                             //MB
                             break;
                         case 3:
-                            viewHolder.getSizeView().setText(finalLength + " GB");
+                            viewHolder.getSizeView().setText(finalLength + " "+GB);
                             //GB
                             break;
                         case 4:
-                            viewHolder.getSizeView().setText(finalLength + " TB");
+                            viewHolder.getSizeView().setText(finalLength + " "+TB);
                             //TB
                             break;
                         default:
                             break;
                     }
                 });
-                if (type.contains("image")) {
+                if (type.contains("image") && showPreviews) {
                     viewHolder.loadingCount++;
                     final int loadingNum = viewHolder.loadingCount;
                     while (thumbnailLoadingCount > 0) {
@@ -649,10 +671,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             } else {
                 activity.runOnUiThread(() -> {
                     viewHolder.setFile(R.drawable.folder);
-                    viewHolder.getSizeView().setText("Calculating...");
+                    viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;
-                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " items"));
+                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " "+items));
             }
         });
     }

@@ -87,7 +87,7 @@ public class DriveServiceHelper {
             do {
                 result = mDriveService.files().list()
                         .setSpaces(APPDATAFOLDER)
-                        .setFields("nextPageToken, files(id, name)")
+                        .setFields("nextPageToken, files(id, name, mimeType)")
                         .setPageToken(pageToken)
                         .setQ("'" + mDriveService.files().get(APPDATAFOLDER).setFields("id").execute().getId() + "' in parents")
                         .execute();
@@ -98,7 +98,7 @@ public class DriveServiceHelper {
             do {
                 result = mDriveService.files().list()
                         .setSpaces(APPDATAFOLDER)
-                        .setFields("nextPageToken, files(id, name)")
+                        .setFields("nextPageToken, files(id, name, mimeType)")
                         .setPageToken(pageToken)
                         .setQ("'" + folderID + "' in parents")
                         .execute();

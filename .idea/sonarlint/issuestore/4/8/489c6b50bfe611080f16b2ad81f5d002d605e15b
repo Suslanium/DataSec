@@ -1,21 +1,31 @@
 
+d
+java:S2184Ð	"HCast one of the operands of this multiplication operation to a "double".(ÕÊè—ûÿÿÿÿ
+R
+java:S1066¹"/Merge this if statement with the enclosing one.(ï˜ëëûÿÿÿÿ8ÂŸ½¤—/
 p
-java:S3776Y"SRefactor this method to reduce its Cognitive Complexity from 259 to the 15 allowed.(¡Œþø8ôã«»’/
-D
-java:S1481×"&Remove this unused "j" local variable.(èŽê»8ã¯Ý»’/
-v
-java:S1104>"TMake upFolder a static final constant or non-public and provide accessors if needed.(Ïä¹Çùÿÿÿÿ8ôã«»’/
-v
-java:S3776Æ"SRefactor this method to reduce its Cognitive Complexity from 167 to the 15 allowed.(é³™ñøÿÿÿÿ8ã¯Ý»’/
-u
-java:S3776á"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(™ÜÚýþÿÿÿÿ8ã¯Ý»’/
-k
-java:S1192¶"HDefine a constant instead of duplicating this literal "Warning" 5 times.(™õ¤°úÿÿÿÿ8’¾¾»’/
+java:S1450N"[Remove the "storagePaths" field and declare it as a local variable in the relevant methods.(š ñQ
+L
+java:S1066 	"/Merge this if statement with the enclosing one.(ð¡Ú<8íÂ¢¦—/
+p
+java:S3776”	"RRefactor this method to reduce its Cognitive Complexity from 22 to the 15 allowed.(›à˜¹8Æ± ¦—/
+C
+java:S1602ê",Remove useless curly braces around statement(¹ôç“
 o
-java:S3776»"RRefactor this method to reduce its Cognitive Complexity from 35 to the 15 allowed.(ÀŒÆy8ã¯Ý»’/
-K
-java:S11289".Remove this unused import 'java.util.Objects'.(¼¸õ›8™¯µ»’/
-P
-java:S1128"3Remove this unused import 'android.widget.Adapter'.(Ùƒùê8ðÓÚ»’/
-
-java:S1192³"\Define a constant instead of duplicating this literal "Please select files/folders" 3 times.(ªÂ¾¯ýÿÿÿÿ8’¾¾»’/
+java:S3776•"SRefactor this method to reduce its Cognitive Complexity from 167 to the 15 allowed.(é³™ñøÿÿÿÿ
+i
+java:S3776h"SRefactor this method to reduce its Cognitive Complexity from 278 to the 15 allowed.(¡Œþø
+h
+java:S3776Š"RRefactor this method to reduce its Cognitive Complexity from 35 to the 15 allowed.(ÀŒÆy
+Y
+java:S1117Ð	"=Rename "freeSpace" which hides the field declared at line 77.(ÕÊè—ûÿÿÿÿ
+L
+java:S1066›	"/Merge this if statement with the enclosing one.(ð¡Ú<8ƒ§ž¦—/
+d
+java:S1192Ø"HDefine a constant instead of duplicating this literal "Warning" 5 times.(™õ¤°úÿÿÿÿ
+x
+java:S1192Õ"\Define a constant instead of duplicating this literal "Please select files/folders" 3 times.(ªÂ¾¯ýÿÿÿÿ
+i
+java:S11284"NRemove this unused import 'com.suslanium.encryptor.GoogleDriveUploadSelector'.(Àðþ·ýÿÿÿÿ
+n
+java:S3776¤"RRefactor this method to reduce its Cognitive Complexity from 30 to the 15 allowed.(™ÜÚýþÿÿÿÿ

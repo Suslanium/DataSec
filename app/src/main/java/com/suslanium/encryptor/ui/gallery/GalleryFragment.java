@@ -2,11 +2,14 @@ package com.suslanium.encryptor.ui.gallery;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -18,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -26,6 +30,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.Encryptor;
@@ -49,6 +54,8 @@ public class GalleryFragment extends Fragment {
     private boolean isOnResume = false;
     private Intent intent2 = null;
     private String currentSearchQuery;
+    private String currentCategory;
+    private ArrayList<String> categories = new ArrayList<>();
     private ProgressBar searchProgress;
     private TextView searchText;
     private RecyclerView recyclerView;
@@ -59,6 +66,7 @@ public class GalleryFragment extends Fragment {
     private ImageButton b1;
     private FloatingActionButton fab;
     private PasswordAdapter adapter = null;
+    private FloatingActionButton newCategory;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,6 +77,18 @@ public class GalleryFragment extends Fragment {
     public void onDestroyView() {
         ((Explorer) requireActivity()).passwordVaultVisible = false;
         super.onDestroyView();
+    }
+
+    public void setCategory(String category){
+        currentCategory = category;
+        updateView(requireView());
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        Explorer parent = (Explorer) context;
+        parent.setGalleryFragment(this);
+        super.onAttach(context);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -121,7 +141,7 @@ public class GalleryFragment extends Fragment {
                     inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
             } else {
-                Snackbar.make(v, "Please enter service name to search", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.searchServiceErr, Snackbar.LENGTH_LONG).show();
             }
         };
         fab = requireView().findViewById(R.id.addData);
@@ -131,7 +151,7 @@ public class GalleryFragment extends Fragment {
                 Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layoutParams.gravity = Gravity.START;
                 layout.setLayoutParams(l3);
-                layout.setHint("Enter service name here...");
+                layout.setHint(R.string.enterServiceName);
                 layout.setTextColor(Color.parseColor("#FFFFFF"));
                 layout.setSingleLine(true);
                 t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
@@ -155,6 +175,7 @@ public class GalleryFragment extends Fragment {
         addDataListener = v -> {
             Intent intent = new Intent(requireActivity(), passwordAdd.class);
             intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
+            intent.putExtra("category", currentCategory);
             startActivity(intent);
         };
         fab.setOnClickListener(addDataListener);
@@ -167,15 +188,69 @@ public class GalleryFragment extends Fragment {
         recyclerView = requireView().findViewById(R.id.passwords);
         searchProgress = requireView().findViewById(R.id.passwordSearchProgress);
         searchText = requireView().findViewById(R.id.passwordSearchText);
+        newCategory = requireActivity().findViewById(R.id.newCategory);
         updateView(view);
+        newCategory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditText input = new EditText(requireActivity().getBaseContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setSingleLine(true);
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.categoryName)
+                        .setView(input)
+                        .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String name = input.getText().toString();
+                                if(!name.matches("")){
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                byte[] pass = intent2.getByteArrayExtra("pass");
+                                                String password = Encryptor.rsadecrypt(pass);
+                                                SQLiteDatabase database = Encryptor.initDataBase(requireContext(), password);
+                                                ArrayList<String> categories = Encryptor.getCategories(database);
+                                                if(!categories.contains(name)){
+                                                    Encryptor.createCategoryStub(database, name);
+                                                    requireActivity().runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            updateView(requireView());
+                                                        }
+                                                    });
+                                                } else {
+                                                    requireActivity().runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            Snackbar.make(v,R.string.catExists, Snackbar.LENGTH_LONG);
+                                                        }
+                                                    });
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                    thread.start();
+                                } else {
+                                    Snackbar.make(v,R.string.enterCatName, Snackbar.LENGTH_LONG);
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> { });
+                builder.show();
+            }
+        });
     }
 
     public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins){
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         if(adapter == null) {
-            adapter = new PasswordAdapter(strings2, id,logins, intent2, requireActivity());
+            adapter = new PasswordAdapter(strings2, id,logins,categories, intent2, requireActivity(), this);
         } else {
-            adapter.setNewData(strings2, id,logins);
+            adapter.setNewData(strings2, id,logins,categories);
         }
         recyclerView.setAdapter(adapter);
         requireActivity().runOnUiThread(() -> {
@@ -189,6 +264,18 @@ public class GalleryFragment extends Fragment {
             }
             fab.setEnabled(true);
         });
+    }
+
+    public void backPress(){
+        if(currentSearchQuery != null && !currentSearchQuery.matches("")){
+            fab.setImageDrawable(createDrawable);
+            currentSearchQuery = "";
+            updateView(requireView());
+            fab.setOnClickListener(addDataListener);
+        } else if(currentCategory != null && !currentCategory.matches("")){
+            currentCategory = null;
+            updateView(requireView());
+        }
     }
 
     @Override
@@ -207,9 +294,12 @@ public class GalleryFragment extends Fragment {
         fadeOut(searchProgress);
         fadeOut(searchText);
         fab.setEnabled(false);
+        newCategory.setEnabled(false);
         ArrayList<String> strings3 = new ArrayList<>();
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<String> logins = new ArrayList<>();
+        categories.clear();
+        //categories.addAll(Encryptor.getCategories(database));
         Thread thread = new Thread(() -> {
             try {
                 byte[] pass = intent2.getByteArrayExtra("pass");
@@ -222,6 +312,7 @@ public class GalleryFragment extends Fragment {
                     ArrayList<String> strings = listHashMap.get(i);
                     String s = strings.get(0);
                     String l = strings.get(1);
+                    String c = strings.get(5);
                     if(currentSearchQuery != null && !currentSearchQuery.matches("")) {
                         if(s.contains(currentSearchQuery)){
                             names.put(i,s);
@@ -229,12 +320,30 @@ public class GalleryFragment extends Fragment {
                             logins.add(l);
                             ids.add(i);
                         }
+                    } else if(currentCategory != null && !currentCategory.matches("")){
+                        if(c != null && c.equals(currentCategory)){
+                            names.put(i,s);
+                            strings3.add(s);
+                            logins.add(l);
+                            ids.add(i);
+                        }
                     } else {
-                        names.put(i,s);
-                        strings3.add(s);
-                        logins.add(l);
-                        ids.add(i);
+                        if(c == null || c.matches("")) {
+                            names.put(i, s);
+                            strings3.add(s);
+                            logins.add(l);
+                            ids.add(i);
+                        }
                     }
+                }
+                if((currentSearchQuery == null || currentSearchQuery.matches("")) && (currentCategory == null || currentCategory.matches(""))) {
+                    categories.addAll(Encryptor.getCategories(database));
+                    requireActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            newCategory.setEnabled(true);
+                        }
+                    });
                 }
                 requireActivity().runOnUiThread(() -> onThreadDone(strings3, ids, logins));
                 HashMap<Integer, byte[]> iconsList = Encryptor.readPasswordIcons(database);
@@ -270,5 +379,9 @@ public class GalleryFragment extends Fragment {
             }
         });
         thread.start();
+    }
+
+    public String getCurrentCategory(){
+        return currentCategory;
     }
 }

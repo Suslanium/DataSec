@@ -5,12 +5,15 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -61,9 +64,9 @@ import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
     private ArrayList<String> fileList = new ArrayList<>();
-    public FloatingActionButton upFolder;
     private View.OnClickListener upFolderAction;
     private FloatingActionButton newFolder;
+    private FloatingActionButton changeStorage;
     private Drawable cancelDrawable;
     private View.OnClickListener newFolderListener;
     private Drawable createDrawable;
@@ -76,6 +79,7 @@ public class HomeFragment extends Fragment {
     private ArrayList<String> storagePaths;
     private String currentStorageName;
     private String currentStoragePath;
+    public boolean showHiddenFiles = true;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -92,10 +96,6 @@ public class HomeFragment extends Fragment {
 
     public View.OnClickListener getUpFolderAction() {
         return upFolderAction;
-    }
-
-    public static <T> T cast(Object o, String clazz) throws ClassNotFoundException {
-        return (T) Class.forName(clazz).cast(o);
     }
 
     
@@ -121,8 +121,10 @@ public class HomeFragment extends Fragment {
             storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
         }
         storagePaths.add(requireContext().getFilesDir().getPath());
-        currentStorageName = "Internal Storage";
+        currentStorageName = getString(R.string.intStorage);
         currentStoragePath = Environment.getExternalStorageDirectory().getPath();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        showHiddenFiles = preferences.getBoolean("showHidden", true);
         final ViewTreeObserver vto = view.getViewTreeObserver();
         if (vto.isAlive()) {
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -145,7 +147,10 @@ public class HomeFragment extends Fragment {
         List<String> sorted = sortFiles(paths);
         ArrayList<File> filesSorted = new ArrayList<>();
         for (int i = 0; i < sorted.size(); i++) {
-            filesSorted.add(new File(sorted.get(i)));
+            File toAdd = new File(sorted.get(i));
+            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                filesSorted.add(toAdd);
+            }
         }
         ArrayList<String> fileNames = new ArrayList<>();
         for (int i = 0; i < filesSorted.size(); i++) {
@@ -206,12 +211,12 @@ public class HomeFragment extends Fragment {
                 case R.id.action_deleteFiles:
                     ArrayList<String> paths12 = adapter.getCheckedFiles();
                     if (paths12.isEmpty()) {
-                        Snackbar.make(requireView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(requireView(), R.string.selectFiles, Snackbar.LENGTH_LONG).show();
                     } else {
                         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                        builder.setTitle("Warning");
-                        builder.setMessage("You are going to delete these files. Do you want to proceed?");
-                        builder.setPositiveButton("Yes", (dialog, which) -> {
+                        builder.setTitle(R.string.warning);
+                        builder.setMessage(R.string.goingToDelete);
+                        builder.setPositiveButton(R.string.yes, (dialog, which) -> {
                             final AlertDialog[] builder1 = new AlertDialog[1];
                             ProgressBar bar1 = new ProgressBar(requireContext());
                             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -219,10 +224,10 @@ public class HomeFragment extends Fragment {
                                     LinearLayout.LayoutParams.WRAP_CONTENT);
                             bar1.setLayoutParams(lp);
                             builder1[0] = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                                    .setTitle("Deleting files...")
+                                    .setTitle(R.string.deleting)
                                     .setView(bar1)
                                     .setCancelable(false)
-                                    .setPositiveButton("Background", (dialog1, which1) -> dialog1.dismiss())
+                                    .setPositiveButton(R.string.bckgnd, (dialog1, which1) -> dialog1.dismiss())
                                     .create();
                             builder1[0].show();
                             adapter.deselectAll();
@@ -283,7 +288,7 @@ public class HomeFragment extends Fragment {
                             });
                             thread.start();
                         });
-                        builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+                        builder.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                         builder.show();
                     }
                     break;
@@ -297,7 +302,7 @@ public class HomeFragment extends Fragment {
                         }
                         shareFiles(uris);
                     } else {
-                        Snackbar.make(requireView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(requireView(), R.string.selectFiles, Snackbar.LENGTH_LONG).show();
                     }
                     adapter.deselectAll();
                     adapter.closeBottomBar();
@@ -306,9 +311,9 @@ public class HomeFragment extends Fragment {
                 case R.id.action_encryptFiles:
                     ArrayList<String> checkedFiles = adapter.getCheckedFiles();
                     if (!checkedFiles.isEmpty()) {
-                        CharSequence[] items = new CharSequence[]{"Encrypt file(s)", "Decrypt file(s)"};
+                        CharSequence[] items = new CharSequence[]{getString(R.string.encFiles), getString(R.string.decFiles)};
                         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                                .setTitle("Choose action")
+                                .setTitle(R.string.choose)
                                 .setItems(items, (dialog, which) -> {
                                     switch (which) {
                                         case 0:
@@ -327,9 +332,9 @@ public class HomeFragment extends Fragment {
                                             }
                                             if (alreadyContainsFiles) {
                                                 MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                                                dialogBuilder.setTitle("Warning");
-                                                dialogBuilder.setMessage("One or more encrypted files already exist. Do you want to delete them or not encrypt files?");
-                                                dialogBuilder.setPositiveButton("Delete", (dialog15, which15) -> {
+                                                dialogBuilder.setTitle(R.string.warning);
+                                                dialogBuilder.setMessage(R.string.encExists);
+                                                dialogBuilder.setPositiveButton(R.string.delete, (dialog15, which15) -> {
                                                     Intent intent = new Intent(requireContext(), EncryptorService.class);
                                                     intent.putExtra(ACTIONTYPE, "E");
                                                     EncryptorService.uniqueID++;
@@ -338,12 +343,12 @@ public class HomeFragment extends Fragment {
                                                     intent.putExtra(INDEX, i);
                                                     intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(requireContext(), intent);
-                                                    Snackbar.make(requireView(), "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                    Snackbar.make(requireView(), R.string.encStarted, Snackbar.LENGTH_LONG).show();
                                                     adapter.deselectAll();
                                                     adapter.closeBottomBar();
                                                     showAddButton(true);
                                                 });
-                                                dialogBuilder.setNegativeButton("Stop", (dialog14, which14) -> {
+                                                dialogBuilder.setNegativeButton(R.string.cancel, (dialog14, which14) -> {
                                                 });
                                                 dialogBuilder.show();
                                             } else {
@@ -355,7 +360,7 @@ public class HomeFragment extends Fragment {
                                                 intent.putExtra(INDEX, i);
                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(requireContext(), intent);
-                                                Snackbar.make(requireView(), "Encryption started!", Snackbar.LENGTH_LONG).show();
+                                                Snackbar.make(requireView(), R.string.encStarted, Snackbar.LENGTH_LONG).show();
                                                 adapter.deselectAll();
                                                 adapter.closeBottomBar();
                                                 showAddButton(true);
@@ -377,9 +382,9 @@ public class HomeFragment extends Fragment {
                                             }
                                             if (alreadyContainsFiles2) {
                                                 MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                                                dialogBuilder.setTitle("Warning");
-                                                dialogBuilder.setMessage("One or more decrypted files already exist. Do you want to delete them or not decrypt files?");
-                                                dialogBuilder.setPositiveButton("Delete", (dialog13, which13) -> {
+                                                dialogBuilder.setTitle(R.string.warning);
+                                                dialogBuilder.setMessage(R.string.decExists);
+                                                dialogBuilder.setPositiveButton(R.string.delete, (dialog13, which13) -> {
                                                     Intent intent = new Intent(requireContext(), EncryptorService.class);
                                                     intent.putExtra(ACTIONTYPE, "D");
                                                     EncryptorService.uniqueID++;
@@ -388,12 +393,12 @@ public class HomeFragment extends Fragment {
                                                     intent.putExtra(INDEX, i);
                                                     intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(requireContext(), intent);
-                                                    Snackbar.make(requireView(), "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                    Snackbar.make(requireView(), R.string.decStarted, Snackbar.LENGTH_LONG).show();
                                                     adapter.deselectAll();
                                                     adapter.closeBottomBar();
                                                     showAddButton(true);
                                                 });
-                                                dialogBuilder.setNegativeButton("Stop", (dialog12, which12) -> {
+                                                dialogBuilder.setNegativeButton(R.string.cancel, (dialog12, which12) -> {
                                                 });
                                                 dialogBuilder.show();
                                             } else {
@@ -405,7 +410,7 @@ public class HomeFragment extends Fragment {
                                                 intent.putExtra(ACTIONTYPE, "D");
                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(requireContext(), intent);
-                                                Snackbar.make(requireView(), "Decryption started!", Snackbar.LENGTH_LONG).show();
+                                                Snackbar.make(requireView(), R.string.decStarted, Snackbar.LENGTH_LONG).show();
                                                 adapter.deselectAll();
                                                 adapter.closeBottomBar();
                                                 showAddButton(true);
@@ -417,7 +422,7 @@ public class HomeFragment extends Fragment {
                                 });
                         builder.show();
                     } else {
-                        Snackbar.make(requireView(), "Please select files/folders", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(requireView(), R.string.selectFiles, Snackbar.LENGTH_LONG).show();
                     }
                     break;
                 case R.id.action_copyFiles:
@@ -431,54 +436,46 @@ public class HomeFragment extends Fragment {
             }
             return false;
         });
-        upFolder = requireActivity().findViewById(R.id.upFolder);
+        changeStorage = requireActivity().findViewById(R.id.sdCardButton);
         changeStorageListener = v -> {
-            if (storagePaths.size() > 1) {
-                String path;
-                if (pathIterator.hasNext()) {
-                    path = pathIterator.next();
-                    if (new File(path).canWrite()) {
-                        if(path.equals(requireContext().getFilesDir().getPath())){
-                            currentStorageName = "Private Folder";
-                            Snackbar.make(v, "Switched to Private Folder", Snackbar.LENGTH_LONG).show();
+            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+                if (storagePaths.size() > 1) {
+                    String path;
+                    if (pathIterator.hasNext()) {
+                        path = pathIterator.next();
+                        if (new File(path).canWrite()) {
+                            if (path.equals(requireContext().getFilesDir().getPath())) {
+                                currentStorageName = getString(R.string.privateFolder);
+                                Snackbar.make(v, getString(R.string.swPrivate), Snackbar.LENGTH_LONG).show();
+                            } else {
+                                currentStorageName = getString(R.string.extStorage) + " " + (pathIterator.previousIndex());
+                                Snackbar.make(v, getString(R.string.swExt) + " " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                            }
+                            currentStoragePath = path;
+                            setStoragePath(path);
+                            calculateFreeSpace(path);
                         } else {
-                            currentStorageName = "External Storage " + (pathIterator.previousIndex());
-                            Snackbar.make(v, "Switched to External Storage " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                            changeStorageListener.onClick(v);
                         }
-                        currentStoragePath = path;
-                        setStoragePath(path);
-                        calculateFreeSpace(path);
                     } else {
-                        changeStorageListener.onClick(v);
-                        /*while (pathIterator.hasPrevious()) {
+                        while (pathIterator.hasPrevious()) {
                             pathIterator.previous();
                         }
                         path = pathIterator.next();
-                        currentStorageName = "Internal Storage";
+                        currentStorageName = getString(R.string.intStorage);
                         currentStoragePath = path;
                         setStoragePath(path);
                         calculateFreeSpace(path);
-                        Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();*/
-                        //Snackbar.make(v, "Sorry, this app cannot access your external storage due to system restrictions.", Snackbar.LENGTH_LONG).show();
-                        //path = pathIterator.previous();
+                        Snackbar.make(v, getString(R.string.swInt), Snackbar.LENGTH_LONG).show();
                     }
-                } else {
-                    while (pathIterator.hasPrevious()) {
-                        pathIterator.previous();
+                    File parent = new File(path);
+                    if (parent.canWrite() && ((Explorer) requireActivity()).currentOperationNumber == 0) {
+                        updateUI(adapter, fileView, parent);
                     }
-                    path = pathIterator.next();
-                    currentStorageName = "Internal Storage";
-                    currentStoragePath = path;
-                    setStoragePath(path);
-                    calculateFreeSpace(path);
-                    Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();
-                }
-                File parent = new File(path);
-                if (parent.canWrite() && ((Explorer) requireActivity()).currentOperationNumber == 0) {
-                    updateUI(adapter, fileView, parent);
                 }
             }
         };
+        changeStorage.setOnClickListener(changeStorageListener);
         upFolderAction = v -> {
             if (((Explorer) requireActivity()).currentOperationNumber == 0) {
                 fileView.stopScroll();
@@ -490,10 +487,8 @@ public class HomeFragment extends Fragment {
                 }
                 if (matches) {
                     ((Explorer) requireActivity()).incrementBackPressedCount();
-                    Snackbar snackbar = Snackbar.make(v, "Press one more time to exit", Snackbar.LENGTH_LONG);
-                    snackbar.setAction("Switch storage", v1 -> {
-                        changeStorageListener.onClick(requireView());
-                    });
+                    Snackbar snackbar = Snackbar.make(v, R.string.pressToExit, Snackbar.LENGTH_LONG);
+                    snackbar.setAction(getString(R.string.swSt), v1 -> changeStorage.performClick());
                     snackbar.show();
                 } else {
                     updateUI(adapter, fileView, parent);
@@ -501,51 +496,51 @@ public class HomeFragment extends Fragment {
                 }
             }
         };
-        FloatingActionButton shareButton = requireActivity().findViewById(R.id.shareButton);
-        shareButton.setOnClickListener(v -> {
-        });
         newFolder = requireActivity().findViewById(R.id.addNewFolder);
         newFolderListener = v -> {
-            final EditText input = new EditText(requireContext());
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            input.setSingleLine(true);
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                    .setTitle("Create new folder")
-                    .setView(input)
-                    .setPositiveButton("Create", (dialog, which) -> {
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> {
-                    });
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
-                String newName = input.getText().toString();
-                if (newName.matches("")) {
-                    Snackbar.make(v12, "Please enter name", Snackbar.LENGTH_LONG).show();
-                } else if (newName.contains(File.separator)) {
-                    Snackbar.make(v12, "Please enter valid name", Snackbar.LENGTH_LONG).show();
-                } else if (adapter.getLocalDataSet().contains(newName)) {
-                    Snackbar.make(v12, "File/folder with same name already exists", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Thread thread = new Thread(() -> {
-                        try {
-                            File testing = new File(adapter.getPath() + File.separator + newName);
-                            testing.mkdirs();
-                            requireActivity().runOnUiThread(() -> {
-                                dialog.dismiss();
-                                ArrayList<String> currentSet = adapter.getLocalDataSet();
-                                currentSet.add(newName);
-                                fileList = currentSet;
-                                adapter.setNewData(adapter.getPath(), fileList);
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            requireActivity().runOnUiThread(() -> Snackbar.make(v12, "Please enter valid name", Snackbar.LENGTH_LONG).show());
-                        }
-                    });
-                    thread.start();
-                }
-            });
+            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+                final EditText input = new EditText(requireContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setSingleLine(true);
+                //Translation end
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.createFolder)
+                        .setView(input)
+                        .setPositiveButton(R.string.create, (dialog, which) -> {
+                        })
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
+                    String newName = input.getText().toString();
+                    if (newName.matches("")) {
+                        Snackbar.make(v12, R.string.enterNameErr, Snackbar.LENGTH_LONG).show();
+                    } else if (newName.contains(File.separator)) {
+                        Snackbar.make(v12, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
+                    } else if (adapter.getLocalDataSet().contains(newName)) {
+                        Snackbar.make(v12, R.string.folderExistsErr, Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Thread thread = new Thread(() -> {
+                            try {
+                                File testing = new File(adapter.getPath() + File.separator + newName);
+                                testing.mkdirs();
+                                requireActivity().runOnUiThread(() -> {
+                                    dialog.dismiss();
+                                    ArrayList<String> currentSet = adapter.getLocalDataSet();
+                                    currentSet.add(newName);
+                                    fileList = currentSet;
+                                    adapter.setNewData(adapter.getPath(), fileList);
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                requireActivity().runOnUiThread(() -> Snackbar.make(v12, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
+                            }
+                        });
+                        thread.start();
+                    }
+                });
+            }
         };
         newFolder.setOnClickListener(newFolderListener);
         Drawable finalCancelDrawable = cancelDrawable;
@@ -555,6 +550,7 @@ public class HomeFragment extends Fragment {
             if (!fileName.matches("")) {
                 b1.setEnabled(false);
                 newFolder.setEnabled(false);
+                changeStorage.setEnabled(false);
                 adapter.isSearching = true;
                 if (((Explorer) requireActivity()).searchBar != null) {
                     t.removeView(((Explorer) requireActivity()).searchBar);
@@ -567,7 +563,7 @@ public class HomeFragment extends Fragment {
                 fadeOut.setDuration(200);
                 fadeIn.setDuration(200);
                 fadeIn.setFillAfter(true);
-                search[0].setText("Searching...");
+                search[0].setText(R.string.searching);
                 fileView.startAnimation(fadeIn);
                 fileView.setEnabled(false);
                 search[0] = requireActivity().findViewById(R.id.searchText);
@@ -587,13 +583,15 @@ public class HomeFragment extends Fragment {
                             Thread.currentThread().interrupt();
                         }
                     }
+                    final boolean[] noResults = {false};
                     if (searchResult.isEmpty()) {
                         requireActivity().runOnUiThread(() -> {
                             try {
+                                noResults[0] = true;
                                 fileView.startAnimation(fadeOut);
                                 search[0].startAnimation(fadeIn);
                                 bar[0].startAnimation(fadeIn);
-                                Snackbar.make(v, "No results", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -627,19 +625,22 @@ public class HomeFragment extends Fragment {
                         adapter.isSearching = false;
                         adapter.setSearchEnded();
                         b1.setEnabled(true);
-                        newFolder.setImageDrawable(finalCancelDrawable);
                         newFolder.setEnabled(true);
-                        newFolder.setOnClickListener(v13 -> {
-                            File parent = new File(adapter.getPath());
-                            updateUI(adapter, fileView, parent);
-                            newFolder.setImageDrawable(finalCreateDrawable);
-                            newFolder.setOnClickListener(newFolderListener);
-                        });
+                        changeStorage.setEnabled(true);
+                        if(!noResults[0]) {
+                            newFolder.setImageDrawable(finalCancelDrawable);
+                            newFolder.setOnClickListener(v13 -> {
+                                File parent = new File(adapter.getPath());
+                                updateUI(adapter, fileView, parent);
+                                newFolder.setImageDrawable(finalCreateDrawable);
+                                newFolder.setOnClickListener(newFolderListener);
+                            });
+                        }
                     });
                 });
                 thread.start();
             } else {
-                Snackbar.make(v, "Please enter file name", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
             }
         };
         b1.setOnClickListener(v -> {
@@ -649,7 +650,7 @@ public class HomeFragment extends Fragment {
                 layoutParams.gravity = Gravity.START;
                 layout.setLayoutParams(l3);
                 layout.setTextColor(Color.parseColor("#FFFFFF"));
-                layout.setHint("Enter file name here...");
+                layout.setHint(R.string.enterFileNameSearch);
                 layout.setSingleLine(true);
                 t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layout.setFocusableInTouchMode(true);
@@ -693,7 +694,11 @@ public class HomeFragment extends Fragment {
                 List<String> sorted13 = sortFiles(paths14);
                 ArrayList<File> filesSorted13 = new ArrayList<>();
                 for (int i = 0; i < sorted13.size(); i++) {
-                    filesSorted13.add(new File(sorted13.get(i)));
+                    //-----------------------------------------------
+                    File toAdd = new File(sorted13.get(i));
+                    if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                        filesSorted13.add(toAdd);
+                    }
                 }
                 ArrayList<String> fileNames2 = new ArrayList<>();
                 for (int i = 0; i < filesSorted13.size(); i++) {
@@ -733,8 +738,10 @@ public class HomeFragment extends Fragment {
     public void showAddButton(boolean show) {
         if (show) {
             fadeOut(newFolder);
+            fadeOut(changeStorage);
         } else {
             fadeIn(newFolder);
+            fadeIn(changeStorage);
         }
     }
 
@@ -788,8 +795,8 @@ public class HomeFragment extends Fragment {
         String originalPath = adapter.getPath();
         if (!checkedFiles2.isEmpty()) {
             if (newFolder.getDrawable() == cancelDrawable) newFolder.performClick();
-            if (!cut) t.setTitle("Copy " + checkedFiles2.size() + " items");
-            else t.setTitle("Move " + checkedFiles2.size() + " items");
+            if (!cut) t.setTitle(R.string.copyTo);
+            else t.setTitle(R.string.moveTo);
             adapter.setDoingFileOperations(true);
             adapter.deselectAll();
             adapter.closeBottomBar();
@@ -798,7 +805,7 @@ public class HomeFragment extends Fragment {
             b1.setEnabled(false);
             cancel.setOnClickListener(v -> {
                 adapter.setDoingFileOperations(false);
-                t.setTitle("File explorer");
+                t.setTitle(R.string.menu_explorer);
                 fadeIn(confirm);
                 fadeIn(cancel);
                 b1.setEnabled(true);
@@ -813,7 +820,7 @@ public class HomeFragment extends Fragment {
                         LinearLayout.LayoutParams.WRAP_CONTENT);
                 bar.setLayoutParams(lp);
                 AlertDialog prep = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                        .setTitle("Preparing...")
+                        .setTitle(R.string.preparing)
                         .setView(bar)
                         .setCancelable(false)
                         .create();
@@ -977,20 +984,20 @@ public class HomeFragment extends Fragment {
         final boolean[] dialogVisible = {true};
         requireActivity().runOnUiThread(() -> {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                    .setTitle("Warning")
+                    .setTitle(R.string.warning)
                     .setCancelable(false)
-                    .setMessage("Folder " + name + " already exists in " + substring + ". Do you want to merge folder contents, rename or skip it?")
-                    .setPositiveButton("Merge", (dialog, which) -> {
+                    .setMessage(getString(R.string.folder)+" " + name + " "+getString(R.string.alreadyExistsSubStr)+" " + substring + getString(R.string.replaceFolderEnding))
+                    .setPositiveButton(R.string.merge, (dialog, which) -> {
                         result[0] = 1;
                         dialogVisible[0] = false;
                         dialog.dismiss();
                     })
-                    .setNegativeButton("Skip", (dialog, which) -> {
+                    .setNegativeButton(R.string.skip, (dialog, which) -> {
                         result[0] = 2;
                         dialogVisible[0] = false;
                         dialog.dismiss();
                     })
-                    .setNeutralButton("Rename", (dialog, which) -> {
+                    .setNeutralButton(R.string.rename, (dialog, which) -> {
                         result[0] = 3;
                         dialogVisible[0] = false;
                         dialog.dismiss();
@@ -1102,14 +1109,14 @@ public class HomeFragment extends Fragment {
         final boolean[] dialogVisible = {true};
         requireActivity().runOnUiThread(() -> {
             CheckBox checkBox = new CheckBox(requireContext());
-            checkBox.setText("Apply to all files");
+            checkBox.setText(R.string.applyToAllFiles);
             checkBox.setLayoutParams(lp);
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                    .setTitle("Warning")
+                    .setTitle(R.string.warning)
                     .setView(checkBox)
                     .setCancelable(false)
-                    .setMessage("File " + fileName + " already exists in " + folderName + ". Do you want to replace, rename or skip it?")
-                    .setPositiveButton("Replace", (dialog, which) -> {
+                    .setMessage(R.string.file+" " + fileName +" "+ getString(R.string.alreadyExistsSubStr) +" "+ folderName + getString(R.string.replaceFileEnding))
+                    .setPositiveButton(R.string.replace, (dialog, which) -> {
                         if (checkBox.isChecked()) {
                             result[0] = 1;
                         } else {
@@ -1118,7 +1125,7 @@ public class HomeFragment extends Fragment {
                         dialogVisible[0] = false;
                         dialog.dismiss();
                     })
-                    .setNegativeButton("Skip", (dialog, which) -> {
+                    .setNegativeButton(R.string.skip, (dialog, which) -> {
                         if (checkBox.isChecked()) {
                             result[0] = 2;
                         } else {
@@ -1127,7 +1134,7 @@ public class HomeFragment extends Fragment {
                         dialogVisible[0] = false;
                         dialog.dismiss();
                     })
-                    .setNeutralButton("Rename", (dialog, which) -> {
+                    .setNeutralButton(R.string.rename, (dialog, which) -> {
                         if (checkBox.isChecked()) {
                             result[0] = 5;
                         } else {
@@ -1173,10 +1180,16 @@ public class HomeFragment extends Fragment {
         if (childs != null && childs.length > 0) {
             for (int i = 0; i < childs.length; i++) {
                 if (childs[i].getName().contains(fileName)) {
-                    result.add(childs[i]);
+                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                        Log.d("add", childs[i].getName());
+                        result.add(childs[i]);
+                    }
                 }
-                if (childs[i].isDirectory())
-                    result.addAll(searchFiles(childs[i].getPath(), fileName));
+                if (childs[i].isDirectory()) {
+                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                        result.addAll(searchFiles(childs[i].getPath(), fileName));
+                    }
+                }
             }
         }
         return result;
@@ -1201,7 +1214,7 @@ public class HomeFragment extends Fragment {
         }
         return sortedFiles;
     }
-    private String fitString (TextView text, String newText) {
+    public static String fitString (TextView text, String newText) {
         float textWidth = text.getPaint().measureText(newText);
         int startIndex = 1;
         while (textWidth >= text.getMeasuredWidth()){
@@ -1230,19 +1243,19 @@ public class HomeFragment extends Fragment {
         freeSpace = (double) Math.round(freeSpace * 100) / 100;
         switch (spaceDivisonCount){
             case 0:
-                this.freeSpace.setText(freeSpace + " B free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.bytes));
                 break;
             case 1:
-                this.freeSpace.setText(freeSpace + " KB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.kbytes));
                 break;
             case 2:
-                this.freeSpace.setText(freeSpace + " MB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.mbytes));
                 break;
             case 3:
-                this.freeSpace.setText(freeSpace + " GB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.gbytes));
                 break;
             case 4:
-                this.freeSpace.setText(freeSpace + " TB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.tbytes));
                 break;
             default:
                 break;

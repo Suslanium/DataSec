@@ -50,6 +50,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     private String currentStorageName;
     private String currentStoragePath;
     public boolean searchEnded = false;
+    public boolean showHiddenFiles = true;
 
 
     @Override
@@ -73,6 +74,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         final ProgressBar[] bar = {findViewById(R.id.progressBarSearchUpload)};
         bar[0].setVisibility(View.GONE);
         search[0].setVisibility(View.GONE);
+        showHiddenFiles = preferences.getBoolean("showHidden", true);
         RecyclerView fileView = findViewById(R.id.deviceFiles);
         File[] dir = getExternalFilesDirs(null);
         ArrayList<String> storagePaths = new ArrayList<>();
@@ -81,7 +83,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
         }
         storagePaths.add(this.getFilesDir().getPath());
-        currentStorageName = "Internal Storage";
+        currentStorageName = getString(R.string.intStorage);
         currentStoragePath = Environment.getExternalStorageDirectory().getPath();
         calculateFreeSpace(currentStoragePath);
         ListIterator<String> pathIterator = storagePaths.listIterator();
@@ -95,7 +97,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         List<String> sorted = sortFiles(paths);
         ArrayList<File> filesSorted = new ArrayList<>();
         for(int i=0;i<sorted.size();i++){
-            filesSorted.add(new File(sorted.get(i)));
+            File toAdd = new File(sorted.get(i));
+            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                filesSorted.add(toAdd);
+            }
         }
         ArrayList<String> fileNames = new ArrayList<>();
         for (int i = 0; i < filesSorted.size(); i++) {
@@ -114,39 +119,28 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     path = pathIterator.next();
                     if (new File(path).canWrite()) {
                         if(path.equals(this.getFilesDir().getPath())){
-                            currentStorageName = "Private Folder";
-                            Snackbar.make(v, "Switched to Private Folder", Snackbar.LENGTH_LONG).show();
+                            currentStorageName = getString(R.string.privateFolder);
+                            Snackbar.make(v, R.string.swPrivate, Snackbar.LENGTH_LONG).show();
                         } else {
-                            currentStorageName = "External Storage " + (pathIterator.previousIndex());
-                            Snackbar.make(v, "Switched to External Storage " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                            currentStorageName = getString(R.string.extStorage)+" " + (pathIterator.previousIndex());
+                            Snackbar.make(v, getString(R.string.swExt)+"" + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
                         }
                         currentStoragePath = path;
                         setStoragePath(path);
                         calculateFreeSpace(path);
                     } else {
                         sdcardButton.performClick();
-                        /*while (pathIterator.hasPrevious()) {
-                            pathIterator.previous();
-                        }
-                        path = pathIterator.next();
-                        currentStorageName = "Internal Storage";
-                        currentStoragePath = path;
-                        setStoragePath(path);
-                        calculateFreeSpace(path);
-                        Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();*/
-                        //Snackbar.make(v, "Sorry, this app cannot access your external storage due to system restrictions.", Snackbar.LENGTH_LONG).show();
-                        //path = pathIterator.previous();
                     }
                 } else {
                     while (pathIterator.hasPrevious()) {
                         pathIterator.previous();
                     }
                     path = pathIterator.next();
-                    currentStorageName = "Internal Storage";
+                    currentStorageName = getString(R.string.intStorage);
                     currentStoragePath = path;
                     setStoragePath(path);
                     calculateFreeSpace(path);
-                    Snackbar.make(v, "Switched to Internal Storage", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(v, R.string.swInt, Snackbar.LENGTH_LONG).show();
                 }
                 File parent = new File(path);
                 if (parent.canWrite()) {
@@ -168,7 +162,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                             List<String> sorted1 = sortFiles(paths1);
                             ArrayList<File> filesSorted1 = new ArrayList<>();
                             for (int i = 0; i < sorted1.size(); i++) {
-                                filesSorted1.add(new File(sorted1.get(i)));
+                                File toAdd = new File(sorted1.get(i));
+                                if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                                    filesSorted1.add(toAdd);
+                                }
                             }
                             ArrayList<String> fileNames2 = new ArrayList<>();
                             for (int i = 0; i < filesSorted1.size(); i++) {
@@ -244,7 +241,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                         List<String> sorted12 = sortFiles(paths12);
                         ArrayList<File> filesSorted12 = new ArrayList<>();
                         for (int i = 0; i < sorted12.size(); i++) {
-                            filesSorted12.add(new File(sorted12.get(i)));
+                            File toAdd = new File(sorted12.get(i));
+                            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                                filesSorted12.add(toAdd);
+                            }
                         }
                         ArrayList<String> fileNames2 = new ArrayList<>();
                         for (int i = 0; i < filesSorted12.size(); i++) {
@@ -299,7 +299,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 ContextCompat.startForegroundService(GoogleDriveUploadSelector.this, intent);
                 finish();
             } else {
-                Snackbar.make(v, "Please select files/folders", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.selectFiles, Snackbar.LENGTH_LONG).show();
             }
         });
         View.OnClickListener searchListener = v -> {
@@ -310,7 +310,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 layout.setVisibility(View.GONE);
                 final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                search[0].setText("Searching...");
+                search[0].setText(R.string.searching);
                 HomeFragment.fadeIn(fileView);
                 search[0] = findViewById(R.id.searchTextUploadProgress);
                 bar[0] = findViewById(R.id.progressBarSearchUpload);
@@ -327,7 +327,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                                 HomeFragment.fadeOut(fileView);
                                 HomeFragment.fadeIn(search[0]);
                                 HomeFragment.fadeIn(bar[0]);
-                                Snackbar.make(v, "No results", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -355,7 +355,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 });
                 thread.start();
             } else {
-                Snackbar.make(v, "Please enter file name", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
             }
         };
         b1.setOnClickListener(v -> {
@@ -400,19 +400,19 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         freeSpace = (double) Math.round(freeSpace * 100) / 100;
         switch (spaceDivisonCount){
             case 0:
-                this.freeSpace.setText(freeSpace + " B free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.bytes));
                 break;
             case 1:
-                this.freeSpace.setText(freeSpace + " KB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.kbytes));
                 break;
             case 2:
-                this.freeSpace.setText(freeSpace + " MB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.mbytes));
                 break;
             case 3:
-                this.freeSpace.setText(freeSpace + " GB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.gbytes));
                 break;
             case 4:
-                this.freeSpace.setText(freeSpace + " TB free");
+                this.freeSpace.setText(freeSpace + " "+getString(R.string.tbytes));
                 break;
             default:
                 break;
@@ -436,10 +436,15 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         if (childs != null && childs.length > 0) {
             for (int i = 0; i < childs.length; i++) {
                 if (childs[i].getName().contains(fileName)) {
-                    result.add(childs[i]);
+                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                        result.add(childs[i]);
+                    }
                 }
-                if (childs[i].isDirectory())
-                    result.addAll(searchFiles(childs[i].getPath(), fileName));
+                if (childs[i].isDirectory()) {
+                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                        result.addAll(searchFiles(childs[i].getPath(), fileName));
+                    }
+                }
             }
         }
         return result;

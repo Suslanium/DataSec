@@ -67,6 +67,9 @@ public class passwordAdd extends AppCompatActivity {
     private TextInputEditText notes;
     private FloatingActionButton cancel;
     private int colorFrom = Color.parseColor("#FF0000");
+    private String weakPassword = "Weak password";
+    private String mediumPassword = "Medium password";
+    private String strongPassword = "Strong password";
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -100,9 +103,10 @@ public class passwordAdd extends AppCompatActivity {
         setContentView(R.layout.activity_password_add);
         addServiceIcon = findViewById(R.id.serviceAddIcon);
         addServiceIcon.setOnClickListener(v -> {
+            //Translation end 2
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
-            startActivityForResult(Intent.createChooser(intent, "Select icon"), PICK_IMAGE);
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.selectIcon)), PICK_IMAGE);
         });
         name = findViewById(R.id.nameInput2);
         login = findViewById(R.id.loginInput2);
@@ -111,16 +115,19 @@ public class passwordAdd extends AppCompatActivity {
         notes = findViewById(R.id.noteInput2);
         FloatingActionButton submit = findViewById(R.id.submit);
         cancel = findViewById(R.id.cancel);
+        weakPassword = getString(R.string.weakPassword);
+        mediumPassword = getString(R.string.mediumPassword);
+        strongPassword = getString(R.string.strongPassword);
         cancel.setOnClickListener(v -> {
             if (!name.getText().toString().matches("") || !login.getText().toString().matches("") || !pass.getText().toString().matches("") || !website.getText().toString().matches("") || !notes.getText().toString().matches("")) {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordAdd.this, R.style.MaterialAlertDialog_rounded)
-                        .setTitle("Discard entry?")
-                        .setMessage("You have some unsaved changes. Do you want to discard them?")
-                        .setPositiveButton("Yes", (dialog, which) -> {
+                        .setTitle(R.string.discardEntry)
+                        .setMessage(R.string.discardEntryText)
+                        .setPositiveButton(R.string.yes, (dialog, which) -> {
                             dialog.dismiss();
                             finish();
                         })
-                        .setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+                        .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 builder.show();
             } else finish();
         });
@@ -134,7 +141,7 @@ public class passwordAdd extends AppCompatActivity {
                         SQLiteDatabase database = Encryptor.initDataBase(passwordAdd.this, password);
                         if(image == null){
                             try {
-                                URL imageURL = new URL("http://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
+                                URL imageURL = new URL("https://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
                                 HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
                                 connection.setDoInput(true);
                                 connection.connect();
@@ -148,17 +155,17 @@ public class passwordAdd extends AppCompatActivity {
                                 image = null;
                             }
                         }
-                        Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString());
+                        Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent.getStringExtra("category"));
                         Encryptor.closeDataBase(database);
                         finish();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        runOnUiThread(() -> Snackbar.make(v, "Failed to add entry.", Snackbar.LENGTH_LONG).show());
+                        runOnUiThread(() -> Snackbar.make(v, R.string.failedToAddEntry, Snackbar.LENGTH_LONG).show());
                     }
                 });
                 thread.start();
             } else {
-                Snackbar.make(v, "Please fill data", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.fillDataErr, Snackbar.LENGTH_LONG).show();
             }
         });
         TextInputLayout nameLayout = findViewById(R.id.name);
@@ -170,7 +177,7 @@ public class passwordAdd extends AppCompatActivity {
                 ClipData clip = ClipData.newPlainText("Encryptor", name.getText().toString());
                 if (clipboard == null || clip == null) return;
                 clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, "Title copied to clipboard!", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
             }
         });
         TextInputLayout passLayout = findViewById(R.id.password);
@@ -194,7 +201,7 @@ public class passwordAdd extends AppCompatActivity {
                 ClipData clip = ClipData.newPlainText("Encryptor", login.getText().toString());
                 if (clipboard == null || clip == null) return;
                 clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, "Login copied to clipboard!", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
             }
         });
         TextInputLayout websiteLayout = findViewById(R.id.website);
@@ -207,7 +214,7 @@ public class passwordAdd extends AppCompatActivity {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(s));
                     startActivity(browserIntent);
                 } catch (Exception e) {
-                    Snackbar.make(v, "Enter a valid URL, please.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(v, R.string.invalidURLErr, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
@@ -220,7 +227,7 @@ public class passwordAdd extends AppCompatActivity {
                 ClipData clip = ClipData.newPlainText("Encryptor", notes.getText().toString());
                 if (clipboard == null || clip == null) return;
                 clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, "Note copied to clipboard!", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
             }
         });
         ProgressBar strength = findViewById(R.id.passwordStrengthBar);
@@ -243,15 +250,15 @@ public class passwordAdd extends AppCompatActivity {
                 setPassBarProgress(passStrength * 100, strength);
                 if (passStrength >= 8) {
                     passLayout.setHelperTextEnabled(true);
-                    passLayout.setHelperText("Strong password");
+                    passLayout.setHelperText(strongPassword);
                     setPassBarColor(Color.parseColor("#00FF00"), strength);
                 } else if (passStrength >= 5) {
                     passLayout.setHelperTextEnabled(true);
-                    passLayout.setHelperText("Medium password");
+                    passLayout.setHelperText(mediumPassword);
                     setPassBarColor(Color.parseColor("#FFFF00"), strength);
                 } else if (passStrength <= 3) {
                     passLayout.setHelperTextEnabled(true);
-                    passLayout.setHelperText("Weak password");
+                    passLayout.setHelperText(weakPassword);
                     setPassBarColor(Color.parseColor("#FF0000"), strength);
                 }
             }
@@ -263,11 +270,11 @@ public class passwordAdd extends AppCompatActivity {
                 final EditText input = new EditText(passwordAdd.this);
                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
                 input.setSingleLine(true);
-                input.setHint("Password length");
+                input.setHint(R.string.passLength);
                 final String[] passwordAlphabetMode = {""};
-                CharSequence[] items = new CharSequence[]{"Uppercase letters", "Lowercase letters", "Numbers", "Special symbols"};
+                CharSequence[] items = new CharSequence[]{getString(R.string.uppercase), getString(R.string.lowercase), getString(R.string.numbers), getString(R.string.specialSymbols)};
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordAdd.this, R.style.MaterialAlertDialog_rounded)
-                        .setTitle("Generate password")
+                        .setTitle(getString(R.string.generatePass))
                         .setMultiChoiceItems(items, null, (dialog, which, isChecked) -> {
                             switch (which){
                                 case 0:
@@ -319,7 +326,7 @@ public class passwordAdd extends AppCompatActivity {
                             }
                         })
                         .setView(input)
-                        .setPositiveButton("Generate", (dialog, which) -> {
+                        .setPositiveButton(R.string.generate, (dialog, which) -> {
                             try {
                                 String lengthString = input.getText().toString();
                                 if (!lengthString.matches("") && !passwordAlphabetMode[0].matches("")) {
@@ -327,13 +334,13 @@ public class passwordAdd extends AppCompatActivity {
                                     String password = RndPassword.generateRandomPasswordStr(length, passwordAlphabetMode[0]);
                                     pass.setText(password);
                                 } else {
-                                    Snackbar.make(v, "Select options for password generation first.", Snackbar.LENGTH_LONG).show();
+                                    Snackbar.make(v, R.string.selectPassOptions, Snackbar.LENGTH_LONG).show();
                                 }
                             } catch (Exception e){
-                                Snackbar.make(v, "Length is too big.", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(v, R.string.passwordTooLong, Snackbar.LENGTH_LONG).show();
                             }
                         })
-                        .setNegativeButton("Cancel", (dialog, which) -> {});
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> {});
                 builder.show();
             }
         });

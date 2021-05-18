@@ -59,6 +59,7 @@ public class EncryptorService extends Service {
     public static HashMap<Integer, String> originalPath = new HashMap<>();
     public static HashMap<Integer, ArrayList<String>> originalPaths = new HashMap<>();
     public static HashMap<Integer, ArrayList<String>> names = new HashMap<>();
+    public static HashMap<Integer, ArrayList<String>> mimeTypes = new HashMap<>();
     public static HashMap<Integer, HashMap<String, String>> folderReplacements = new HashMap<>();
     public static HashMap<Integer, Boolean> deletingFiles = new HashMap<>();
     public static boolean changingPassword = false;
@@ -73,8 +74,8 @@ public class EncryptorService extends Service {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Encrypting/decrypting";
-            String description = "Show notifications when encrypting/decrypting files";
+            CharSequence name = getString(R.string.encDec);
+            String description = getString(R.string.channelDesc);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
@@ -87,7 +88,7 @@ public class EncryptorService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.locked)
-                .setContentTitle("Encrypting service is running")
+                .setContentTitle(getString(R.string.serviceRunning))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         startForeground(++id, builder.build());
@@ -95,6 +96,7 @@ public class EncryptorService extends Service {
         int index = intent.getIntExtra("index", 0);
         ArrayList<String> pathsList = EncryptorService.paths.remove(index);
         ArrayList<String> namesList = EncryptorService.names.remove(index);
+        ArrayList<String> mimesList = EncryptorService.mimeTypes.remove(index);
         byte[] pass = intent.getByteArrayExtra("pass");
         String currentFolderID = intent.getStringExtra("gDriveFolder");
         isRunning.add(true);
@@ -109,7 +111,7 @@ public class EncryptorService extends Service {
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Encrypting...")
+                                .setContentTitle(getString(R.string.encrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -142,7 +144,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while encrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -160,7 +162,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while encrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -186,17 +188,18 @@ public class EncryptorService extends Service {
                         PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 12345, shareIntent, 0);
                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("File(s) have been successfully encrypted!")
+                                .setContentTitle(getString(R.string.serviceEncSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                .addAction(R.drawable.checkmark, "Share", pendingIntent);
+                                .addAction(R.drawable.checkmark, getString(R.string.share), pendingIntent);
                         if (errorsCount[0] > 0)
-                            builder22.setContentText("Errors: " + errorsCount[0]);
+                            builder22.setContentText(getString(R.string.errors)+" " + errorsCount[0]);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder22.build());
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
-
+                        isRunning.remove(true);
+                        if (!isRunning.contains(true)) stopSelf();
                     }
                 });
                 thread.start();
@@ -210,7 +213,7 @@ public class EncryptorService extends Service {
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Decrypting...")
+                                .setContentTitle(getString(R.string.decrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -253,7 +256,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while decrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -270,7 +273,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while decrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -283,16 +286,17 @@ public class EncryptorService extends Service {
                         }
                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("File(s) have been successfully decrypted!")
+                                .setContentTitle(getString(R.string.serviceDecSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
-                            builder23.setContentText("Errors: " + errorsCount[0]);
+                            builder23.setContentText(getString(R.string.errors)+" " + errorsCount[0]);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder23.build());
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception ignored) {
-
+                        isRunning.remove(true);
+                        if (!isRunning.contains(true)) stopSelf();
                     }
                 });
                 thread.start();
@@ -305,7 +309,7 @@ public class EncryptorService extends Service {
                         ArrayList<File> encryptedFiles = new ArrayList<>();
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Encrypting...")
+                                .setContentTitle(getString(R.string.encrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -334,7 +338,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while encrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -350,7 +354,7 @@ public class EncryptorService extends Service {
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                 .setSmallIcon(R.drawable.locked)
-                                                .setContentTitle("Something went wrong while encrypting " + file.getName())
+                                                .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
                                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -363,12 +367,12 @@ public class EncryptorService extends Service {
                         }
                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Uploading files to Google Drive...")
+                                .setContentTitle(getString(R.string.uploadingTo))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
-                            builder24.setContentText("Errors: " + errorsCount[0]);
+                            builder24.setContentText(getString(R.string.errors)+" " + errorsCount[0]);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder24.build());
                         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -415,8 +419,13 @@ public class EncryptorService extends Service {
                                     }
                                     if (driveFileNames.contains(encryptedFiles.get(i).getName())) {
                                         for (int j = 0; j < driveFiles.size(); j++) {
-                                            if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())) {
+                                            if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName()) && driveFiles.get(j).getMimeType().equals("application/vnd.google-apps.folder")) {
                                                 String folderID = driveFiles.get(j).getId();
+                                                uploadFilesInFolder(folderID, mDriveServiceHelper, filePaths);
+                                            } else if(driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())){
+                                                mDriveServiceHelper.deleteFolderFile(driveFiles.get(j).getId());
+                                                GoogleDriveFileHolder folder = mDriveServiceHelper.createFolder(encryptedFiles.get(i).getName(), currentFolderID);
+                                                String folderID = folder.getId();
                                                 uploadFilesInFolder(folderID, mDriveServiceHelper, filePaths);
                                             }
                                         }
@@ -436,10 +445,10 @@ public class EncryptorService extends Service {
                         }
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Encrypted files have been successfully uploaded to GDrive!")
+                                .setContentTitle(getString(R.string.serviceGEncSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
-                            builder3.setContentText("Errors: " + errorsCount[0]);
+                            builder3.setContentText(getString(R.string.errors) + errorsCount[0]);
                         NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager3.notify(operationID, builder3.build());
                         isRunning.remove(true);
@@ -448,7 +457,7 @@ public class EncryptorService extends Service {
                         e.printStackTrace();
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Something went wrong while uploading...")
+                                .setContentTitle(getString(R.string.serviceGEncError))
                                 .setContentText(e.getMessage())
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
@@ -471,7 +480,7 @@ public class EncryptorService extends Service {
                         if (acct != null) {
                             NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                     .setSmallIcon(R.drawable.locked)
-                                    .setContentTitle("Downloading files from G Drive...")
+                                    .setContentTitle(getString(R.string.serviceDownloading))
                                     .setOngoing(true)
                                     .setProgress(1, 0, true)
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -487,12 +496,12 @@ public class EncryptorService extends Service {
                             new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads").mkdirs();
                             ArrayList<File> downloadedFiles = null;
                             if (pathsList != null) {
-                                downloadedFiles = gDriveDownloadFiles(mDriveServiceHelper, pathsList, namesList, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads");
+                                downloadedFiles = gDriveDownloadFiles(mDriveServiceHelper, pathsList, namesList, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads",mimesList);
                             }
                             String password = Encryptor.rsadecrypt(pass);
                             NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                     .setSmallIcon(R.drawable.locked)
-                                    .setContentTitle("Decrypting...")
+                                    .setContentTitle(getString(R.string.decrypting))
                                     .setOngoing(true)
                                     .setProgress(1, 0, true)
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -535,7 +544,7 @@ public class EncryptorService extends Service {
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                     .setSmallIcon(R.drawable.locked)
-                                                    .setContentTitle("Something went wrong while decrypting " + file.getName())
+                                                    .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                     .setOngoing(true)
                                                     .setProgress(1, 0, true)
                                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -552,7 +561,7 @@ public class EncryptorService extends Service {
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                                     .setSmallIcon(R.drawable.locked)
-                                                    .setContentTitle("Something went wrong while decrypting " + file.getName())
+                                                    .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                     .setOngoing(true)
                                                     .setProgress(1, 0, true)
                                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -565,21 +574,21 @@ public class EncryptorService extends Service {
                             }
                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                     .setSmallIcon(R.drawable.locked)
-                                    .setContentTitle("File(s) have been successfully downloaded and decrypted!")
+                                    .setContentTitle(getString(R.string.serviceGDecSuccess))
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                             if (errorsCount[0] > 0)
-                                builder32.setContentText("Errors: " + errorsCount[0]);
+                                builder32.setContentText(getString(R.string.errors)+" " + errorsCount[0]);
                             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                             notificationManager.notify(operationID, builder32.build());
                             isRunning.remove(true);
                             if (!isRunning.contains(true)) stopSelf();
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Something went wrong...")
-                                .setOngoing(true)
-                                .setProgress(1, 0, true)
+                                .setContentTitle(getString(R.string.serviceDecryptionError)+"...")
+                                .setContentText(e.getMessage())
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager2.notify(operationID, builder2.build());
@@ -593,7 +602,7 @@ public class EncryptorService extends Service {
                     try {
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Deleting file(s) from Google drive...")
+                                .setContentTitle(getString(R.string.serviceGDelete))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -618,7 +627,7 @@ public class EncryptorService extends Service {
                         }
                         NotificationCompat.Builder builder12 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("File(s) have been successfully deleted!")
+                                .setContentTitle(getString(R.string.serviceGDeleteSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder12.build());
@@ -627,7 +636,7 @@ public class EncryptorService extends Service {
                     } catch (Exception e) {
                         NotificationCompat.Builder builder12 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Something went wrong while deleting file(s)")
+                                .setContentTitle(getString(R.string.serviceGDeleteError))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager.notify(operationID, builder12.build());
@@ -643,32 +652,84 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     File toDownload = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
                     File origin = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
+                    String password = null;
                     try {
-                        EncryptorService.changingPassword = true;
-                        String password = Encryptor.rsadecrypt(pass);
-                        String newPass = Encryptor.rsadecrypt(newPassEnc);
-                        deleteFiles(toDownload.getPath());
-                        try (InputStream in = new BufferedInputStream(new FileInputStream(origin)); OutputStream out = new BufferedOutputStream(new FileOutputStream(toDownload))) {
-                            byte[] buffer = new byte[256 * 1024];
-                            int lengthRead;
-                            while ((lengthRead = in.read(buffer)) > 0) {
-                                out.write(buffer, 0, lengthRead);
-                                out.flush();
+                        password = Encryptor.rsadecrypt(pass);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    String newPass = null;
+                    try {
+                        newPass = Encryptor.rsadecrypt(newPassEnc);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if(origin.exists()) {
+                        try {
+                            EncryptorService.changingPassword = true;
+                            deleteFiles(toDownload.getPath());
+                            try (InputStream in = new BufferedInputStream(new FileInputStream(origin)); OutputStream out = new BufferedOutputStream(new FileOutputStream(toDownload))) {
+                                byte[] buffer = new byte[256 * 1024];
+                                int lengthRead;
+                                while ((lengthRead = in.read(buffer)) > 0) {
+                                    out.write(buffer, 0, lengthRead);
+                                    out.flush();
+                                }
+                                in.close();
+                                origin.delete();
+                                SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
+                                SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), newPass);
+                                ArrayList<String> categories = Encryptor.getCategories(downloadedDatabase);
+                                for (int i = 0; i < categories.size(); i++) {
+                                    Encryptor.createCategoryStub(database, categories.get(i));
+                                }
+                                Cursor cursor = downloadedDatabase.rawQuery("SELECT * FROM passwordTable", null);
+                                if (cursor.moveToFirst()) {
+                                    do {
+                                        if (cursor.getInt(8) == 0) {
+                                            Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6), cursor.getString(7));
+                                        }
+                                    } while (cursor.moveToNext());
+                                }
+                                cursor.close();
+                                Encryptor.closeDataBase(database);
+                                Encryptor.closeDataBase(downloadedDatabase);
+                                toDownload.delete();
+                                MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .build();
+                                SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                SharedPreferences.Editor edit = editor.edit();
+                                edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
+                                edit.apply();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                if (toDownload.exists() && !origin.exists()) {
+                                    try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(origin))) {
+                                        byte[] buffer = new byte[256 * 1024];
+                                        int lengthRead;
+                                        while ((lengthRead = in.read(buffer)) > 0) {
+                                            out.write(buffer, 0, lengthRead);
+                                            out.flush();
+                                        }
+                                        in.close();
+                                        toDownload.delete();
+                                    } catch (Exception e0) {
+                                        e0.printStackTrace();
+                                    }
+                                }
+                            } finally {
+                                EncryptorService.changingPassword = false;
+                                isRunning.remove(true);
+                                if (!isRunning.contains(true)) stopSelf();
                             }
-                            in.close();
-                            origin.delete();
-                            SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
-                            SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), newPass);
-                            Cursor cursor = downloadedDatabase.rawQuery("SELECT * FROM passwordTable", null);
-                            if (cursor.moveToFirst()) {
-                                do {
-                                    Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6));
-                                } while (cursor.moveToNext());
-                            }
-                            cursor.close();
-                            Encryptor.closeDataBase(database);
-                            Encryptor.closeDataBase(downloadedDatabase);
-                            toDownload.delete();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            isRunning.remove(true);
+                            if (!isRunning.contains(true)) stopSelf();
+                        }
+                    } else {
+                        try {
                             MasterKey mainKey = new MasterKey.Builder(getBaseContext())
                                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                                     .build();
@@ -676,54 +737,10 @@ public class EncryptorService extends Service {
                             SharedPreferences.Editor edit = editor.edit();
                             edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                             edit.apply();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if(toDownload.exists() && !origin.exists()){
-                                try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(origin))) {
-                                    byte[] buffer = new byte[256 * 1024];
-                                    int lengthRead;
-                                    while ((lengthRead = in.read(buffer)) > 0) {
-                                        out.write(buffer, 0, lengthRead);
-                                        out.flush();
-                                    }
-                                    in.close();
-                                    toDownload.delete();
-                                } catch (Exception e0){
-                                    e0.printStackTrace();
-                                }
-                            }
-                        } finally {
-                            EncryptorService.changingPassword = false;
-                            isRunning.remove(true);
-                            if (!isRunning.contains(true)) stopSelf();
+                        } catch (Exception e){
+
                         }
-                        /*String password = Encryptor.rsadecrypt(pass);
-                        SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
-                        String newPass = Encryptor.rsadecrypt(newPassEnc);
-                        HashMap<Integer, ArrayList<String>> data = Encryptor.readPasswordData(database);
-                        HashMap<Integer, byte[]> icons = Encryptor.readPasswordIcons(database);
-                        Encryptor.closeDataBase(database);
-                        Encryptor.deleteDatabase(getBaseContext());
-                        if (!data.isEmpty()) {
-                            SQLiteDatabase newDatabase = Encryptor.initDataBase(getBaseContext(), newPass);
-                            for (int i = 1; i <= data.size(); i++) {
-                                if (data.get(i) != null)
-                                    Encryptor.insertDataIntoPasswordTable(newDatabase, data.get(i).get(0), data.get(i).get(1), data.get(i).get(2), icons.get(i), data.get(i).get(3), data.get(i).get(4));
-                            }
-                            Encryptor.closeDataBase(newDatabase);
-                        }
-                        MasterKey mainKey = new MasterKey.Builder(getBaseContext())
-                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                .build();
-                        SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                        SharedPreferences.Editor edit = editor.edit();
-                        edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
-                        edit.apply();
                         EncryptorService.changingPassword = false;
-                        isRunning.remove(true);
-                        if (!isRunning.contains(true)) stopSelf();*/
-                    } catch (Exception e) {
-                        e.printStackTrace();
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     }
@@ -736,7 +753,7 @@ public class EncryptorService extends Service {
                     EncryptorService.deletingFiles.put(index, true);
                     NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                             .setSmallIcon(R.drawable.locked)
-                            .setContentTitle("Deleting file(s)...")
+                            .setContentTitle(getString(R.string.serviceDelete))
                             .setOngoing(true)
                             .setProgress(1, 0, true)
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -762,7 +779,7 @@ public class EncryptorService extends Service {
                     if (pathsList != null) {
                         builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Copying file(s)...")
+                                .setContentTitle(getString(R.string.serviceCopy))
                                 .setOngoing(true)
                                 .setProgress(pathsList.size(), 0, false)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -783,7 +800,7 @@ public class EncryptorService extends Service {
                     if (pathsList != null) {
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.locked)
-                                .setContentTitle("Moving file(s)...")
+                                .setContentTitle(getString(R.string.serviceMove))
                                 .setOngoing(true)
                                 .setProgress(pathsList.size(), 0, false)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -802,7 +819,7 @@ public class EncryptorService extends Service {
                     public void run() {
                         try {
                             File fileToUpload = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
-                            if(fileToUpload.exists()) {
+                            if (fileToUpload.exists()) {
                                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                         .requestEmail()
                                         .build();
@@ -887,7 +904,7 @@ public class EncryptorService extends Service {
                                 if (toDownload.exists()) {
                                     String password = Encryptor.rsadecrypt(pass);
                                     if (Encryptor.checkDatabase(toDownload, password, getBaseContext())) {
-                                        if(!mergeDatabases) {
+                                        if (!mergeDatabases) {
                                             Encryptor.deleteDatabase(getBaseContext());
                                             try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db")))) {
                                                 byte[] buffer = new byte[256 * 1024];
@@ -904,28 +921,25 @@ public class EncryptorService extends Service {
                                         } else {
                                             SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
                                             SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
+                                            ArrayList<String> categories = Encryptor.getCategories(downloadedDatabase);
+                                            ArrayList<String> originalCategories = Encryptor.getCategories(database);
+                                            for (int i = 0; i < categories.size(); i++) {
+                                                if (!originalCategories.contains(categories.get(i))) {
+                                                    Encryptor.createCategoryStub(database, categories.get(i));
+                                                }
+                                            }
                                             Cursor cursor = downloadedDatabase.rawQuery("SELECT * FROM passwordTable", null);
                                             if (cursor.moveToFirst()) {
                                                 do {
-                                                    Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6));
+                                                    if(cursor.getInt(8) == 0) {
+                                                        Encryptor.insertDataIntoPasswordTable(database, cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6), cursor.getString(7));
+                                                    }
                                                 } while (cursor.moveToNext());
                                             }
                                             cursor.close();
                                             Encryptor.closeDataBase(database);
                                             Encryptor.closeDataBase(downloadedDatabase);
                                             toDownload.delete();
-                                            /*HashMap<Integer, ArrayList<String>> passwordData = Encryptor.readPasswordData(downloadedDatabase);
-                                            HashMap<Integer, byte[]> passwordIcons = Encryptor.readPasswordIcons(downloadedDatabase);
-                                            downloadedDatabase.close();
-                                            if (!passwordData.isEmpty()) {
-                                                SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
-                                                for (int i = 1; i <= passwordData.size(); i++) {
-                                                    if (passwordData.get(i) != null)
-                                                        Encryptor.insertDataIntoPasswordTable(database, passwordData.get(i).get(0), passwordData.get(i).get(1), passwordData.get(i).get(2), passwordIcons.get(i), passwordData.get(i).get(3), passwordData.get(i).get(4));
-                                                }
-                                                Encryptor.closeDataBase(database);
-                                            }
-                                            toDownload.delete();*/
                                         }
                                     } else {
                                         toDownload.delete();
@@ -1010,7 +1024,8 @@ public class EncryptorService extends Service {
                     if (original.canRead() && original.canWrite()) {
                         try {
                             copied.getParentFile().mkdirs();
-                        } catch (Exception ignored) { }
+                        } catch (Exception ignored) {
+                        }
                         int errorCountBefore = errorCount;
                         try (InputStream in = new BufferedInputStream(new FileInputStream(original)); OutputStream out = new BufferedOutputStream(new FileOutputStream(copied))) {
                             byte[] buffer = new byte[256 * 1024];
@@ -1040,8 +1055,8 @@ public class EncryptorService extends Service {
 
                 }
             }
-            if (cut) builder.setContentTitle("Moving " + copiedCount + " files");
-            else builder.setContentTitle("Copying " + copiedCount + " files");
+            if (cut) builder.setContentTitle(getString(R.string.serviceMoving)+" " + copiedCount + " "+getString(R.string.serviceFiles));
+            else builder.setContentTitle(getString(R.string.serviceCopying)+" " + copiedCount + " "+getString(R.string.serviceFiles));
             builder.setProgress(pathsSize, i, false);
             manager.notify(operationID, builder.build());
         }
@@ -1054,9 +1069,9 @@ public class EncryptorService extends Service {
             }
         }
         manager.cancel(operationID);
-        if (cut) builder.setContentTitle("Successfully moved " + copiedCount + " files");
-        else builder.setContentTitle("Successfully copied " + copiedCount + " files");
-        if (errorCount > 0) builder.setContentText("Errors occured during process:" + errorCount);
+        if (cut) builder.setContentTitle(getString(R.string.serviceMoveSuccess)+" " + copiedCount + " "+getString(R.string.serviceFiles));
+        else builder.setContentTitle(getString(R.string.serviceCopySuccess)+" " + copiedCount + " "+getString(R.string.serviceFiles));
+        if (errorCount > 0) builder.setContentText(getString(R.string.errors) + errorCount);
         builder.setOngoing(false);
         builder.setProgress(0, 0, false);
         manager.notify(operationID, builder.build());
@@ -1136,8 +1151,13 @@ public class EncryptorService extends Service {
                 if (driveFileNames.contains(encryptedFiles.get(i).getName())) {
                     if (driveFiles != null) {
                         for (int j = 0; j < driveFiles.size(); j++) {
-                            if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())) {
+                            if (driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName()) && driveFiles.get(j).getMimeType().equals("application/vnd.google-apps.folder")) {
                                 String subFolderID = driveFiles.get(j).getId();
+                                uploadFilesInFolder(subFolderID, mDriveServiceHelper, subFilePaths);
+                            } else if(driveFiles.get(j).getName().equals(encryptedFiles.get(i).getName())){
+                                mDriveServiceHelper.deleteFolderFile(driveFiles.get(j).getId());
+                                GoogleDriveFileHolder folder = mDriveServiceHelper.createFolder(encryptedFiles.get(i).getName(), folderID);
+                                String subFolderID = folder.getId();
                                 uploadFilesInFolder(subFolderID, mDriveServiceHelper, subFilePaths);
                             }
                         }
@@ -1198,10 +1218,10 @@ public class EncryptorService extends Service {
         folder.delete();
     }
 
-    private ArrayList<File> gDriveDownloadFiles(DriveServiceHelper mDriveServiceHelper, ArrayList<String> paths, ArrayList<String> names, String dirPath) throws Exception {
+    private ArrayList<File> gDriveDownloadFiles(DriveServiceHelper mDriveServiceHelper, ArrayList<String> paths, ArrayList<String> names, String dirPath, ArrayList<String> mime) throws Exception {
         ArrayList<File> downloadedFiles = new ArrayList<>();
         for (int i = 0; i < paths.size(); i++) {
-            if (names.get(i).contains(".")) {
+            if (!mime.get(i).equals("application/vnd.google-apps.folder")) {
                 File toDownload = new File(dirPath + File.separator + names.get(i));
                 if (toDownload.exists()) toDownload.delete();
                 mDriveServiceHelper.downloadFile(toDownload, paths.get(i));
@@ -1212,12 +1232,14 @@ public class EncryptorService extends Service {
                 List<com.google.api.services.drive.model.File> filesInFolder = mDriveServiceHelper.listDriveFiles(paths.get(i));
                 ArrayList<String> paths2 = new ArrayList<>();
                 ArrayList<String> names2 = new ArrayList<>();
+                ArrayList<String> mime2 = new ArrayList<>();
                 if (filesInFolder != null && !filesInFolder.isEmpty()) {
                     for (int j = 0; j < filesInFolder.size(); j++) {
                         paths2.add(filesInFolder.get(j).getId());
                         names2.add(filesInFolder.get(j).getName());
+                        mime2.add(filesInFolder.get(j).getMimeType());
                     }
-                    gDriveDownloadFiles(mDriveServiceHelper, paths2, names2, dirPath + File.separator + names.get(i));
+                    gDriveDownloadFiles(mDriveServiceHelper, paths2, names2, dirPath + File.separator + names.get(i),mime2);
                     downloadedFiles.add(folderToDownload);
                 }
             }

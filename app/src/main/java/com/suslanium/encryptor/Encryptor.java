@@ -3,7 +3,10 @@ package com.suslanium.encryptor;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -55,7 +58,12 @@ public final class Encryptor {
     public static byte[] encryptBytesAES256(byte[] input, String password) {
         try {
             SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "AndroidOpenSSL");
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            SecretKeyFactory factory;
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            } else {
+                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            }
             byte[] salt = new byte[PBKDF2_SALT_LENGTH];
             secureRandom.nextBytes(salt);
             KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATION_COUNT, AES_KEY_LENGTH);
@@ -73,6 +81,7 @@ public final class Encryptor {
             byteBuffer.put(encrypted);
             return byteBuffer.array();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -86,7 +95,12 @@ public final class Encryptor {
             byteBuffer.get(nonce);
             byte[] cipherBytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(cipherBytes);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            SecretKeyFactory factory;
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            } else {
+                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            }
             KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATION_COUNT, AES_KEY_LENGTH);
             byte[] secret = factory.generateSecret(keySpec).getEncoded();
             SecretKey key = new SecretKeySpec(secret, "AES");
@@ -95,22 +109,49 @@ public final class Encryptor {
             cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec);
             return cipher.doFinal(cipherBytes);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            try {
+                ByteBuffer byteBuffer = ByteBuffer.wrap(encrypted);
+                byte[] salt = new byte[PBKDF2_SALT_LENGTH];
+                byteBuffer.get(salt);
+                byte[] nonce = new byte[GCM_NONCE_LENGTH];
+                byteBuffer.get(nonce);
+                byte[] cipherBytes = new byte[byteBuffer.remaining()];
+                byteBuffer.get(cipherBytes);
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+                KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATION_COUNT, AES_KEY_LENGTH);
+                byte[] secret = factory.generateSecret(keySpec).getEncoded();
+                SecretKey key = new SecretKeySpec(secret, "AES");
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
+                cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec);
+                return cipher.doFinal(cipherBytes);
+            } catch (Exception e2){
+                e2.printStackTrace();
+                throw new RuntimeException(e2);
+            }
         }
     }
 
     public static void encryptFileAES256(File original, String password, File fileToSave) throws Exception {
         if (original.length() > 15 * 1024 * 1024) {
-            List<File> split = splitFile(original);
+            List<File> split = new LinkedList<>();
             List<File> encryptedSplit = new LinkedList<>();
-            for (int i = 0; i < split.size(); i++) {
-                encryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + ".enc"));
-                encryptedSplit.add(new File(split.get(i).getPath() + ".enc"));
-            }
-            zip(fileToSave, encryptedSplit);
-            for (int i = 0; i < split.size(); i++) {
-                split.get(i).delete();
-                encryptedSplit.get(i).delete();
+            try {
+                split.addAll(splitFile(original));
+                for (int i = 0; i < split.size(); i++) {
+                    encryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + ".enc"));
+                    encryptedSplit.add(new File(split.get(i).getPath() + ".enc"));
+                }
+                zip(fileToSave, encryptedSplit);
+            } catch (Exception e){
+                throw new Exception(e);
+            } finally {
+                for (int i = 0; i < split.size(); i++) {
+                    split.get(i).delete();
+                }
+                for (int i = 0; i < encryptedSplit.size(); i++) {
+                    encryptedSplit.get(i).delete();
+                }
             }
         } else {
             int size = (int) original.length();
@@ -129,16 +170,23 @@ public final class Encryptor {
     public static void decryptFileAES256(File original, String password, File fileToSave) throws Exception {
         if (original.length() > 15 * 1024 * 1024) {
             List<File> split = new LinkedList<>();
-            unZip(original, split);
             List<File> decryptedSplit = new LinkedList<>();
-            for (int i = 0; i < split.size(); i++) {
-                decryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + "dec"));
-                decryptedSplit.add(new File(split.get(i).getPath() + "dec"));
-            }
-            mergeFiles(decryptedSplit, fileToSave);
-            for (int i = 0; i < split.size(); i++) {
-                split.get(i).delete();
-                decryptedSplit.get(i).delete();
+            try {
+                unZip(original, split);
+                for (int i = 0; i < split.size(); i++) {
+                    decryptFileAES256(split.get(i), password, new File(split.get(i).getPath() + "dec"));
+                    decryptedSplit.add(new File(split.get(i).getPath() + "dec"));
+                }
+                mergeFiles(decryptedSplit, fileToSave);
+            } catch (Exception e){
+                throw new Exception(e);
+            } finally {
+                for (int i = 0; i < split.size(); i++) {
+                    split.get(i).delete();
+                }
+                for (int i = 0; i < decryptedSplit.size(); i++) {
+                    decryptedSplit.get(i).delete();
+                }
             }
         } else {
             int size = (int) original.length();
@@ -325,11 +373,13 @@ public final class Encryptor {
                 "\tpass TEXT,\n" +
                 "\timage BLOB,\n" +
                 "\twebsite TEXT,\n" +
-                "\tnotes TEXT\n" +
+                "\tnotes TEXT,\n" +
+                "\tcategory TEXT,\n" +
+                "\tisstub INTEGER DEFAULT 0\n" +
                 ");");
     }
 
-    public static void insertDataIntoPasswordTable(SQLiteDatabase database, String name, String login, String password, byte[] image, String website, String notes) {
+    public static void insertDataIntoPasswordTable(SQLiteDatabase database, String name, String login, String password, byte[] image, String website, String notes, String category) {
         //database.execSQL("INSERT INTO passwordTable (id, name, login, pass, image) VALUES ($next_id, '" + name + "', '" + login + "', '" + password + "', '"+ image +"');");
         ContentValues cv = new ContentValues();
         cv.put("name", name);
@@ -338,6 +388,7 @@ public final class Encryptor {
         cv.put("image", image);
         cv.put("website", website);
         cv.put("notes", notes);
+        cv.put("category", category);
         database.insert("passwordTable", null, cv);
     }
 
@@ -346,18 +397,48 @@ public final class Encryptor {
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
         if (cursor.moveToFirst()) {
             do {
-                ArrayList<String> strings = new ArrayList<>();
-                strings.add(cursor.getString(1));
-                strings.add(cursor.getString(2));
-                strings.add(cursor.getString(3));
-                strings.add(cursor.getString(5));
-                strings.add(cursor.getString(6));
-                Integer id = cursor.getInt(0);
-                table.put(id, strings);
+                if(cursor.getInt(8) == 0) {
+                    ArrayList<String> strings = new ArrayList<>();
+                    strings.add(cursor.getString(1));
+                    strings.add(cursor.getString(2));
+                    strings.add(cursor.getString(3));
+                    strings.add(cursor.getString(5));
+                    strings.add(cursor.getString(6));
+                    strings.add(cursor.getString(7));
+                    Integer id = cursor.getInt(0);
+                    table.put(id, strings);
+                }
             } while (cursor.moveToNext());
         }
         cursor.close();
         return table;
+    }
+
+    public static void createCategoryStub(SQLiteDatabase database,String categoryName){
+        ContentValues cv = new ContentValues();
+        cv.put("name", categoryName + "stub");
+        cv.put("login", (String) null);
+        cv.put("pass", (String) null);
+        cv.put("image", (byte[]) null);
+        cv.put("website", (String) null);
+        cv.put("notes", (String) null);
+        cv.put("category", categoryName);
+        cv.put("isstub",1);
+        database.insert("passwordTable", null, cv);
+    }
+
+    public static ArrayList<String> getCategories(SQLiteDatabase database){
+        ArrayList<String> result = new ArrayList<>();
+        Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
+        if (cursor.moveToFirst()) {
+            do {
+                if(cursor.getInt(8) == 1) {
+                    result.add(cursor.getString(7));
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return result;
     }
 
     public static HashMap<Integer, byte[]> readPasswordIcons(SQLiteDatabase database){
@@ -365,15 +446,17 @@ public final class Encryptor {
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
         if (cursor.moveToFirst()) {
             do {
-                Integer id = cursor.getInt(0);
-                table.put(id, cursor.getBlob(4));
+                if(cursor.getInt(8) == 0) {
+                    Integer id = cursor.getInt(0);
+                    table.put(id, cursor.getBlob(4));
+                }
             } while (cursor.moveToNext());
         }
         cursor.close();
         return table;
     }
 
-    public static void updateDataIntoPasswordTable(SQLiteDatabase database, int id, String name, String login, String password, byte[] image, String website, String notes) {
+    public static void updateDataIntoPasswordTable(SQLiteDatabase database, int id, String name, String login, String password, byte[] image, String website, String notes, String category) {
         //database.execSQL("UPDATE passwordTable SET name = '" + name + "', login = '" + login + "', pass = '" + password + "', image = '"+ image + "' WHERE id = " + id + ";");
         ContentValues cv = new ContentValues();
         cv.put("name", name);
@@ -382,6 +465,7 @@ public final class Encryptor {
         cv.put("image", image);
         cv.put("website", website);
         cv.put("notes", notes);
+        cv.put("category", category);
         database.update("passwordTable", cv, "id = ?", new String[]{String.valueOf(id)});
     }
 
@@ -406,10 +490,7 @@ public final class Encryptor {
             readPasswordIcons(database);
             database.close();
             return true;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
-        } catch (Error e){
+        } catch (Exception | Error e){
             e.printStackTrace();
             return false;
         }

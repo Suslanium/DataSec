@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.DateFormat;
@@ -18,6 +19,7 @@ import java.text.SimpleDateFormat;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,6 +69,14 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private int thumbnailLoadingCount = 0;
     private ExecutorService service;
     public boolean isSearching = false;
+    private boolean showPreviews = true;
+    private String B = "B";
+    private String KB = "KB";
+    private String MB = "MB";
+    private String GB = "GB";
+    private String TB = "TB";
+    private String Calc = "Calculating...";
+    private String items = "items";
 
     /**
      * Provide a reference to the type of views that you are using
@@ -137,7 +147,10 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                             List<String> sorted = sortFiles(paths);
                                             ArrayList<File> filesSorted = new ArrayList<>();
                                             for (int i = 0; i < sorted.size(); i++) {
-                                                filesSorted.add(new File(sorted.get(i)));
+                                                File toAdd = new File(sorted.get(i));
+                                                if((((GoogleDriveUploadSelector) activity).showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                                                    filesSorted.add(toAdd);
+                                                }
                                             }
                                             ArrayList<String> fileNames = new ArrayList<>();
                                             for (int i = 0; i < filesSorted.size(); i++) {
@@ -186,13 +199,13 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                     thread.start();
                                 }
                             } else {
-                                Snackbar.make(v, "Access denied", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(v, R.string.accessDenied, Snackbar.LENGTH_LONG).show();
                             }
                         } else {
                             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
-                                    .setTitle("Confirm action")
-                                    .setMessage("Do you want to encrypt & upload this file?")
-                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    .setTitle(R.string.confirmAction)
+                                    .setMessage(R.string.uploadSelectorConfirmText)
+                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             ArrayList<String> paths = new ArrayList<>();
@@ -209,7 +222,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                             activity.finish();
                                         }
                                     })
-                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
@@ -261,6 +274,15 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         format.setTimeZone(TimeZone.getDefault());
         date = new Date();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        showPreviews = preferences.getBoolean("showPreviews", true);
+        B = activity.getString(R.string.b);
+        KB = activity.getString(R.string.kb);
+        MB = activity.getString(R.string.mb);
+        GB = activity.getString(R.string.gb);
+        TB = activity.getString(R.string.tb);
+        Calc = activity.getString(R.string.calculating);
+        items = activity.getString(R.string.items);
     }
 
     // Create new views (invoked by the layout manager)
@@ -355,30 +377,30 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                 activity.runOnUiThread(() -> {
                     switch (finalUnit) {
                         case 0:
-                            viewHolder.getSizeView().setText(finalLength + " B");
+                            viewHolder.getSizeView().setText(finalLength + " "+B);
                             //B
                             break;
                         case 1:
-                            viewHolder.getSizeView().setText(finalLength + " KB");
+                            viewHolder.getSizeView().setText(finalLength + " "+KB);
                             //KB
                             break;
                         case 2:
-                            viewHolder.getSizeView().setText(finalLength + " MB");
+                            viewHolder.getSizeView().setText(finalLength + " "+MB);
                             //MB
                             break;
                         case 3:
-                            viewHolder.getSizeView().setText(finalLength + " GB");
+                            viewHolder.getSizeView().setText(finalLength + " "+GB);
                             //GB
                             break;
                         case 4:
-                            viewHolder.getSizeView().setText(finalLength + " TB");
+                            viewHolder.getSizeView().setText(finalLength + " "+TB);
                             //TB
                             break;
                         default:
                             break;
                     }
                 });
-                if (type.contains("image")) {
+                if (type.contains("image") && showPreviews) {
                     viewHolder.loadingCount++;
                     final int loadingNum = viewHolder.loadingCount;
                     while (thumbnailLoadingCount > 0) {
@@ -406,10 +428,10 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
             } else {
                 activity.runOnUiThread(() -> {
                     viewHolder.setFile(R.drawable.folder);
-                    viewHolder.getSizeView().setText("Calculating...");
+                    viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;
-                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " items"));
+                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " "+items));
             }
         });
     }

@@ -1,40 +1,44 @@
 
-P
-java:S1481¥"-Remove this unused "position" local variable.(—¬æéşÿÿÿÿ8¨¹˜¿’/
-E
-java:S1604Ç"(Make this anonymous inner class a lambda(ô§ê8ª¯‹¿’/
-_
-java:S1854ã"<Remove this useless assignment to local variable "position".(à±™¾ÿÿÿÿÿ8ª¯‹¿’/
+n	java:S116@"TRename this field "CheckedId" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÏÚÅöÿÿÿÿÿ
+W	java:S125ğ"<This block of commented-out lines of code should be removed.(éØ»Úûÿÿÿÿ
+m
+java:S1104\"XMake loadingCount a static final constant or non-public and provide accessors if needed.(à’`
+R	java:S125ì"<This block of commented-out lines of code should be removed.(¥«Æª
 o
-java:S1104W"TMake realPath a static final constant or non-public and provide accessors if needed.(»ÃÍøÿÿÿÿ
-Q
-java:S1066g"/Merge this if statement with the enclosing one.(äçÕøÿÿÿÿ8¡ı‡¿’/
-g
-java:S11285"ERemove this unused import 'android.content.Context.ACTIVITY_SERVICE'.(Ş¨îşÿÿÿÿ8ññ™¿’/
-`
-java:S1126ü"BReplace this if-then-else statement by a single method invocation.(ÏÖÈ˜8„¿’/
+java:S1104["TMake realPath a static final constant or non-public and provide accessors if needed.(»ÃÍøÿÿÿÿ
+I
+java:S1481ë"-Remove this unused "position" local variable.(à±™¾ÿÿÿÿÿ
 >
-java:S1604w"(Make this anonymous inner class a lambda(¤çî†
-T
-java:S1128"8Remove this unused import 'android.app.ActivityManager'.(•è‡`8ññ™¿’/
-n	java:S116>"TRename this field "CheckedId" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÏÚÅöÿÿÿÿÿ
-u
-java:S3776ù"RRefactor this method to reduce its Cognitive Complexity from 65 to the 15 allowed.(¯ã‡ãúÿÿÿÿ8„¿’/
-Z
-java:S1854¦"<Remove this useless assignment to local variable "position".(ıí©¡8¨¹˜¿’/
-P
-java:S1481ã"-Remove this unused "position" local variable.(à±™¾ÿÿÿÿÿ8ª¯‹¿’/
-\
-java:S1155¦">Use isEmpty() to check whether the collection is empty or not.(ıí©¡8¨¹˜¿’/
-K
-java:S1604"(Make this anonymous inner class a lambda(çæ”¬ÿÿÿÿÿ8ª¯‹¿’/
-k
-java:S1104V"UMake encrypted a static final constant or non-public and provide accessors if needed.(¤êœí
-m
-java:S1104X"XMake loadingCount a static final constant or non-public and provide accessors if needed.(à’`
+java:S1604{"(Make this anonymous inner class a lambda(¤çî†
+`
+java:S11287"ERemove this unused import 'android.content.Context.ACTIVITY_SERVICE'.(Ş¨îşÿÿÿÿ
+H
+java:S1128"-Remove this unused import 'android.util.Log'.(Ô¦Ø²øÿÿÿÿ
+D
+java:S11281".Remove this unused import 'java.util.Objects'.(¼¸õ›
+J
+java:S1066k"/Merge this if statement with the enclosing one.(äçÕøÿÿÿÿ
+I
+java:S1481º"-Remove this unused "position" local variable.(—¬æéşÿÿÿÿ
+Y
+java:S1126"BReplace this if-then-else statement by a single method invocation.(ÏÖÈ˜
 i
-java:S3776Z"SRefactor this method to reduce its Cognitive Complexity from 228 to the 15 allowed.(ÊÈå
+java:S3776^"SRefactor this method to reduce its Cognitive Complexity from 236 to the 15 allowed.(ÊÈå
+k
+java:S1104Z"UMake encrypted a static final constant or non-public and provide accessors if needed.(¤êœí
+U
+java:S1155»">Use isEmpty() to check whether the collection is empty or not.(ıí©¡
+X
+java:S1854ë"<Remove this useless assignment to local variable "position".(à±™¾ÿÿÿÿÿ
+n
+java:S3776Œ"RRefactor this method to reduce its Cognitive Complexity from 66 to the 15 allowed.(¯ã‡ãúÿÿÿÿ
+S
+java:S1854»"<Remove this useless assignment to local variable "position".(ıí©¡
 m
-java:S1104A"WMake isSearching a static final constant or non-public and provide accessors if needed.(Ğ•§é
-Z
-java:S1854§"<Remove this useless assignment to local variable "position".(ı²‘Š8¨¹˜¿’/
+java:S1104C"WMake isSearching a static final constant or non-public and provide accessors if needed.(Ğ•§é
+S
+java:S1854¼"<Remove this useless assignment to local variable "position".(ı²‘Š
+D
+java:S1604˜"(Make this anonymous inner class a lambda(çæ”¬ÿÿÿÿÿ
+>
+java:S1604Ë"(Make this anonymous inner class a lambda(ô§ê

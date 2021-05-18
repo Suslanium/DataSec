@@ -68,7 +68,7 @@ public class EncryptFragment extends Fragment {
             ClipData clip = ClipData.newPlainText("Encryptor", cipher.getText().toString());
             if (clipboard == null || clip == null) return;
             clipboard.setPrimaryClip(clip);
-            Snackbar.make(view, "Copied to clipboard!", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(view, R.string.copied, Snackbar.LENGTH_LONG).show();
         });
         switch (position){
             case 1:
@@ -92,7 +92,7 @@ public class EncryptFragment extends Fragment {
                                         });
                                     } catch (Exception e) {
                                         try {
-                                            requireActivity().runOnUiThread(() -> Snackbar.make(view, "Something went wrong...", Snackbar.LENGTH_LONG).show());
+                                            requireActivity().runOnUiThread(() -> Snackbar.make(view, R.string.smthWentWrong, Snackbar.LENGTH_LONG).show());
                                         } catch (Exception e2) {
                                             e2.printStackTrace();
                                         }
@@ -103,21 +103,21 @@ public class EncryptFragment extends Fragment {
                                 });
                                 thread.start();
                             } else {
-                                Snackbar.make(view, "Please wait...", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(view, R.string.wait, Snackbar.LENGTH_LONG).show();
                             }
                         } else {
-                            Snackbar.make(view, "Please enter key for encryption", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(view, R.string.enterKeyForEnc, Snackbar.LENGTH_LONG).show();
                         }
                     } else {
-                        Snackbar.make(view, "Please enter text to encrypt", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.enterTextToEnc, Snackbar.LENGTH_LONG).show();
                     }
                 });
                 group.setVisibility(View.INVISIBLE);
                 break;
             case 2:
-                plainT.setHint("Ciphertext");
-                cipherT.setHint("Plain text");
-                encryptButton.setText("Decrypt");
+                plainT.setHint(R.string.ciphertext);
+                cipherT.setHint(R.string.plaintext);
+                encryptButton.setText(R.string.decryptMessage);
                 encryptButton.setOnClickListener(v -> {
                     String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
@@ -138,7 +138,7 @@ public class EncryptFragment extends Fragment {
                                         });
                                     } catch (Exception e) {
                                         try {
-                                            requireActivity().runOnUiThread(() -> Snackbar.make(view, "Wrong key or bad ciphertext", Snackbar.LENGTH_LONG).show());
+                                            requireActivity().runOnUiThread(() -> Snackbar.make(view, R.string.wrongKey, Snackbar.LENGTH_LONG).show());
                                         } catch (Exception e2) {
                                             e2.printStackTrace();
                                         }
@@ -149,19 +149,19 @@ public class EncryptFragment extends Fragment {
                                 });
                                 thread.start();
                             } else {
-                                Snackbar.make(view, "Please wait...", Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(view, R.string.wait, Snackbar.LENGTH_LONG).show();
                             }
                         } else {
-                            Snackbar.make(view, "Please enter key for decryption", Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(view, R.string.enterKeyForDec, Snackbar.LENGTH_LONG).show();
                         }
                     } else {
-                        Snackbar.make(view, "Please enter text for decryption", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.enterTextToDec, Snackbar.LENGTH_LONG).show();
                     }
                 });
                 group.setVisibility(View.INVISIBLE);
                 break;
             case 3:
-                cipherT.setHint("Hash output");
+                cipherT.setHint(R.string.hashOutput);
                 keyT.setVisibility(View.INVISIBLE);
                 final String[] hashFunction = {null};
                 group.setOnCheckedChangeListener((group1, checkedId) -> {
@@ -173,14 +173,14 @@ public class EncryptFragment extends Fragment {
                         default:break;
                     }
                 });
-                encryptButton.setText("Calculate hash");
+                encryptButton.setText(R.string.calcHash);
                 encryptButton.setOnClickListener(v -> {
                     String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
                         String s = Encryptor.calculateHash(plainText, hashFunction[0]);
                         cipher.setText(s);
                     } else {
-                        Snackbar.make(view, "Please enter text", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.enterText, Snackbar.LENGTH_LONG).show();
                     }
                 });
                 break;

@@ -79,12 +79,12 @@ public class PasswordActivity extends AppCompatActivity {
                                     if (passwordHash.equals(passHash)) {
                                         login(password);
                                     } else {
-                                        runOnUiThread(() -> Snackbar.make(v, "Wrong password!", Snackbar.LENGTH_LONG).show());
+                                        runOnUiThread(() -> Snackbar.make(v, R.string.wrongPass, Snackbar.LENGTH_LONG).show());
                                     }
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                runOnUiThread(() -> Snackbar.make(v, "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show());
+                                runOnUiThread(() -> Snackbar.make(v, R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                             }
                         });
                         thread.start();
@@ -109,18 +109,18 @@ public class PasswordActivity extends AppCompatActivity {
                                 if (passwordHash.equals(passHash)) {
                                     login(password);
                                 } else {
-                                    runOnUiThread(() -> Snackbar.make(v, "Wrong password!", Snackbar.LENGTH_LONG).show());
+                                    runOnUiThread(() -> Snackbar.make(v, R.string.wrongPass, Snackbar.LENGTH_LONG).show());
                                 }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
-                            runOnUiThread(() -> Snackbar.make(v, "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show());
+                            runOnUiThread(() -> Snackbar.make(v, R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                         }
                     });
                     thread.start();
                 }
             } else {
-                Snackbar.make(v, "Cannot use app while changing password", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.cannotUseWhileChanging, Snackbar.LENGTH_LONG).show();
             }
         }
     }
@@ -131,12 +131,43 @@ public class PasswordActivity extends AppCompatActivity {
         if (requestCode == 1002) {
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    Intent intent = new Intent();
-                    intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + packageName));
-                    startActivityForResult(intent, 1002);
+            if(!EncryptorService.changingPassword) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        intent.setData(Uri.parse("package:" + packageName));
+                        startActivityForResult(intent, 1002);
+                    } else {
+                        TextInputLayout text = findViewById(R.id.textInputLayout);
+                        String password = text.getEditText().getText().toString();
+                        Thread thread = new Thread(() -> {
+                            try {
+                                MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .build();
+                                SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                String passHash = editor.getString("passHash", null);
+                                if (passHash == null) {
+                                    SharedPreferences.Editor edit = editor.edit();
+                                    edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
+                                    edit.apply();
+                                    login(password);
+                                } else {
+                                    String passwordHash = Encryptor.calculateHash(password, "SHA-512");
+                                    if (passwordHash.equals(passHash)) {
+                                        login(password);
+                                    } else {
+                                        runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show());
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
+                            }
+                        });
+                        thread.start();
+                    }
                 } else {
                     TextInputLayout text = findViewById(R.id.textInputLayout);
                     String password = text.getEditText().getText().toString();
@@ -157,45 +188,20 @@ public class PasswordActivity extends AppCompatActivity {
                                 if (passwordHash.equals(passHash)) {
                                     login(password);
                                 } else {
-                                    runOnUiThread(() -> Snackbar.make(getCurrentFocus(), "Wrong password!", Snackbar.LENGTH_LONG).show());
+                                    runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show());
                                 }
                             }
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
-                            runOnUiThread(() -> Snackbar.make(getCurrentFocus(), "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show());
+                            runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                         }
                     });
                     thread.start();
                 }
             } else {
-                TextInputLayout text = findViewById(R.id.textInputLayout);
-                String password = text.getEditText().getText().toString();
-                Thread thread = new Thread(() -> {
-                    try {
-                        MasterKey mainKey = new MasterKey.Builder(getBaseContext())
-                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                .build();
-                        SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                        String passHash = editor.getString("passHash", null);
-                        if (passHash == null) {
-                            SharedPreferences.Editor edit = editor.edit();
-                            edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
-                            edit.apply();
-                            login(password);
-                        } else {
-                            String passwordHash = Encryptor.calculateHash(password, "SHA-512");
-                            if (passwordHash.equals(passHash)) {
-                                login(password);
-                            } else {
-                                runOnUiThread(() -> Snackbar.make(getCurrentFocus(), "Wrong password!", Snackbar.LENGTH_LONG).show());
-                            }
-                        }
-                    } catch (Exception e){
-                        e.printStackTrace();
-                        runOnUiThread(() -> Snackbar.make(getCurrentFocus(), "Oops, something went wrong! Try again.", Snackbar.LENGTH_LONG).show());
-                    }
-                });
-                thread.start();
+                try {
+                    Snackbar.make(findViewById(R.id.welcomeText), R.string.cannotUseWhileChanging, Snackbar.LENGTH_LONG).show();
+                } catch (Exception ignored){}
             }
         }
     }

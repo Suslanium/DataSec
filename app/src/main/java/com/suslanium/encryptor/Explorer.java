@@ -37,6 +37,7 @@ public class Explorer extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private HomeFragment fragment = null;
+    private GalleryFragment galleryFragment = null;
     private Intent intent = null;
     public int currentOperationNumber = 0;
     public ImageButton searchButton = null;
@@ -135,6 +136,8 @@ public class Explorer extends AppCompatActivity {
     public void onBackPressed() {
         if (fragment != null && fragment.isVisible()) {
             fragment.getUpFolderAction().onClick(navExplorer);
+        } else if(galleryFragment != null && galleryFragment.isVisible()){
+            galleryFragment.backPress();
         }
     }
 
@@ -167,6 +170,7 @@ public class Explorer extends AppCompatActivity {
         this.fragment = fragment;
     }
 
+    public void setGalleryFragment(GalleryFragment fragment){galleryFragment = fragment;}
 
     @Override
     public boolean onSupportNavigateUp() {

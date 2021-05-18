@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -81,19 +84,26 @@ public class SettingsFragment extends Fragment {
         updateUI();
     }
 
-    private void updateUI(){
+    private void updateUI() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
         boolean autoDelete = preferences.getBoolean("auto_Delete", false);
         boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
+        boolean showLogin = preferences.getBoolean("showLogins", true);
+        boolean showPreview = preferences.getBoolean("showPreviews", true);
+        boolean showHide = preferences.getBoolean("showHidden", true);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch darkTheme = requireActivity().findViewById(R.id.darkTheme);
         Button changePass = requireActivity().findViewById(R.id.changePassword);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter = requireActivity().findViewById(R.id.deleteAfter);
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter2  = requireActivity().findViewById(R.id.deleteAfter2);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter2 = requireActivity().findViewById(R.id.deleteAfter2);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showPreviews = requireActivity().findViewById(R.id.previewSwitch);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showLogins = requireActivity().findViewById(R.id.showLoginsSwitch);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showHidden = requireActivity().findViewById(R.id.hiddenFilesSwitch);
         Button backUpDataBase = requireActivity().findViewById(R.id.backUpDatabase);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if(((Explorer) requireActivity()).searchButton != null)t.removeView(((Explorer) requireActivity()).searchButton);
-        if(((Explorer) requireActivity()).searchBar != null) {
+        if (((Explorer) requireActivity()).searchButton != null)
+            t.removeView(((Explorer) requireActivity()).searchButton);
+        if (((Explorer) requireActivity()).searchBar != null) {
             t.removeView(((Explorer) requireActivity()).searchBar);
             ((Explorer) requireActivity()).searchBar = null;
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -109,21 +119,35 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("auto_Delete", isChecked);
             editor.apply();
         });
-        if(dark_theme){
+        showPreviews.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+            editor.putBoolean("showPreviews", isChecked);
+            editor.apply();
+        });
+        showLogins.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+            editor.putBoolean("showLogins", isChecked);
+            editor.apply();
+        });
+        showHidden.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+            editor.putBoolean("showHidden", isChecked);
+            editor.apply();
+        });
+        if (dark_theme) {
             darkTheme.setChecked(true);
         } else {
             changePass.setTextColor(Color.parseColor("#000000"));
             backUpDataBase.setTextColor(Color.parseColor("#000000"));
         }
-        if(autoDelete){
-            deleteAfter.setChecked(true);
-        }
-        if(autoDelete2){
-            deleteAfter2.setChecked(true);
-        }
+        deleteAfter.setChecked(autoDelete);
+        deleteAfter2.setChecked(autoDelete2);
+        showPreviews.setChecked(showPreview);
+        showLogins.setChecked(showLogin);
+        showHidden.setChecked(showHide);
         darkTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
-            if(isChecked){
+            if (isChecked) {
                 editor.putBoolean("dark_Theme", true);
                 editor.apply();
                 Intent intent = new Intent(requireContext(), Explorer.class);
@@ -142,20 +166,20 @@ public class SettingsFragment extends Fragment {
         });
         changePass.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-            builder1.setTitle("Warning!");
-            builder1.setMessage("You will lose access to all your encrypted files until you change your password back to the current one! Do you wish to proceed?");
-            builder1.setPositiveButton("Yes", (dialog, which) -> {
+            builder1.setTitle(R.string.warning);
+            builder1.setMessage(R.string.changePassWarning);
+            builder1.setPositiveButton(R.string.yes, (dialog, which) -> {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                builder.setTitle("Enter new password:");
+                builder.setTitle(R.string.enterNewPass);
                 final EditText input = new EditText(requireContext());
                 input.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 builder.setView(input);
-                builder.setPositiveButton("Confirm", (dialog1, which1) -> {
+                builder.setPositiveButton(R.string.confirm, (dialog1, which1) -> {
                     String newPass = input.getText().toString();
-                    if(!newPass.equals("") && newPass != null) {
+                    if (!newPass.equals("")) {
                         MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                        builder2.setTitle("Moving your passwords to new Database...");
-                        builder2.setMessage("Don't close the application until this window disappears!");
+                        builder2.setTitle(R.string.wait);
+                        builder2.setMessage(R.string.movingPass);
                         ProgressBar bar = new ProgressBar(requireContext());
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -172,42 +196,48 @@ public class SettingsFragment extends Fragment {
                                 intent.putExtra("newPass", newPassEnc);
                                 intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
                                 ContextCompat.startForegroundService(requireContext(), intent);
-                                while(!EncryptorService.changingPassword){
-                                    Thread.sleep(100);
-                                }
-                                while(EncryptorService.changingPassword){
+                                Thread.sleep(1000);
+                                while (EncryptorService.changingPassword) {
                                     Thread.sleep(100);
                                 }
                                 requireActivity().runOnUiThread(() -> {
                                     Intent intent2 = new Intent(requireContext(), PasswordActivity.class);
                                     startActivity(intent2);
                                 });
-                            } catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         });
                         thread.start();
                     } else {
-                        Snackbar.make(v, "Please enter new password", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(v, R.string.enterNewPassErr, Snackbar.LENGTH_LONG).show();
                     }
                 });
-                builder.setNegativeButton("Cancel", (dialog12, which12) -> dialog12.dismiss());
+                builder.setNegativeButton(R.string.cancel, (dialog12, which12) -> dialog12.dismiss());
                 builder.show();
             });
-            builder1.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+            builder1.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
             builder1.show();
         });
         backUpDataBase.setOnClickListener(v -> {
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestEmail()
-                    .build();
-            mGoogleSignInClient = GoogleSignIn.getClient(requireContext(), gso);
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
-            if(account != null) {
-                askForRestoringOrBackup();
+            ConnectivityManager cm =
+                    (ConnectivityManager)requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+                mGoogleSignInClient = GoogleSignIn.getClient(requireContext(), gso);
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
+                if (account != null) {
+                    askForRestoringOrBackup();
+                } else {
+                    Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                    startActivityForResult(signInIntent, SIGNIN);
+                }
             } else {
-                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-                startActivityForResult(signInIntent, SIGNIN);
+                Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_LONG).show();
             }
         });
     }
@@ -221,131 +251,119 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    private void askForRestoringOrBackup(){
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
-                .setTitle("Choose action")
-                .setItems(new CharSequence[]{"Backup database", "Restore database"}, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case 0:
-                                MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
-                                        .setTitle("WARNING!")
-                                        .setMessage("This operation will delete previous backup. You will lose ALL your data from previous backup(if it exists). If you want to save your data - you should restore passwords from previous backup before doing this. Do you want to continue?")
-                                        .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(requireContext(), EncryptorService.class);
-                                                intent.putExtra("actionType", "gDriveDBU");
-                                                EncryptorService.uniqueID++;
-                                                int i = EncryptorService.uniqueID;
-                                                intent.putExtra("index", i);
-                                                intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                                                ContextCompat.startForegroundService(requireContext(), intent);
-                                                MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded);
-                                                ProgressBar bar = new ProgressBar(requireContext());
-                                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                                                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                                                bar.setLayoutParams(lp);
-                                                builder2.setTitle("Uploading database...");
-                                                builder2.setView(bar);
-                                                builder2.setCancelable(false);
-                                                AlertDialog alertDialog = builder2.create();
-                                                alertDialog.show();
-                                                Thread thread = new Thread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        try {
-                                                            Thread.sleep(1000);
-                                                        } catch (InterruptedException e) {
-                                                            e.printStackTrace();
-                                                            Thread.currentThread().interrupt();
-                                                        }
-                                                        while(EncryptorService.deletingFiles.containsValue(true)){
-                                                            try {
-                                                                Thread.sleep(100);
-                                                            } catch (InterruptedException e) {
-                                                                e.printStackTrace();
-                                                                Thread.currentThread().interrupt();
-                                                            }
-                                                        }
-                                                        requireActivity().runOnUiThread(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                alertDialog.dismiss();
-                                                                switch (EncryptorService.backupRestoreReturn){
-                                                                    case 0:
-                                                                        Snackbar.make(requireView(), "Database backed up successfully!", Snackbar.LENGTH_LONG).show();
-                                                                        break;
-                                                                    case 2:
-                                                                        Snackbar.make(requireView(), "Database not found.", Snackbar.LENGTH_LONG).show();
-                                                                        EncryptorService.backupRestoreReturn = 0;
-                                                                        //No database
-                                                                        break;
-                                                                    case 3:
-                                                                        Snackbar.make(requireView(), "Error", Snackbar.LENGTH_LONG).show();
-                                                                        EncryptorService.backupRestoreReturn = 0;
-                                                                        //Error
-                                                                        break;
-                                                                    default:
-                                                                        break;
-                                                                }
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                                thread.start();
+    private void askForRestoringOrBackup() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                .setTitle(R.string.choose)
+                .setItems(new CharSequence[]{getString(R.string.backup), getString(R.string.restoreDatabase)}, (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
+                                    .setTitle(R.string.warning)
+                                    .setMessage(R.string.overwriteBackup)
+                                    .setPositiveButton(R.string.cont, (dialog13, which13) -> {
+                                        Intent intent = new Intent(requireContext(), EncryptorService.class);
+                                        intent.putExtra("actionType", "gDriveDBU");
+                                        EncryptorService.uniqueID++;
+                                        int i = EncryptorService.uniqueID;
+                                        intent.putExtra("index", i);
+                                        intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                                        ContextCompat.startForegroundService(requireContext(), intent);
+                                        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded);
+                                        ProgressBar bar = new ProgressBar(requireContext());
+                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                LinearLayout.LayoutParams.WRAP_CONTENT);
+                                        bar.setLayoutParams(lp);
+                                        builder2.setTitle(R.string.wait);
+                                        builder2.setMessage(R.string.uploadingDB);
+                                        builder2.setView(bar);
+                                        builder2.setCancelable(false);
+                                        AlertDialog alertDialog = builder2.create();
+                                        alertDialog.show();
+                                        Thread thread = new Thread(() -> {
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                                Thread.currentThread().interrupt();
                                             }
-                                        })
-                                        .setNegativeButton("Cancel", (dialog1, which1) -> {});
-                                builder1.show();
-                                break;
-                            case 1:
-                                MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded)
-                                        .setTitle("Select action")
-                                        .setMessage("You can either replace all your data or merge passwords from cloud with current database. What would you like to do?")
-                                        .setPositiveButton("Merge", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(requireContext(), EncryptorService.class);
-                                                intent.putExtra("actionType", "gDriveDBD");
-                                                EncryptorService.uniqueID++;
-                                                int i = EncryptorService.uniqueID;
-                                                intent.putExtra("index", i);
-                                                intent.putExtra("mergeData", true);
-                                                intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                                                ContextCompat.startForegroundService(requireContext(), intent);
-                                                afterServiceStart();
+                                            while (EncryptorService.deletingFiles.containsValue(true)) {
+                                                try {
+                                                    Thread.sleep(100);
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                    Thread.currentThread().interrupt();
+                                                }
                                             }
-                                        })
-                                        .setNegativeButton("Replace", (dialog1, which1) -> {
-                                            Intent intent = new Intent(requireContext(), EncryptorService.class);
-                                            intent.putExtra("actionType", "gDriveDBD");
-                                            EncryptorService.uniqueID++;
-                                            int i = EncryptorService.uniqueID;
-                                            intent.putExtra("index", i);
-                                            intent.putExtra("mergeData", false);
-                                            intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                                            ContextCompat.startForegroundService(requireContext(), intent);
-                                            afterServiceStart();
+                                            requireActivity().runOnUiThread(() -> {
+                                                alertDialog.dismiss();
+                                                switch (EncryptorService.backupRestoreReturn) {
+                                                    case 0:
+                                                        Snackbar.make(requireView(), R.string.backupSuccess, Snackbar.LENGTH_LONG).show();
+                                                        break;
+                                                    case 2:
+                                                        Snackbar.make(requireView(), R.string.databaseNotFound, Snackbar.LENGTH_LONG).show();
+                                                        EncryptorService.backupRestoreReturn = 0;
+                                                        //No database
+                                                        break;
+                                                    case 3:
+                                                        Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                                                        EncryptorService.backupRestoreReturn = 0;
+                                                        //Error
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            });
                                         });
-                                builder2.show();
-                                break;
-                        }
+                                        thread.start();
+                                    })
+                                    .setNegativeButton(R.string.cancel, (dialog1, which1) -> {
+                                    });
+                            builder1.show();
+                            break;
+                        case 1:
+                            MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                                    .setTitle(R.string.choose)
+                                    .setMessage(R.string.replaceDatabaseQ)
+                                    .setPositiveButton(R.string.merge, (dialog12, which12) -> {
+                                        Intent intent = new Intent(requireContext(), EncryptorService.class);
+                                        intent.putExtra("actionType", "gDriveDBD");
+                                        EncryptorService.uniqueID++;
+                                        int i = EncryptorService.uniqueID;
+                                        intent.putExtra("index", i);
+                                        intent.putExtra("mergeData", true);
+                                        intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                                        ContextCompat.startForegroundService(requireContext(), intent);
+                                        afterServiceStart();
+                                    })
+                                    .setNegativeButton(R.string.replace, (dialog1, which1) -> {
+                                        Intent intent = new Intent(requireContext(), EncryptorService.class);
+                                        intent.putExtra("actionType", "gDriveDBD");
+                                        EncryptorService.uniqueID++;
+                                        int i = EncryptorService.uniqueID;
+                                        intent.putExtra("index", i);
+                                        intent.putExtra("mergeData", false);
+                                        intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                                        ContextCompat.startForegroundService(requireContext(), intent);
+                                        afterServiceStart();
+                                    });
+                            builder2.show();
+                            break;
                     }
                 });
         builder.show();
     }
 
-    private void afterServiceStart(){
-        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_rounded);
+    private void afterServiceStart() {
+        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
         ProgressBar bar = new ProgressBar(requireContext());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         bar.setLayoutParams(lp);
-        builder2.setTitle("Downloading database...");
+        builder2.setTitle(R.string.wait);
+        builder2.setMessage(R.string.downloadingDataBase);
         builder2.setView(bar);
         builder2.setCancelable(false);
         AlertDialog alertDialog = builder2.create();
@@ -359,7 +377,7 @@ public class SettingsFragment extends Fragment {
                     e.printStackTrace();
                     Thread.currentThread().interrupt();
                 }
-                while(EncryptorService.deletingFiles.containsValue(true)){
+                while (EncryptorService.deletingFiles.containsValue(true)) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -367,31 +385,28 @@ public class SettingsFragment extends Fragment {
                         Thread.currentThread().interrupt();
                     }
                 }
-                requireActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        alertDialog.dismiss();
-                        switch (EncryptorService.backupRestoreReturn){
-                            case 0:
-                                Snackbar.make(requireView(), "Database restored successfully!", Snackbar.LENGTH_LONG).show();
-                                break;
-                            case 1:
-                                Snackbar.make(requireView(), "Database password doesn't match current password", Snackbar.LENGTH_LONG).show();
-                                EncryptorService.backupRestoreReturn = 0;
-                                break;
-                            case 2:
-                                Snackbar.make(requireView(), "Database not found in cloud.", Snackbar.LENGTH_LONG).show();
-                                EncryptorService.backupRestoreReturn = 0;
-                                //No database
-                                break;
-                            case 3:
-                                Snackbar.make(requireView(), "Error", Snackbar.LENGTH_LONG).show();
-                                EncryptorService.backupRestoreReturn = 0;
-                                //Error
-                                break;
-                            default:
-                                break;
-                        }
+                requireActivity().runOnUiThread(() -> {
+                    alertDialog.dismiss();
+                    switch (EncryptorService.backupRestoreReturn) {
+                        case 0:
+                            Snackbar.make(requireView(), R.string.databaseRestoreSuccess, Snackbar.LENGTH_LONG).show();
+                            break;
+                        case 1:
+                            Snackbar.make(requireView(), R.string.databasePassNotMatch, Snackbar.LENGTH_LONG).show();
+                            EncryptorService.backupRestoreReturn = 0;
+                            break;
+                        case 2:
+                            Snackbar.make(requireView(), R.string.noDBfoundInCloud, Snackbar.LENGTH_LONG).show();
+                            EncryptorService.backupRestoreReturn = 0;
+                            //No database
+                            break;
+                        case 3:
+                            Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                            EncryptorService.backupRestoreReturn = 0;
+                            //Error
+                            break;
+                        default:
+                            break;
                     }
                 });
             }
