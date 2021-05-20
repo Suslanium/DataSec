@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:checked="false"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:text="@string/darkTheme"
                 android:textSize="18sp"
                 tools:checked="false" />
@@ -35,7 +35,7 @@
                 android:id="@+id/deleteAfter"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:text="@string/deleteAfter1"
                 android:textSize="18sp" />
 
@@ -43,7 +43,7 @@
                 android:id="@+id/deleteAfter2"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:lineSpacingExtra="2dp"
                 android:text="@string/deleteAfter2"
                 android:textSize="18sp" />
@@ -52,7 +52,7 @@
                 android:id="@+id/previewSwitch"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:text="@string/previews"
                 android:textSize="18sp" />
 
@@ -60,7 +60,7 @@
                 android:id="@+id/showLoginsSwitch"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:text="@string/showLogins"
                 android:textSize="18sp" />
 
@@ -68,7 +68,7 @@
                 android:id="@+id/hiddenFilesSwitch"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:text="@string/showHidden"
                 android:textSize="18sp" />
 
@@ -77,7 +77,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:backgroundTint="#00FFFFFF"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:gravity="start|center_vertical"
                 android:letterSpacing="0"
                 android:stateListAnimator="@null"
@@ -91,7 +91,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:backgroundTint="#00FFFFFF"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/ubuntu"
                 android:gravity="start|center_vertical"
                 android:letterSpacing="0"
                 android:stateListAnimator="@null"

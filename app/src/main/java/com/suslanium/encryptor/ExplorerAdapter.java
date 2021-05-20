@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 
 import java.text.SimpleDateFormat;
 
+import android.graphics.Typeface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -75,6 +77,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private static final String INDEX = "index";
     private boolean searchEnded = false;
     private boolean showPreviews = true;
+    private boolean canSelect = true;
     private String B = "B";
     private String KB = "KB";
     private String MB = "MB";
@@ -112,17 +115,19 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 String filePath = path + File.separator + realPath;
                 if (!deletedFilePaths.contains(filePath)) {
                     if (!isDoingFileOperations) {
-                        if (fileCheckbox.isChecked()) {
-                            fileCheckbox.setChecked(false);
-                            CheckedId.remove(realPath);
-                            closeBottomBar();
-                            if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
-                                fragment.showAddButton(true);
+                        if (canSelect) {
+                            if (fileCheckbox.isChecked()) {
+                                fileCheckbox.setChecked(false);
+                                CheckedId.remove(realPath);
+                                closeBottomBar();
+                                if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE && CheckedId.isEmpty()) {
+                                    fragment.showAddButton(true);
+                                }
+                            } else {
+                                openBottomBar();
+                                fileCheckbox.setChecked(true);
+                                CheckedId.add(realPath);
                             }
-                        } else {
-                            openBottomBar();
-                            fileCheckbox.setChecked(true);
-                            CheckedId.add(realPath);
                         }
                     }
                 }
@@ -135,7 +140,9 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         if (!deletedFilePaths.contains(filePath)) {
                             File file = new File(filePath);
                             if ((file.isDirectory()) || (file.isFile() && !isDoingFileOperations)) {
-                                final EditText input = new EditText(activity.getBaseContext());
+                                final EditText input = new EditText(fragment.requireContext());
+                                Typeface ubuntu = ResourcesCompat.getFont(fragment.requireContext(), R.font.ubuntu);
+                                input.setTypeface(ubuntu);
                                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                                 input.setSingleLine(true);
                                 input.setText(file.getName());
@@ -221,7 +228,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             ArrayList<File> filesSorted = new ArrayList<>();
                                             for (int i = 0; i < sorted.size(); i++) {
                                                 File toAdd = new File(sorted.get(i));
-                                                if((fragment.showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                                                if ((fragment.showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
                                                     filesSorted.add(toAdd);
                                                 }
                                             }
@@ -234,7 +241,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                             }
                                             CheckedId.clear();
                                             holders.clear();
-                                            if(searchEnded){
+                                            if (searchEnded) {
                                                 fragment.cancelSearch();
                                                 searchEnded = false;
                                             }
@@ -372,9 +379,9 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     intent.setAction(Intent.ACTION_VIEW);
                                                     intent.setDataAndType(uriForFile, type);
                                                     //if(type.contains("vnd.android.package-archive")){
-                                                        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                     //} else {
-                                                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                                     //}
                                                     activity.startActivity(intent);
                                                 } catch (Exception e) {
@@ -448,12 +455,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         deletedFilePaths.removeAll(paths);
     }
 
-    public void setSearchEnded(){
-        searchEnded=true;
+    public void setSearchEnded() {
+        searchEnded = true;
     }
 
     public void closeBottomBar() {
         if (CheckedId.isEmpty() && bottomBar.getVisibility() == View.VISIBLE) {
+            canSelect = false;
             bottomBar.animate()
                     .alpha(0f)
                     .setDuration(200)
@@ -461,6 +469,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
+                            canSelect = true;
                             bottomBar.setVisibility(View.GONE);
                         }
                     });
@@ -471,20 +480,31 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         isDoingFileOperations = doingFileOperations;
     }
 
+    public boolean getDoingFileOperations(){
+        return isDoingFileOperations;
+    }
+
     public void openBottomBar() {
         if (CheckedId.isEmpty() && bottomBar.getVisibility() == View.GONE) {
-                bottomBar.setVisibility(View.VISIBLE);
-                bottomBar.bringToFront();
-                bottomBar.animate()
-                        .alpha(1f)
-                        .setDuration(200)
-                        .setListener(null);
-                bottomBar.getMenu().setGroupCheckable(0, true, false);
-                for (int i = 0; i < bottomBar.getMenu().size(); i++) {
-                    bottomBar.getMenu().getItem(i).setChecked(false);
-                }
-                bottomBar.getMenu().setGroupCheckable(0, true, true);
-                fragment.showAddButton(false);
+            canSelect = false;
+            bottomBar.setVisibility(View.VISIBLE);
+            bottomBar.bringToFront();
+            bottomBar.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            canSelect = true;
+                        }
+                    });
+            bottomBar.getMenu().setGroupCheckable(0, true, false);
+            for (int i = 0; i < bottomBar.getMenu().size(); i++) {
+                bottomBar.getMenu().getItem(i).setChecked(false);
+            }
+            bottomBar.getMenu().setGroupCheckable(0, true, true);
+            fragment.showAddButton(false);
         }
     }
 
@@ -595,7 +615,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     } else if (type.contains("x-msdos-program")) {
                         //EXE
                         viewHolder.setFile(R.drawable.app);
-                    } else if(type.contains("vnd.android.package-archive")){
+                    } else if (type.contains("vnd.android.package-archive")) {
                         viewHolder.setFile(R.mipmap.ic_launcher);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
                         viewHolder.setFile(R.drawable.powerpoint);
@@ -620,23 +640,23 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 activity.runOnUiThread(() -> {
                     switch (finalUnit) {
                         case 0:
-                            viewHolder.getSizeView().setText(finalLength + " "+B);
+                            viewHolder.getSizeView().setText(finalLength + " " + B);
                             //B
                             break;
                         case 1:
-                            viewHolder.getSizeView().setText(finalLength + " "+KB);
+                            viewHolder.getSizeView().setText(finalLength + " " + KB);
                             //KB
                             break;
                         case 2:
-                            viewHolder.getSizeView().setText(finalLength + " "+MB);
+                            viewHolder.getSizeView().setText(finalLength + " " + MB);
                             //MB
                             break;
                         case 3:
-                            viewHolder.getSizeView().setText(finalLength + " "+GB);
+                            viewHolder.getSizeView().setText(finalLength + " " + GB);
                             //GB
                             break;
                         case 4:
-                            viewHolder.getSizeView().setText(finalLength + " "+TB);
+                            viewHolder.getSizeView().setText(finalLength + " " + TB);
                             //TB
                             break;
                         default:
@@ -674,7 +694,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;
-                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " "+items));
+                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " " + items));
             }
         });
     }

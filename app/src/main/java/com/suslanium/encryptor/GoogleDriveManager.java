@@ -5,14 +5,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.AttributeSet;
@@ -21,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Adapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -67,6 +72,7 @@ public class GoogleDriveManager extends AppCompatActivity {
     private FloatingActionButton upload;
     private TextView pathView;
     private TextView sizeView;
+    private SwipeRefreshLayout layout;
 
     @Override
     protected void onStart() {
@@ -79,8 +85,8 @@ public class GoogleDriveManager extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if(dark_theme) setTheme(R.style.Theme_MaterialComponents);
-        else setTheme(R.style.Theme_MaterialComponents_Light);
+        if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark_ActionBar);
+        else setTheme(R.style.Theme_Encryptor_Light_ActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_manager);
         sView = findViewById(R.id.gDriveBottomView);
@@ -94,9 +100,10 @@ public class GoogleDriveManager extends AppCompatActivity {
         }
     }
 
-    public void checkFileBar(){
+    public void checkFileBar() {
         ArrayList<String> checkedIds = adapter.getCheckedIds();
-        if(checkedIds!=null&& checkedIds.size() >0 && bottomNavigationView.getVisibility() == View.GONE){
+        if (checkedIds != null && checkedIds.size() > 0 && bottomNavigationView.getVisibility() == View.GONE) {
+            adapter.setCanSelect(false);
             bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
             for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
                 bottomNavigationView.getMenu().getItem(i).setChecked(false);
@@ -105,19 +112,68 @@ public class GoogleDriveManager extends AppCompatActivity {
             HomeFragment.fadeOut(bottomNavigationView);
             HomeFragment.fadeIn(newFolder);
             HomeFragment.fadeIn(upload);
-        } else if(bottomNavigationView.getVisibility() == View.VISIBLE && checkedIds.isEmpty()){
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.setCanSelect(true);
+                }
+            }, 200);
+        } else if (bottomNavigationView.getVisibility() == View.VISIBLE && checkedIds.isEmpty()) {
+            adapter.setCanSelect(false);
             HomeFragment.fadeIn(bottomNavigationView);
             HomeFragment.fadeOut(newFolder);
             HomeFragment.fadeOut(upload);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.setCanSelect(true);
+                }
+            }, 200);
         }
     }
 
+    public void updateUI(boolean search) {
+        try {
+            if (currentOperationNumber == 0) {
+                currentOperationNumber++;
+                List<File> files = mDriveServiceHelper.listDriveFiles(currentFolderID);
+                ArrayList<String>[] names = new ArrayList[]{null, null, null};
+                names[0] = new ArrayList<>();
+                names[1] = new ArrayList<>();
+                names[2] = new ArrayList<>();
+                if (files != null) {
+                    if (!files.isEmpty()) {
+                        for (File file1 : files) {
+                            names[0].add(file1.getName());
+                            names[1].add(file1.getId());
+                            names[2].add(file1.getMimeType());
+                        }
+                        adapter.setNewData(names[0], names[1], names[2]);
+                    }
+                } else {
+                    adapter.setNewData(names[0], names[1], names[2]);
+                }
+                currentOperationNumber--;
+            }
+            if(search){
+                runOnUiThread(() -> layout.setRefreshing(false));
+            }
+        } catch (Exception e) {
+            currentOperationNumber--;
+            if(search){
+                runOnUiThread(() -> layout.setRefreshing(false));
+            }
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public void onBackPressed() {
-        if(lists.size() > 1){
-            folders.remove(folders.get(folders.size()-1));
+        if (lists.size() > 1) {
+            folders.remove(folders.get(folders.size() - 1));
             constructAndSetPath();
-            if(currentOperationNumber == 0) {
+            if (currentOperationNumber == 0) {
                 currentOperationNumber++;
                 Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
                 fadeIn.setDuration(200);
@@ -127,7 +183,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                 currentFolderID = ids.get(ids.size() - 1);
                 ids.remove(ids.size() - 1);
                 Thread thread = new Thread(() -> {
-                    while (!fadeIn.hasEnded()){
+                    while (!fadeIn.hasEnded()) {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
@@ -143,7 +199,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                     fadeOut.setDuration(200);
                     runOnUiThread(() -> recyclerView.startAnimation(fadeOut));
                     runOnUiThread(this::checkFileBar);
-                    while (!fadeOut.hasEnded()){
+                    while (!fadeOut.hasEnded()) {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
@@ -188,9 +244,22 @@ public class GoogleDriveManager extends AppCompatActivity {
         folders.add(getString(R.string.rootFolder));
         pathView = findViewById(R.id.storagePathG);
         sizeView = findViewById(R.id.freeSpaceG);
+        layout = findViewById(R.id.swipeGDrive);
+        layout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUI(true);
+                    }
+                });
+                thread.start();
+            }
+        });
         View.OnClickListener deleteListener = v -> {
             ArrayList<String> ids2 = adapter.getCheckedIds();
-            if(ids2 != null && ids2.size() > 0) {
+            if (ids2 != null && ids2.size() > 0) {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(GoogleDriveManager.this, R.style.MaterialAlertDialog_rounded)
                         .setTitle(R.string.warning)
                         .setMessage(R.string.goingToDelete)
@@ -222,7 +291,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             ArrayList<String> checkedIds = adapter.getCheckedIds();
             ArrayList<String> checkedNames = adapter.getCheckedNames();
             ArrayList<String> mimes = adapter.getCheckedMimes();
-            if(checkedIds != null && !checkedIds.isEmpty()){
+            if (checkedIds != null && !checkedIds.isEmpty()) {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(GoogleDriveManager.this, R.style.MaterialAlertDialog_rounded)
                         .setTitle(R.string.confirmAction)
                         .setMessage(R.string.downloadDecryptFiles)
@@ -232,7 +301,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                             EncryptorService.uniqueID++;
                             int i = EncryptorService.uniqueID;
                             EncryptorService.paths.put(i, checkedIds);
-                            EncryptorService.names.put(i,checkedNames);
+                            EncryptorService.names.put(i, checkedNames);
                             EncryptorService.mimeTypes.put(i, mimes);
                             intent.putExtra("index", i);
                             intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
@@ -247,7 +316,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.action_decryptFilesG:
                         downloadListener.onClick(bottomNavigationView);
                         adapter.deselectAll();
@@ -270,6 +339,8 @@ public class GoogleDriveManager extends AppCompatActivity {
                     .setTitle(R.string.createFolder)
                     .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
             final EditText input = new EditText(GoogleDriveManager.this);
+            Typeface ubuntu = ResourcesCompat.getFont(GoogleDriveManager.this, R.font.ubuntu);
+            input.setTypeface(ubuntu);
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
             builder.setPositiveButton(R.string.create, (dialog, which) -> {
@@ -282,26 +353,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                         Thread thread = new Thread(() -> {
                             try {
                                 mDriveServiceHelper.createFolder(name, currentFolderID);
-                                List<File> files = mDriveServiceHelper.listDriveFiles(currentFolderID);
-                                ArrayList<String>[] names = new ArrayList[]{null, null, null};
-                                if (files != null) {
-                                    if (!files.isEmpty()) {
-                                        names[0] = new ArrayList<>();
-                                        names[1] = new ArrayList<>();
-                                        names[2] = new ArrayList<>();
-                                        for (File file1 : files) {
-                                            names[0].add(file1.getName());
-                                            names[1].add(file1.getId());
-                                            names[2].add(file1.getMimeType());
-                                        }
-                                        adapter.setNewData(names[0], names[1], names[2]);
-                                    }
-                                } else {
-                                    names[0] = new ArrayList<>();
-                                    names[1] = new ArrayList<>();
-                                    names[2] = new ArrayList<>();
-                                    adapter.setNewData(names[0], names[1], names[2]);
-                                }
+                                updateUI(false);
                             } catch (Exception e) {
                                 runOnUiThread(() -> Snackbar.make(v, R.string.failedToCreateG, Snackbar.LENGTH_LONG).show());
                             }
@@ -321,7 +373,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             Intent intent = new Intent(GoogleDriveManager.this, GoogleDriveUploadSelector.class);
             intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
             intent.putExtra("gDriveFolder", currentFolderID);
-            if(currentFolderID == null){
+            if (currentFolderID == null) {
                 Log.d("aaa", "null");
             } else Log.d("aaa", currentFolderID);
             startActivity(intent);
@@ -330,24 +382,24 @@ public class GoogleDriveManager extends AppCompatActivity {
     }
 
     public void showRootFilesInDrive() {
-        final ArrayList<String>[] names = new ArrayList[]{null, null,null};
+        final ArrayList<String>[] names = new ArrayList[]{null, null, null};
         Thread thread = new Thread(() -> {
             try {
                 long total = 0;
                 long used = 0;
                 try {
                     About about = googleDriveService.about().get().setFields("storageQuota").execute();
-                    if(about.getStorageQuota().getLimit()!=null){
+                    if (about.getStorageQuota().getLimit() != null) {
                         total = about.getStorageQuota().getLimit();
                     }
-                    if(about.getStorageQuota().getUsage()!=null) {
+                    if (about.getStorageQuota().getUsage() != null) {
                         used = about.getStorageQuota().getUsage();
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 long free = 0;
-                if(total != 0 && used != 0) {
+                if (total != 0 && used != 0) {
                     free = total - used;
                     double freeSpace = free;
                     int spaceDivisonCount = 0;
@@ -363,19 +415,19 @@ public class GoogleDriveManager extends AppCompatActivity {
                         public void run() {
                             switch (finalSpaceDivisonCount) {
                                 case 0:
-                                    sizeView.setText(finalFreeSpace + " "+getString(R.string.bytes));
+                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.bytes));
                                     break;
                                 case 1:
-                                    sizeView.setText(finalFreeSpace + " "+getString(R.string.kbytes));
+                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.kbytes));
                                     break;
                                 case 2:
-                                    sizeView.setText(finalFreeSpace + " "+getString(R.string.mbytes));
+                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.mbytes));
                                     break;
                                 case 3:
-                                    sizeView.setText(finalFreeSpace + " "+getString(R.string.gbytes));
+                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.gbytes));
                                     break;
                                 case 4:
-                                    sizeView.setText(finalFreeSpace + " "+getString(R.string.tbytes));
+                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.tbytes));
                                     break;
                                 default:
                                     break;
@@ -392,22 +444,22 @@ public class GoogleDriveManager extends AppCompatActivity {
                 }
                 List<File> fileList = mDriveServiceHelper.listDriveFiles(null);
                 if (fileList != null) {
+                    names[0] = new ArrayList<>();
+                    names[1] = new ArrayList<>();
+                    names[2] = new ArrayList<>();
                     if (!fileList.isEmpty()) {
-                        names[0] = new ArrayList<>();
-                        names[1] = new ArrayList<>();
-                        names[2] = new ArrayList<>();
                         for (File file : fileList) {
                             names[0].add(file.getName());
                             names[1].add(file.getId());
                             names[2].add(file.getMimeType());
                         }
                     }
-                    lists.put(lists.size(), new ArrayList[]{names[0],names[1]});
+                    lists.put(lists.size(), new ArrayList[]{names[0], names[1]});
                     ids.add(null);
                     runOnUiThread(() -> {
                         recyclerView = findViewById(R.id.gDriveFileList);
                         recyclerView.setLayoutManager(new LinearLayoutManager(GoogleDriveManager.this));
-                        adapter = new GoogleDriveAdapter(names[0], mDriveServiceHelper, names[1], GoogleDriveManager.this, recyclerView,names[2]);
+                        adapter = new GoogleDriveAdapter(names[0], mDriveServiceHelper, names[1], GoogleDriveManager.this, recyclerView, names[2]);
                         recyclerView.setAdapter(adapter);
                         constructAndSetPath();
                     });
@@ -427,13 +479,13 @@ public class GoogleDriveManager extends AppCompatActivity {
         return currentFolderID;
     }
 
-    public void constructAndSetPath(){
+    public void constructAndSetPath() {
         StringBuilder path = new StringBuilder();
-        for(int i=0;i<folders.size();i++){
+        for (int i = 0; i < folders.size(); i++) {
             path.append(java.io.File.separator).append(folders.get(i));
         }
         String pathStr = new String(path);
-        String toSet = HomeFragment.fitString(pathView,pathStr);
+        String toSet = HomeFragment.fitString(pathView, pathStr);
         pathView.setText(toSet);
     }
 }

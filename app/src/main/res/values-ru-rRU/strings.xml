@@ -209,4 +209,14 @@
     <string name="confirmPass">Подтвердите пароль</string>
     <string name="welcomeToEncryptor">Добро пожаловать в Encryptor!</string>
     <string name="swSt">Сменить хранилище</string>
+    <string name="welcomeToEncryptorText">Encryptor - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер.и есть полнофункциональный файловый менеджер.</string>
+    <string name="letsSetupPermissions">Давайте установим необходимые разрешения</string>
+    <string name="letsSetupPermissionsText">Перед началом использования необходимо предоставить некоторые разрешения.</string>
+    <string name="letsSetupPassword">Давайте установим пароль</string>
+    <string name="letsSetupPasswordText">" Этот пароль будет использоваться для входа в приложение. Запомните его, так как восстановить ваш пароль будет невозможно."</string>
+    <string name="next">Далее</string>
+    <string name="finishSetup">Завершить настройку</string>
+    <string name="pleaseGrantPermissions">Предоставьте необходимые разрешения, пожалуйста.</string>
+    <string name="enterPassErr">Введите пароль, пожалуйста</string>
+    <string name="passwsMatchErr">Пароли не совпадают</string>
 </resources>

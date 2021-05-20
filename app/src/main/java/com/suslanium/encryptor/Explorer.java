@@ -53,30 +53,24 @@ public class Explorer extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean darkTheme = preferences.getBoolean("dark_Theme", true);
-        if (darkTheme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
-        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
+        if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
+        else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         intent = getIntent();
         boolean isFromSettings = intent.getBooleanExtra("fromSettings", false);
         setContentView(R.layout.activity_explorer);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitleTextAppearance(this,R.style.Ubuntu);
         setSupportActionBar(toolbar);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setItemTextAppearance(R.style.Theme_Encryptor_Dark_Nav);
         mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange, R.id.nav_messagecrypt, R.id.nav_settings)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-        float radius = getResources().getDimension(R.dimen.drawer_round);
-        MaterialShapeDrawable navViewBackground = (MaterialShapeDrawable) navigationView.getBackground();
-        navViewBackground.setShapeAppearanceModel(
-                navViewBackground.getShapeAppearanceModel()
-                        .toBuilder()
-                        .setTopRightCorner(CornerFamily.ROUNDED, getResources().getDimension(R.dimen.drawer_round2))
-                        .setBottomRightCorner(CornerFamily.ROUNDED, radius)
-                        .build());
         if (isFromSettings) {
             navController.navigate(R.id.nav_settings);
         }

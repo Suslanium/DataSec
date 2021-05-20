@@ -46,7 +46,6 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     public int currentOperationNumber = 0;
     private TextView storagePath;
     private TextView freeSpace;
-    private ArrayList<String> storagePaths;
     private String currentStorageName;
     private String currentStoragePath;
     public boolean searchEnded = false;
@@ -62,8 +61,8 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean darkTheme = preferences.getBoolean("dark_Theme", true);
-        if(darkTheme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
-        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
+        if(darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
+        else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_upload_selector);
         storagePath = findViewById(R.id.storagePath2);
@@ -144,62 +143,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 }
                 File parent = new File(path);
                 if (parent.canWrite()) {
-                    if (currentOperationNumber == 0) {
-                        fileView.stopScroll();
-                        currentOperationNumber++;
-                        Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_out_right);
-                        fadeIn.setDuration(200);
-                        fadeIn.setFillAfter(true);
-                        fileView.startAnimation(fadeIn);
-                        Thread thread = new Thread(() -> {
-                            File[] files2 = parent.listFiles();
-                            ArrayList<String> paths1 = new ArrayList<>();
-                            if (files2 != null) {
-                                for (int i = 0; i < files2.length; i++) {
-                                    paths1.add(files2[i].getPath());
-                                }
-                            }
-                            List<String> sorted1 = sortFiles(paths1);
-                            ArrayList<File> filesSorted1 = new ArrayList<>();
-                            for (int i = 0; i < sorted1.size(); i++) {
-                                File toAdd = new File(sorted1.get(i));
-                                if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                                    filesSorted1.add(toAdd);
-                                }
-                            }
-                            ArrayList<String> fileNames2 = new ArrayList<>();
-                            for (int i = 0; i < filesSorted1.size(); i++) {
-                                fileNames2.add(filesSorted1.get(i).getName());
-                            }
-                            fileList.clear();
-                            fileList.addAll(fileNames2);
-                            while (!fadeIn.hasEnded()) {
-                                try {
-                                    Thread.sleep(10);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                    Thread.currentThread().interrupt();
-                                }
-                            }
-                            Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
-                            fadeOut.setDuration(200);
-                            runOnUiThread(() -> {
-                                adapter.setNewData(parent.getPath(), fileList);
-                                fileView.scrollToPosition(0);
-                                fileView.startAnimation(fadeOut);
-                            });
-                            while (!fadeOut.hasEnded()) {
-                                try {
-                                    Thread.sleep(10);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                    Thread.currentThread().interrupt();
-                                }
-                            }
-                            currentOperationNumber--;
-                        });
-                        thread.start();
-                    }
+                    updateUI(adapter, fileView, parent);
                 }
             }
         });
@@ -221,66 +165,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 if (matches) {
                     finish();
                 } else {
-                    currentOperationNumber++;
-                    Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_out_right);
-                    fadeIn.setDuration(200);
-                    fadeIn.setFillAfter(true);
-                    fileView.startAnimation(fadeIn);
-                    File finalParent = parent;
-                    Thread thread = new Thread(() -> {
-                        File[] files2 = new File[0];
-                        if (finalParent != null) {
-                            files2 = finalParent.listFiles();
-                        }
-                        ArrayList<String> paths12 = new ArrayList<>();
-                        if (files2 != null) {
-                            for (int i = 0; i < files2.length; i++) {
-                                paths12.add(files2[i].getPath());
-                            }
-                        }
-                        List<String> sorted12 = sortFiles(paths12);
-                        ArrayList<File> filesSorted12 = new ArrayList<>();
-                        for (int i = 0; i < sorted12.size(); i++) {
-                            File toAdd = new File(sorted12.get(i));
-                            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                                filesSorted12.add(toAdd);
-                            }
-                        }
-                        ArrayList<String> fileNames2 = new ArrayList<>();
-                        for (int i = 0; i < filesSorted12.size(); i++) {
-                            fileNames2.add(filesSorted12.get(i).getName());
-                        }
-                        fileList.clear();
-                        fileList.addAll(fileNames2);
-                        while (!fadeIn.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                        Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
-                        fadeOut.setDuration(200);
-                        runOnUiThread(() -> {
-                            if (finalParent != null) {
-                                adapter.setNewData(finalParent.getPath(), fileList);
-                                setStoragePath(finalParent.getPath());
-                            }
-                            fileView.scrollToPosition(0);
-                            fileView.startAnimation(fadeOut);
-                        });
-                        while (!fadeOut.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                        currentOperationNumber--;
-                    });
-                    thread.start();
+                    updateUI(adapter, fileView, parent);
                 }
             }
         });
@@ -383,6 +268,64 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         super.onResume();
     }
 
+    public void updateUI(GDriveUploadSelectorAdapter adapter, RecyclerView fileView, File parent) {
+        if (currentOperationNumber == 0) {
+            fileView.stopScroll();
+            currentOperationNumber++;
+            Animation fadeIn1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_out_right);
+            fadeIn1.setDuration(200);
+            fadeIn1.setFillAfter(true);
+            fileView.startAnimation(fadeIn1);
+            Thread thread1 = new Thread(() -> {
+                File[] files2 = parent.listFiles();
+                ArrayList<String> paths14 = new ArrayList<>();
+                for (int i = 0; i < files2.length; i++) {
+                    paths14.add(files2[i].getPath());
+                }
+                List<String> sorted13 = sortFiles(paths14);
+                ArrayList<File> filesSorted13 = new ArrayList<>();
+                for (int i = 0; i < sorted13.size(); i++) {
+                    //-----------------------------------------------
+                    File toAdd = new File(sorted13.get(i));
+                    if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
+                        filesSorted13.add(toAdd);
+                    }
+                }
+                ArrayList<String> fileNames2 = new ArrayList<>();
+                for (int i = 0; i < filesSorted13.size(); i++) {
+                    fileNames2.add(filesSorted13.get(i).getName());
+                }
+                fileList.clear();
+                fileList.addAll(fileNames2);
+                while (!fadeIn1.hasEnded()) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
+                fadeOut1.setDuration(200);
+                runOnUiThread(() -> {
+                    adapter.setNewData(parent.getPath(), fileList);
+                    fileView.scrollToPosition(0);
+                    fileView.startAnimation(fadeOut1);
+                });
+                while (!fadeOut1.hasEnded()) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                currentOperationNumber--;
+            });
+            thread1.start();
+        }
+    }
+
     public void setStoragePath(String path){
         String pathToShow = path.replace(currentStoragePath, currentStorageName);
         pathToShow = fitString(storagePath, pathToShow);
@@ -429,6 +372,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         }
         return newText;
     }
+
     private ArrayList<File> searchFiles(String path, String fileName) {
         ArrayList<File> result = new ArrayList<>();
         File parent = new File(path);

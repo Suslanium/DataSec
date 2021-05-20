@@ -213,6 +213,15 @@
     <string name="grantStorage">GRANT STORAGE PERMISSION</string>
     <string name="confirmPass">Confirm password</string>
     <string name="welcomeToEncryptor">Welcome to Encryptor!</string>
-    <string name="welcomeToEncryptorText" translatable="false">" Encryptor is an application that helps you securely store sensitive data. With this app, you can encrypt and decrypt files, store files in a private folder, store your passwords securely, and store encrypted data in the cloud. Also this application has a fully functional file manager."</string>
+    <string name="welcomeToEncryptorText">Encryptor is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager.</string>
     <string name="swSt">Switch storage</string>
+    <string name="letsSetupPermissions">Lets setup required permissions</string>
+    <string name="letsSetupPermissionsText">Before using this app, you need to grant some permissions.</string>
+    <string name="letsSetupPassword">Let\'s set up a password</string>
+    <string name="letsSetupPasswordText">This password will be used to log into this application. Remember it, as it will be impossible to recover your password.</string>
+    <string name="next">Next</string>
+    <string name="finishSetup">Finish setup</string>
+    <string name="pleaseGrantPermissions">Please grant required permissions</string>
+    <string name="enterPassErr">Please enter password</string>
+    <string name="passwsMatchErr">Passwords do not match</string>
 </resources>

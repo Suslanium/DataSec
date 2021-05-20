@@ -2,6 +2,7 @@ package com.suslanium.encryptor;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
@@ -17,6 +18,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PathEffect;
+import android.graphics.Typeface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -97,8 +99,8 @@ public class passwordChange extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if(dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
-        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
+        if(dark_theme) setTheme(R.style.Theme_Encryptor_Dark);
+        else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_change);
         Bundle b = getIntent().getExtras();
@@ -318,6 +320,8 @@ public class passwordChange extends AppCompatActivity {
         Button generatePassword = findViewById(R.id.generatePassword2);
         generatePassword.setOnClickListener(v -> {
             final EditText input = new EditText(passwordChange.this);
+            Typeface ubuntu = ResourcesCompat.getFont(passwordChange.this, R.font.ubuntu);
+            input.setTypeface(ubuntu);
             input.setInputType(InputType.TYPE_CLASS_NUMBER);
             input.setSingleLine(true);
             input.setHint(R.string.passLength);

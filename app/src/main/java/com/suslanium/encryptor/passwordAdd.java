@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -40,6 +41,7 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -97,8 +99,8 @@ public class passwordAdd extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if (dark_theme) setTheme(R.style.Theme_MaterialComponents_NoActionBar);
-        else setTheme(R.style.Theme_MaterialComponents_Light_NoActionBar);
+        if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark);
+        else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_add);
         addServiceIcon = findViewById(R.id.serviceAddIcon);
@@ -268,6 +270,8 @@ public class passwordAdd extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final EditText input = new EditText(passwordAdd.this);
+                Typeface ubuntu = ResourcesCompat.getFont(passwordAdd.this, R.font.ubuntu);
+                input.setTypeface(ubuntu);
                 input.setInputType(InputType.TYPE_CLASS_NUMBER);
                 input.setSingleLine(true);
                 input.setHint(R.string.passLength);

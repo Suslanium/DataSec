@@ -6,6 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeExplorer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/storagePath">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fileView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <TextView
         android:id="@+id/freeSpace"
         android:layout_width="wrap_content"
@@ -48,15 +62,6 @@
         app:layout_constraintVertical_bias="1.0"
         app:menu="@menu/bottomexplorermenu" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/fileView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/storagePath" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/sdCardButton"
         android:layout_width="wrap_content"
@@ -64,7 +69,7 @@
         android:clickable="true"
         android:src="@android:drawable/stat_notify_sdcard"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@+id/fileView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.7"
         app:layout_constraintStart_toStartOf="parent"
@@ -119,8 +124,8 @@
         android:clickable="true"
         android:src="@android:drawable/ic_delete"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/fileView"
-        app:layout_constraintEnd_toEndOf="@+id/fileView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.7"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

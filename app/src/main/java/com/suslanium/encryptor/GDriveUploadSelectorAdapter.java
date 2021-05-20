@@ -351,9 +351,11 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                         viewHolder.setFile(R.drawable.image);
                     } else if (type.contains("video")) {
                         viewHolder.setFile(R.drawable.video);
-                    } else if (type.contains("x-msdos-program") || type.contains("vnd.android.package-archive")) {
+                    } else if (type.contains("x-msdos-program")) {
                         //EXE
                         viewHolder.setFile(R.drawable.app);
+                    } else if (type.contains("vnd.android.package-archive")) {
+                        viewHolder.setFile(R.mipmap.ic_launcher);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
                         viewHolder.setFile(R.drawable.powerpoint);
                     } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {

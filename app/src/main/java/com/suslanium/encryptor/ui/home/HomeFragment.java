@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,9 +40,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -52,6 +55,7 @@ import com.suslanium.encryptor.Explorer;
 import com.suslanium.encryptor.ExplorerAdapter;
 import com.suslanium.encryptor.GoogleDriveUploadSelector;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.passwordAdd;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -115,6 +119,7 @@ public class HomeFragment extends Fragment {
         ((Explorer) requireActivity()).explorerVisible = true;
         ListIterator<String> pathIterator;
         RecyclerView fileView = requireActivity().findViewById(R.id.fileView);
+        SwipeRefreshLayout swipeRefreshLayout = requireActivity().findViewById(R.id.swipeExplorer);
         storagePaths = new ArrayList<>();
         File[] dir = requireContext().getExternalFilesDirs(null);
         for (int i = 0; i < dir.length; i++) {
@@ -206,6 +211,17 @@ public class HomeFragment extends Fragment {
         Intent intent2 = ((Explorer) requireActivity()).getIntent2();
         FloatingActionButton confirm = requireActivity().findViewById(R.id.confirmButton);
         FloatingActionButton cancel = requireActivity().findViewById(R.id.cancelButton);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                updateUI(adapter, fileView, new File(adapter.getPath()));
+                cancelSearch();
+                if (!adapter.getDoingFileOperations() && getAddButtonState() == View.GONE) {
+                    showAddButton(true);
+                }
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.action_deleteFiles:
@@ -293,20 +309,24 @@ public class HomeFragment extends Fragment {
                     }
                     break;
                 case R.id.action_shareFiles:
-                    ArrayList<String> checkedFiles1 = adapter.getCheckedFiles();
-                    ArrayList<String> pathswSub = constructFilePaths(checkedFiles1);
-                    ArrayList<Uri> uris = new ArrayList<>();
-                    if (!pathswSub.isEmpty()) {
-                        for (int i = 0; i < pathswSub.size(); i++) {
-                            uris.add(FileProvider.getUriForFile(requireContext(), "com.suslanium.encryptor.fileprovider", new File(pathswSub.get(i))));
+                    try {
+                        ArrayList<String> checkedFiles1 = adapter.getCheckedFiles();
+                        ArrayList<String> pathswSub = constructFilePaths(checkedFiles1);
+                        ArrayList<Uri> uris = new ArrayList<>();
+                        if (!pathswSub.isEmpty()) {
+                            for (int i = 0; i < pathswSub.size(); i++) {
+                                uris.add(FileProvider.getUriForFile(requireContext(), "com.suslanium.encryptor.fileprovider", new File(pathswSub.get(i))));
+                            }
+                            shareFiles(uris);
+                        } else {
+                            Snackbar.make(requireView(), R.string.selectFiles, Snackbar.LENGTH_LONG).show();
                         }
-                        shareFiles(uris);
-                    } else {
-                        Snackbar.make(requireView(), R.string.selectFiles, Snackbar.LENGTH_LONG).show();
+                        adapter.deselectAll();
+                        adapter.closeBottomBar();
+                        showAddButton(true);
+                    } catch (Exception e){
+                        Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
                     }
-                    adapter.deselectAll();
-                    adapter.closeBottomBar();
-                    showAddButton(true);
                     break;
                 case R.id.action_encryptFiles:
                     ArrayList<String> checkedFiles = adapter.getCheckedFiles();
@@ -488,7 +508,7 @@ public class HomeFragment extends Fragment {
                 if (matches) {
                     ((Explorer) requireActivity()).incrementBackPressedCount();
                     Snackbar snackbar = Snackbar.make(v, R.string.pressToExit, Snackbar.LENGTH_LONG);
-                    snackbar.setAction(getString(R.string.swSt), v1 -> changeStorage.performClick());
+                    snackbar.setAction(getString(R.string.swSt), v1 -> {try{changeStorage.performClick();}catch (Exception e){e.printStackTrace();}});
                     snackbar.show();
                 } else {
                     updateUI(adapter, fileView, parent);
@@ -500,6 +520,8 @@ public class HomeFragment extends Fragment {
         newFolderListener = v -> {
             if (((Explorer) requireActivity()).currentOperationNumber == 0) {
                 final EditText input = new EditText(requireContext());
+                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                input.setTypeface(ubuntu);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 input.setSingleLine(true);
                 //Translation end
@@ -646,6 +668,8 @@ public class HomeFragment extends Fragment {
         b1.setOnClickListener(v -> {
             if (((Explorer) requireActivity()).searchBar == null) {
                 EditText layout = new EditText(requireContext());
+                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                layout.setTypeface(ubuntu);
                 Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layoutParams.gravity = Gravity.START;
                 layout.setLayoutParams(l3);

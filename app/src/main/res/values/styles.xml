@@ -2,14 +2,61 @@
 <resources>
     <style name="ShapeAppearanceOverlay.Nav" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">22dp</item>
+        <item name="cornerSize">10dp</item>
     </style>
     <style name="MaterialAlertDialog_rounded" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/DialogCorners</item>
+        <item name="buttonBarPositiveButtonStyle">@style/ButtonStyle</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/ButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/ButtonStyle</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/ButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/ButtonStyle</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/ButtonStyle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/UbuntuAppearance</item>
     </style>
 
     <style name="DialogCorners">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">#90A4AE</item>
+        <item name="android:fontFamily">@font/ubuntu</item>
+        <item name="android:backgroundTint">#00000000</item>
+    </style>
+    <style name="UbuntuTextStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/ubuntu</item>
+    </style>
+    <style name="UbuntuButtonStyle" parent="android:Widget.Holo.Button">
+        <item name="android:fontFamily">@font/ubuntu</item>
+    </style>
+    <style name="UbuntuEditTextStyle" parent="android:Widget.EditText">
+        <item name="android:fontFamily">@font/ubuntu</item>
+    </style>
+    <style name="UbuntuMatButtonStyleDark" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#90A4AE</item>
+        <item name="android:fontFamily">@font/ubuntu</item>
+    </style>
+    <style name="UbuntuTextInputStyleDark" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <!-- The color of the label when it is collapsed and the text field is active -->
+        <item name="hintTextColor">#CFD8DC</item>
+        <!-- The color of the label in all other text field states (such as resting and disabled) -->
+        <item name="android:textColorHint">#CFD8DC</item>
+        <item name="boxStrokeColor">#CFD8DC</item>
+    </style>
+    <style name="EditTextDark" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHint">#CFD8DC</item>
+        <item name="android:textColorPrimary">#CFD8DC</item>
+        <item name="android:colorControlActivated">#CFD8DC</item>
+        <item name="android:colorControlNormal">#CFD8DC</item>
+        <item name="fontFamily">@font/ubuntu</item>
+    </style>
+    <style name="snackBarButtonDark" parent="@style/Widget.MaterialComponents.Button.TextButton.Snackbar">
+        <item name="backgroundTint">#00000000</item>
+        <item name="android:textColor">#37474F</item>
+    </style>
+    <style name="UbuntuAppearance">
+        <item name="fontFamily">@font/ubuntu</item>
+        <item name="android:fontFamily">@font/ubuntu</item>
     </style>
 </resources>

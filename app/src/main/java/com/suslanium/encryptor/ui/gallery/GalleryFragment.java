@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -26,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -148,6 +150,8 @@ public class GalleryFragment extends Fragment {
         b1.setOnClickListener(v -> {
             if(((Explorer) requireActivity()).searchBar == null) {
                 EditText layout = new EditText(requireContext());
+                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                layout.setTypeface(ubuntu);
                 Toolbar.LayoutParams layoutParams = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layoutParams.gravity = Gravity.START;
                 layout.setLayoutParams(l3);
@@ -193,7 +197,9 @@ public class GalleryFragment extends Fragment {
         newCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText input = new EditText(requireActivity().getBaseContext());
+                final EditText input = new EditText(requireContext());
+                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                input.setTypeface(ubuntu);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 input.setSingleLine(true);
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)

@@ -28,6 +28,9 @@ import com.google.android.material.textfield.TextInputLayout;
 public class PasswordActivity extends AppCompatActivity {
 
     @Override
+    public void onBackPressed() {}
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password);
@@ -37,6 +40,11 @@ public class PasswordActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         window.setNavigationBarColor(Color.parseColor("#1976D2"));
         window.setStatusBarColor(Color.parseColor("#6200EA"));
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!preferences.getBoolean("setupComplete", false)){
+            Intent intent = new Intent(this, WelcomeActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void checkForPermissionsPassword(View v) {

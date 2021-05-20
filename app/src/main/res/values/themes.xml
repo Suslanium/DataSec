@@ -1,7 +1,53 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Encryptor" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.Encryptor.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#78909C</item>
+        <item name="colorPrimaryVariant">#607D8B</item>
+        <item name="colorSecondary">#B0BEC5</item>
+        <item name="colorSecondaryVariant">#90A4AE</item>
+        <item name="android:colorBackground">#CFD8DC</item>
+        <item name="colorSurface">#CFD8DC</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="android:textColor">#455A64</item>
+        <item name="toolbarStyle">@style/Widget.Encryptor.Toolbar.Light</item>
+        <item name="android:textViewStyle">@style/UbuntuTextStyle</item>
+        <item name="materialButtonStyle">@style/UbuntuMatButtonStyleDark</item>
+        <item name="textInputStyle">@style/UbuntuTextInputStyleDark</item>
+        <item name="android:buttonStyle">@style/UbuntuButtonStyle</item>
+        <item name="snackbarButtonStyle">@style/snackBarButtonDark</item>
+        <item name="android:navigationBarColor">#CFD8DC</item>
+        <!-- Secondary brand color. -->
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+    <style name="Theme.Encryptor.Light.ActionBar" parent="Theme.MaterialComponents.Light">
+        <!-- Primary brand color. -->
+        <!-- Customize your theme here. -->
+        <!-- Primary brand color. -->
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#78909C</item>
+        <item name="colorPrimaryVariant">#607D8B</item>
+        <item name="colorSecondary">#B0BEC5</item>
+        <item name="colorSecondaryVariant">#90A4AE</item>
+        <item name="android:colorBackground">#CFD8DC</item>
+        <item name="colorSurface">#CFD8DC</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="android:textColor">#455A64</item>
+        <item name="toolbarStyle">@style/Widget.Encryptor.Toolbar.Light</item>
+        <item name="android:textViewStyle">@style/UbuntuTextStyle</item>
+        <item name="materialButtonStyle">@style/UbuntuMatButtonStyleDark</item>
+        <item name="textInputStyle">@style/UbuntuTextInputStyleDark</item>
+        <item name="android:buttonStyle">@style/UbuntuButtonStyle</item>
+        <item name="snackbarButtonStyle">@style/snackBarButtonDark</item>
+        <item name="android:navigationBarColor">#CFD8DC</item>
+        <!-- Secondary brand color. -->
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
 
@@ -13,8 +59,15 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+    <style name="Widget.Encryptor.Toolbar.Light" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="titleTextColor">#FFFFFF</item>
+        <item name="subtitleTextColor">#FFFFFF</item>
+    </style>
 
     <style name="AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Ubuntu" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">@font/ubuntu_medium</item>
+    </style>
 </resources>
