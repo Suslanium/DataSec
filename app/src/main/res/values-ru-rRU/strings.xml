@@ -207,7 +207,7 @@
     <string name="grantBattery">Предоставить разрешение для батареи</string>
     <string name="grantStorage">Предоставить доступ к хранилищу</string>
     <string name="confirmPass">Подтвердите пароль</string>
-    <string name="welcomeToEncryptor">Добро пожаловать в DataSec!</string>
+    <string name="welcomeToEncryptor">Добро пожаловать в DataCrypt!</string>
     <string name="swSt">Сменить хранилище</string>
     <string name="welcomeToEncryptorText">DataSec - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер.и есть полнофункциональный файловый менеджер.</string>
     <string name="letsSetupPermissions">Давайте установим необходимые разрешения</string>

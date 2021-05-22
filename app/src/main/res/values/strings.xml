@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">DataSec</string>
+    <string name="app_name" translatable="false">DataCrypt</string>
     <string name="password">Password</string>
     <string name="welcome">WELCOME</string>
     <string name="logintip">Please enter your password.</string>
@@ -7,7 +7,7 @@
     <string name="title_activity_explorer">Explorer</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title" translatable="false">DataSec</string>
+    <string name="nav_header_title" translatable="false">DataCrypt</string>
     <string name="nav_header_desc" translatable="false">Navigation header</string>
     <string name="action_settings">Settings</string>
 
@@ -212,7 +212,7 @@
     <string name="grantBattery">GRANT BATTERY PERMISSION</string>
     <string name="grantStorage">GRANT STORAGE PERMISSION</string>
     <string name="confirmPass">Confirm password</string>
-    <string name="welcomeToEncryptor">Welcome to DataSec!</string>
+    <string name="welcomeToEncryptor">Welcome to DataCrypt!</string>
     <string name="welcomeToEncryptorText">DataSec is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager.</string>
     <string name="swSt">Switch storage</string>
     <string name="letsSetupPermissions">Lets setup required permissions</string>
