@@ -207,9 +207,9 @@
     <string name="grantBattery">Предоставить разрешение для батареи</string>
     <string name="grantStorage">Предоставить доступ к хранилищу</string>
     <string name="confirmPass">Подтвердите пароль</string>
-    <string name="welcomeToEncryptor">Добро пожаловать в Encryptor!</string>
+    <string name="welcomeToEncryptor">Добро пожаловать в DataSec!</string>
     <string name="swSt">Сменить хранилище</string>
-    <string name="welcomeToEncryptorText">Encryptor - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер.и есть полнофункциональный файловый менеджер.</string>
+    <string name="welcomeToEncryptorText">DataSec - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер.и есть полнофункциональный файловый менеджер.</string>
     <string name="letsSetupPermissions">Давайте установим необходимые разрешения</string>
     <string name="letsSetupPermissionsText">Перед началом использования необходимо предоставить некоторые разрешения.</string>
     <string name="letsSetupPassword">Давайте установим пароль</string>
@@ -219,4 +219,9 @@
     <string name="pleaseGrantPermissions">Предоставьте необходимые разрешения, пожалуйста.</string>
     <string name="enterPassErr">Введите пароль, пожалуйста</string>
     <string name="passwsMatchErr">Пароли не совпадают</string>
+    <string name="upload">Загрузить файл(ы)...</string>
+    <string name="help">Помощь</string>
+    <string name="signOut">Выйти из Google Диска</string>
+    <string name="signOutSuccess">Выход выполнен</string>
+    <string name="signOutErr">Вы не вошли в аккаунт</string>
 </resources>

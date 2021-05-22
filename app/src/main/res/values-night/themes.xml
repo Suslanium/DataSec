@@ -2,13 +2,6 @@
     <!-- Base application theme. -->
     <style name="Theme.Encryptor.Dark" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary brand color. -->
-        <!--<item name="colorPrimary">#ffecb3</item>
-        <item name="colorPrimaryVariant">#cbba83</item>
-        <item name="colorSecondary">#ffecb3</item>
-        <item name="colorSecondaryVariant">#cbba83</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <item name="android:fontFamily">@font/ubuntu</item>
-        <item name="fontFamily">@font/ubuntu</item>!-->
         <item name="colorPrimary">#37474F</item>
         <item name="colorPrimaryVariant">#263238</item>
         <item name="colorSecondary">#90A4AE</item>
@@ -17,6 +10,7 @@
         <item name="colorSurface">#171E21</item>
         <item name="colorOnPrimary">@color/black</item>
         <item name="android:textColor">#CFD8DC</item>
+        <item name="android:textColorPrimary">#CFD8DC</item>
         <item name="toolbarStyle">@style/Widget.Encryptor.Toolbar.Dark</item>
         <item name="android:textViewStyle">@style/UbuntuTextStyle</item>
         <item name="materialButtonStyle">@style/UbuntuMatButtonStyleDark</item>
@@ -24,6 +18,18 @@
         <item name="android:buttonStyle">@style/UbuntuButtonStyle</item>
         <item name="snackbarButtonStyle">@style/snackBarButtonDark</item>
         <item name="android:navigationBarColor">#171E21</item>
+        <item name="android:switchTextAppearance">@style/SwitchTextAppearanceDark</item>
+        <item name="switchTextAppearance">@style/SwitchTextAppearanceDark</item>
+        <item name="navigationViewBackgroundColor">@color/navDark</item>
+        <item name="navSelectedItemTextColor">@color/navTextDark</item>
+        <item name="navTitleColor">@color/navTextDark</item>
+        <item name="dialogButtonColor">@color/dialogButtonDark</item>
+        <item name="dialogTitleColor">@color/dialogTitleDark</item>
+        <item name="bottomBarColor">@color/bottomBarDark</item>
+        <item name="titleColor">@color/titleColorDark</item>
+        <item name="colorControlNormal">#CFD8DC</item>
+        <item name="inputColor">@color/bottomBarDark</item>
+        <item name="explorerIconColor">@color/explorerIconsDark</item>
         <!-- Secondary brand color. -->
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
@@ -42,13 +48,6 @@
     </style>
     <style name="Theme.Encryptor.Dark.ActionBar" parent="Theme.MaterialComponents">
         <!-- Primary brand color. -->
-        <!--<item name="colorPrimary">#ffecb3</item>
-        <item name="colorPrimaryVariant">#cbba83</item>
-        <item name="colorSecondary">#ffecb3</item>
-        <item name="colorSecondaryVariant">#cbba83</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <item name="android:fontFamily">@font/ubuntu</item>
-        <item name="fontFamily">@font/ubuntu</item>!-->
         <item name="colorPrimary">#37474F</item>
         <item name="colorPrimaryVariant">#263238</item>
         <item name="colorSecondary">#90A4AE</item>
@@ -64,6 +63,50 @@
         <item name="android:buttonStyle">@style/UbuntuButtonStyle</item>
         <item name="snackbarButtonStyle">@style/snackBarButtonDark</item>
         <item name="android:navigationBarColor">#171E21</item>
+        <item name="navigationViewBackgroundColor">@color/navDark</item>
+        <item name="navSelectedItemTextColor">@color/navTextDark</item>
+        <item name="dialogButtonColor">@color/dialogButtonDark</item>
+        <item name="dialogTitleColor">@color/dialogTitleDark</item>
+        <item name="bottomBarColor">@color/bottomBarDark</item>
+        <item name="titleColor">@color/titleColorDark</item>
+        <item name="colorControlNormal">#CFD8DC</item>
+        <item name="explorerIconColor">@color/explorerIconsDark</item>
+        <!-- Secondary brand color. -->
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="inputColor">@color/bottomBarDark</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+    <style name="Theme.Encryptor.Dark.Pass" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#37474F</item>
+        <item name="colorPrimaryVariant">#171E21</item>
+        <item name="colorSecondary">#90A4AE</item>
+        <item name="colorSecondaryVariant">#607D8B</item>
+        <item name="android:colorBackground">#171E21</item>
+        <item name="colorSurface">#171E21</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="android:textColor">#CFD8DC</item>
+        <item name="android:textColorPrimary">#CFD8DC</item>
+        <item name="toolbarStyle">@style/Widget.Encryptor.Toolbar.Dark</item>
+        <item name="android:textViewStyle">@style/UbuntuTextStyle</item>
+        <item name="materialButtonStyle">@style/UbuntuMatButtonStyleDark</item>
+        <item name="textInputStyle">@style/UbuntuTextInputStyleDark</item>
+        <item name="android:buttonStyle">@style/UbuntuButtonStyle</item>
+        <item name="snackbarButtonStyle">@style/snackBarButtonDark</item>
+        <item name="android:navigationBarColor">#171E21</item>
+        <item name="android:switchTextAppearance">@style/SwitchTextAppearanceDark</item>
+        <item name="switchTextAppearance">@style/SwitchTextAppearanceDark</item>
+        <item name="navigationViewBackgroundColor">@color/navDark</item>
+        <item name="navSelectedItemTextColor">@color/navTextDark</item>
+        <item name="dialogButtonColor">@color/dialogButtonDark</item>
+        <item name="dialogTitleColor">@color/dialogTitleDark</item>
+        <item name="bottomBarColor">@color/bottomBarDark</item>
+        <item name="titleColor">@color/titleColorDark</item>
+        <item name="colorControlNormal">#CFD8DC</item>
+        <item name="inputColor">@color/bottomBarDark</item>
+        <item name="explorerIconColor">@color/explorerIconsDark</item>
         <!-- Secondary brand color. -->
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->

@@ -3,15 +3,19 @@ package com.suslanium.encryptor;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.suslanium.encryptor.ui.gallery.GalleryFragment;
@@ -34,6 +38,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     private Activity activity;
     private GalleryFragment fragment;
     private boolean showLogins = true;
+    private static ColorStateList defTint;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -80,12 +85,18 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         }
 
         public void setDefaultIcon() {
+            iconView.setImageTintList(defTint);
             iconView.setImageResource(R.drawable.managerkey);
         }
 
         public void setCategory() {
             isCategory = true;
-            iconView.setImageResource(R.drawable.folder);
+            iconView.setImageTintList(defTint);
+            iconView.setImageResource(R.drawable.ic_folder);
+        }
+
+        public void removeTint(){
+            iconView.setImageTintList(null);
         }
     }
 
@@ -105,6 +116,11 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         this.fragment = fragment;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext());
         showLogins = preferences.getBoolean("showLogins", true);
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = activity.getTheme();
+        theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
+        @ColorInt int color = typedValue.data;
+        defTint = ColorStateList.valueOf(color);
     }
 
     // Create new views (invoked by the layout manager)
@@ -138,6 +154,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
             viewHolder.position = position - localCategories.size();
             try {
                 if (icons.get(position - localCategories.size()) != null) {
+                    viewHolder.removeTint();
                     viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
                 } else {
                     viewHolder.setDefaultIcon();

@@ -20,8 +20,11 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:itemTextAppearance="@style/UbuntuTextStyle"
+        android:theme="@style/UbuntuTextStyleNav"
+        android:backgroundTint="?attr/navigationViewBackgroundColor"
         app:itemShapeFillColor="@color/navviewselector"
+        app:itemTextColor="@color/navviewitem"
+        app:itemIconTint="@color/navviewitem"
         app:headerLayout="@layout/nav_header_main"
         app:itemShapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Nav"
         app:menu="@menu/activity_main_drawer" />

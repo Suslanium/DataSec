@@ -87,7 +87,7 @@ public class EncryptorService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.locked)
+                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                 .setContentTitle(getString(R.string.serviceRunning))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -110,7 +110,7 @@ public class EncryptorService extends Service {
                         ArrayList<String> encryptedPaths = new ArrayList<>();
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.encrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
@@ -143,7 +143,7 @@ public class EncryptorService extends Service {
                                         encryptedPaths.add(file1.getPath());
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -161,7 +161,7 @@ public class EncryptorService extends Service {
                                         encryptedPaths.add(file1.getPath());
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -187,10 +187,10 @@ public class EncryptorService extends Service {
                         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 12345, shareIntent, 0);
                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceEncSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                .addAction(R.drawable.checkmark, getString(R.string.share), pendingIntent);
+                                .addAction(0, getString(R.string.share), pendingIntent);
                         if (errorsCount[0] > 0)
                             builder22.setContentText(getString(R.string.errors)+" " + errorsCount[0]);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
@@ -212,7 +212,7 @@ public class EncryptorService extends Service {
                         boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.decrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
@@ -255,7 +255,7 @@ public class EncryptorService extends Service {
                                         if (autoDelete2) file.delete();
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -272,7 +272,7 @@ public class EncryptorService extends Service {
                                         if (autoDelete2) file.delete();
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -285,7 +285,7 @@ public class EncryptorService extends Service {
                             }
                         }
                         NotificationCompat.Builder builder23 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceDecSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
@@ -308,7 +308,7 @@ public class EncryptorService extends Service {
                         String password = Encryptor.rsadecrypt(pass);
                         ArrayList<File> encryptedFiles = new ArrayList<>();
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.encrypting))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
@@ -337,7 +337,7 @@ public class EncryptorService extends Service {
                                         encryptedFiles.add(new File(getCacheDir() + File.separator + file.getName() + "Enc"));
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -353,7 +353,7 @@ public class EncryptorService extends Service {
                                         encryptedFiles.add(new File(getCacheDir() + File.separator + file.getName() + ".enc"));
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.locked)
+                                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                 .setContentTitle(getString(R.string.serviceErrorEnc)+" " + file.getName())
                                                 .setOngoing(true)
                                                 .setProgress(1, 0, true)
@@ -366,7 +366,7 @@ public class EncryptorService extends Service {
                             }
                         }
                         NotificationCompat.Builder builder24 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.uploadingTo))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
@@ -393,7 +393,6 @@ public class EncryptorService extends Service {
                             if (driveFiles != null) {
                                 for (int i = 0; i < driveFiles.size(); i++) {
                                     driveFileNames.add(driveFiles.get(i).getName());
-                                    Log.d("fileName", driveFiles.get(i).getName());
                                 }
                             }
                             for (int i = 0; i < encryptedFiles.size(); i++) {
@@ -444,7 +443,7 @@ public class EncryptorService extends Service {
                             }
                         }
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGEncSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         if (errorsCount[0] > 0)
@@ -454,9 +453,9 @@ public class EncryptorService extends Service {
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGEncError))
                                 .setContentText(e.getMessage())
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -479,7 +478,7 @@ public class EncryptorService extends Service {
                         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
                         if (acct != null) {
                             NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.locked)
+                                    .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                     .setContentTitle(getString(R.string.serviceDownloading))
                                     .setOngoing(true)
                                     .setProgress(1, 0, true)
@@ -500,7 +499,7 @@ public class EncryptorService extends Service {
                             }
                             String password = Encryptor.rsadecrypt(pass);
                             NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.locked)
+                                    .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                     .setContentTitle(getString(R.string.decrypting))
                                     .setOngoing(true)
                                     .setProgress(1, 0, true)
@@ -543,7 +542,7 @@ public class EncryptorService extends Service {
                                             Encryptor.decryptFolderAESGCM(file, password, file1, null, true);
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                    .setSmallIcon(R.drawable.locked)
+                                                    .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                     .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                     .setOngoing(true)
                                                     .setProgress(1, 0, true)
@@ -560,7 +559,7 @@ public class EncryptorService extends Service {
                                             file.delete();
                                         } catch (Exception e) {
                                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                                    .setSmallIcon(R.drawable.locked)
+                                                    .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                                     .setContentTitle(getString(R.string.serviceDecryptionError)+" " + file.getName())
                                                     .setOngoing(true)
                                                     .setProgress(1, 0, true)
@@ -573,7 +572,7 @@ public class EncryptorService extends Service {
                                 }
                             }
                             NotificationCompat.Builder builder32 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.locked)
+                                    .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                     .setContentTitle(getString(R.string.serviceGDecSuccess))
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                             if (errorsCount[0] > 0)
@@ -584,9 +583,9 @@ public class EncryptorService extends Service {
                             if (!isRunning.contains(true)) stopSelf();
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceDecryptionError)+"...")
                                 .setContentText(e.getMessage())
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -601,7 +600,7 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     try {
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGDelete))
                                 .setOngoing(true)
                                 .setProgress(1, 0, true)
@@ -626,7 +625,7 @@ public class EncryptorService extends Service {
                             }
                         }
                         NotificationCompat.Builder builder12 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGDeleteSuccess))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
@@ -635,7 +634,7 @@ public class EncryptorService extends Service {
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
                         NotificationCompat.Builder builder12 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGDeleteError))
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(EncryptorService.this);
@@ -656,13 +655,13 @@ public class EncryptorService extends Service {
                     try {
                         password = Encryptor.rsadecrypt(pass);
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                     }
                     String newPass = null;
                     try {
                         newPass = Encryptor.rsadecrypt(newPassEnc);
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                     }
                     if(origin.exists()) {
                         try {
@@ -703,7 +702,7 @@ public class EncryptorService extends Service {
                                 edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                                 edit.apply();
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                                 if (toDownload.exists() && !origin.exists()) {
                                     try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(origin))) {
                                         byte[] buffer = new byte[256 * 1024];
@@ -724,7 +723,7 @@ public class EncryptorService extends Service {
                                 if (!isRunning.contains(true)) stopSelf();
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             isRunning.remove(true);
                             if (!isRunning.contains(true)) stopSelf();
                         }
@@ -752,7 +751,7 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     EncryptorService.deletingFiles.put(index, true);
                     NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                            .setSmallIcon(R.drawable.locked)
+                            .setSmallIcon(R.drawable.ic_baseline_lock_24)
                             .setContentTitle(getString(R.string.serviceDelete))
                             .setOngoing(true)
                             .setProgress(1, 0, true)
@@ -778,7 +777,7 @@ public class EncryptorService extends Service {
                     NotificationCompat.Builder builder3 = null;
                     if (pathsList != null) {
                         builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceCopy))
                                 .setOngoing(true)
                                 .setProgress(pathsList.size(), 0, false)
@@ -799,7 +798,7 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     if (pathsList != null) {
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.locked)
+                                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceMove))
                                 .setOngoing(true)
                                 .setProgress(pathsList.size(), 0, false)
@@ -856,7 +855,7 @@ public class EncryptorService extends Service {
                                 EncryptorService.backupRestoreReturn = 2;
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             EncryptorService.backupRestoreReturn = 3;
                         }
                         EncryptorService.deletingFiles.remove(index);
@@ -916,7 +915,7 @@ public class EncryptorService extends Service {
                                                 in.close();
                                                 toDownload.delete();
                                             } catch (Exception e) {
-                                                e.printStackTrace();
+
                                             }
                                         } else {
                                             SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
@@ -953,7 +952,7 @@ public class EncryptorService extends Service {
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                         EncryptorService.backupRestoreReturn = 3;
                     }
                     EncryptorService.deletingFiles.remove(index);
@@ -974,7 +973,7 @@ public class EncryptorService extends Service {
         int pathsSize = paths.size();
         NotificationManagerCompat manager = NotificationManagerCompat.from(EncryptorService.this);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.locked)
+                .setSmallIcon(R.drawable.ic_baseline_lock_24)
                 .setContentTitle("")
                 .setOngoing(true)
                 .setProgress(paths.size(), 0, false)
@@ -1036,7 +1035,7 @@ public class EncryptorService extends Service {
                             }
                             copiedCount++;
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             errorCount++;
                         } finally {
                             if (cut && errorCountBefore == errorCount) original.delete();

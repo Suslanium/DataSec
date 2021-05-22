@@ -109,9 +109,9 @@ public class GalleryFragment extends Fragment {
         b1 = new ImageButton(requireContext());
         Drawable drawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            drawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_search);
+            drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
         } else {
-            drawable = getResources().getDrawable(android.R.drawable.ic_menu_search);
+            drawable = getResources().getDrawable(R.drawable.ic_search);
         }
         b1.setImageDrawable(drawable);
         b1.setBackgroundColor(Color.parseColor("#00000000"));
@@ -235,7 +235,7 @@ public class GalleryFragment extends Fragment {
                                                     });
                                                 }
                                             } catch (Exception e) {
-                                                e.printStackTrace();
+
                                             }
                                         }
                                     });
@@ -373,14 +373,14 @@ public class GalleryFragment extends Fragment {
                     try {
                         Thread.sleep(100);
                     } catch (Exception e){
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }
                 adapter.setIcons(bitmapArrayList);
                 Encryptor.closeDataBase(database);
             } catch (Exception e){
-                e.printStackTrace();
+
                 requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
             }
         });

@@ -113,7 +113,8 @@
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
-            app:srcCompat="@android:drawable/list_selector_background" />
+            app:srcCompat="@android:drawable/list_selector_background"
+            app:tint="?attr/explorerIconColor" />
     </androidx.cardview.widget.CardView>
 
     <ImageView
@@ -123,10 +124,11 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/cardView3"
         app:layout_constraintEnd_toEndOf="@+id/cardView3"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.55"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/cardView3"
-        app:layout_constraintVertical_bias="0.8"
-        app:srcCompat="@drawable/encrypted" />
+        app:layout_constraintVertical_bias="0.65"
+        app:srcCompat="@drawable/ic_baseline_lock_24"
+        app:tint="?attr/colorSurface" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

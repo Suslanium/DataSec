@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".MessageFragment">
 
     <ScrollView
@@ -13,7 +14,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/plainText"
@@ -26,6 +27,7 @@
                     android:id="@+id/plainEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/ubuntu"
                     android:hint="@string/plain"
                     android:singleLine="true" />
 
@@ -72,6 +74,7 @@
                         android:id="@+id/keyEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/ubuntu"
                         android:hint="@string/key"
                         android:singleLine="true" />
 
@@ -92,12 +95,14 @@
                         android:id="@+id/sha1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/ubuntu"
                         android:text="SHA-1" />
 
                     <RadioButton
                         android:id="@+id/sha2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/ubuntu"
                         android:text="SHA-256" />
 
                     <RadioButton
@@ -105,12 +110,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:fontFamily="@font/ubuntu"
                         android:text="SHA-512" />
 
                     <RadioButton
                         android:id="@+id/md5"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/ubuntu"
                         android:text="MD5" />
                 </RadioGroup>
 
@@ -119,15 +126,16 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/cipherText"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginTop="66dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="66dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/cipherEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:focusable="false"
+                    android:fontFamily="@font/ubuntu"
                     android:hint="@string/ciphertext"
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -146,6 +154,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9"
-        app:srcCompat="@drawable/copy" />
+        app:srcCompat="@drawable/ic_baseline_content_copy_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

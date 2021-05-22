@@ -32,15 +32,12 @@ public class PasswordActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean darkTheme = preferences.getBoolean("dark_Theme", false);
+        if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
+        else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password);
-        Window window = this.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-        window.setNavigationBarColor(Color.parseColor("#1976D2"));
-        window.setStatusBarColor(Color.parseColor("#6200EA"));
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if(!preferences.getBoolean("setupComplete", false)){
             Intent intent = new Intent(this, WelcomeActivity.class);
             startActivity(intent);
@@ -91,7 +88,7 @@ public class PasswordActivity extends AppCompatActivity {
                                     }
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                                 runOnUiThread(() -> Snackbar.make(v, R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                             }
                         });
@@ -121,7 +118,7 @@ public class PasswordActivity extends AppCompatActivity {
                                 }
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             runOnUiThread(() -> Snackbar.make(v, R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                         }
                     });
@@ -170,7 +167,7 @@ public class PasswordActivity extends AppCompatActivity {
                                     }
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                                 runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                             }
                         });
@@ -200,7 +197,7 @@ public class PasswordActivity extends AppCompatActivity {
                                 }
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
                         }
                     });
@@ -224,7 +221,7 @@ public class PasswordActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
     }
 }

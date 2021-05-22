@@ -4,7 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".GoogleDriveUploadSelector">
+
+    <ImageView
+        android:id="@+id/actionBar"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bluerect"
+        app:tint="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/uploadText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="35dp"
+        android:fontFamily="@font/ubuntu"
+        android:gravity="center|left"
+        android:text="@string/upload"
+        android:textColor="?attr/titleColor"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/actionBar"
+        app:layout_constraintEnd_toStartOf="@+id/searchButtonUpload"
+        app:layout_constraintStart_toEndOf="@+id/backUpload"
+        app:layout_constraintTop_toTopOf="@+id/actionBar" />
 
     <TextView
         android:id="@+id/freeSpace2"
@@ -18,7 +45,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchButtonUpload"
+        app:layout_constraintTop_toBottomOf="@+id/actionBar"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
@@ -32,7 +59,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/freeSpace2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchButtonUpload"
+        app:layout_constraintTop_toBottomOf="@+id/uploadText"
         app:layout_constraintVertical_bias="0.0" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -49,13 +76,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
+        android:contentDescription="TODO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9"
-        app:srcCompat="@drawable/checkmark" />
+        app:srcCompat="@drawable/check" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/gDriveChangeStorage"
@@ -68,13 +96,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9"
-        app:srcCompat="@android:drawable/stat_notify_sdcard" />
+        app:srcCompat="@drawable/ic_baseline_sd_card_24" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/gDriveSelectorUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,13 +116,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/actionBar"
+        app:layout_constraintEnd_toEndOf="@+id/actionBar"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@android:drawable/ic_menu_search" />
+        app:layout_constraintStart_toStartOf="@+id/actionBar"
+        app:layout_constraintTop_toTopOf="@+id/actionBar"
+        app:srcCompat="@drawable/ic_search" />
 
     <EditText
         android:id="@+id/searchTextUpload"
@@ -102,13 +130,12 @@
         android:ems="10"
         android:hint="@string/enterFileNameSearch"
         android:inputType="textPersonName"
+        android:textColor="#FFFFFF"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/actionBar"
         app:layout_constraintEnd_toStartOf="@+id/searchButtonUpload"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintStart_toStartOf="@+id/uploadText"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/searchTextUploadProgress"
@@ -134,5 +161,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/backUpload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:background="#00FFFFFF"
+        app:layout_constraintBottom_toBottomOf="@+id/uploadText"
+        app:layout_constraintEnd_toEndOf="@+id/actionBar"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/actionBar"
+        app:layout_constraintTop_toTopOf="@+id/actionBar"
+        app:srcCompat="@drawable/backarrow" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -52,7 +52,7 @@ public class Explorer extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean darkTheme = preferences.getBoolean("dark_Theme", true);
+        boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
@@ -145,7 +145,7 @@ public class Explorer extends AppCompatActivity {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+
                 }
                 backPressedCount--;
             });

@@ -9,4 +9,19 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bluetop">#00F0FF</color>
     <color name="purpleDiscord">#7289da</color>
+    <color name="navDark">#263238</color>
+    <color name="navLight">#CFD8DC</color>
+    <color name="navTextDark">#37474F</color>
+    <color name="navTextLight">#455A64</color>
+    <color name="navTitleLight">#CFD8DC</color>
+    <color name="dialogButtonDark">#90A4AE</color>
+    <color name="dialogButtonLight">#455A64</color>
+    <color name="dialogTitleDark">#ECEFF1</color>
+    <color name="dialogTitleLight">#37474F</color>
+    <color name="bottomBarDark">#263238</color>
+    <color name="bottomBarLight">#CFD8DC</color>
+    <color name="titleColorDark">#CFD8DC</color>
+    <color name="titleColorLight">#FFFFFF</color>
+    <color name="explorerIconsDark">#90A4AE</color>
+    <color name="explorerIconsLight">#78909C</color>
 </resources>

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".ui.home.HomeFragment">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -20,6 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     <TextView
         android:id="@+id/freeSpace"
         android:layout_width="wrap_content"
@@ -53,6 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:alpha="0"
+        android:background="?attr/bottomBarColor"
         android:visibility="gone"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -67,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:src="@android:drawable/stat_notify_sdcard"
+        android:src="@drawable/ic_baseline_sd_card_24"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -107,7 +110,7 @@
         android:layout_height="wrap_content"
         android:alpha="0"
         android:clickable="true"
-        android:src="@drawable/checkmark"
+        android:src="@drawable/check"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

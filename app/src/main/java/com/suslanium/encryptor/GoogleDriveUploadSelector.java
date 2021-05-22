@@ -49,7 +49,8 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     private String currentStorageName;
     private String currentStoragePath;
     public boolean searchEnded = false;
-    public boolean showHiddenFiles = true;
+    public boolean showHiddenFiles = false;
+    private TextView title;
 
 
     @Override
@@ -60,20 +61,21 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean darkTheme = preferences.getBoolean("dark_Theme", true);
+        boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if(darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_upload_selector);
         storagePath = findViewById(R.id.storagePath2);
         freeSpace = findViewById(R.id.freeSpace2);
+        title = findViewById(R.id.uploadText);
         ImageButton b1 = findViewById(R.id.searchButtonUpload);
         EditText layout = findViewById(R.id.searchTextUpload);
         final TextView[] search = {findViewById(R.id.searchTextUploadProgress)};
         final ProgressBar[] bar = {findViewById(R.id.progressBarSearchUpload)};
         bar[0].setVisibility(View.GONE);
         search[0].setVisibility(View.GONE);
-        showHiddenFiles = preferences.getBoolean("showHidden", true);
+        showHiddenFiles = preferences.getBoolean("showHidden", false);
         RecyclerView fileView = findViewById(R.id.deviceFiles);
         File[] dir = getExternalFilesDirs(null);
         ArrayList<String> storagePaths = new ArrayList<>();
@@ -110,6 +112,8 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         fileView.setLayoutManager(new LinearLayoutManager(this));
         fileView.setAdapter(adapter);
         upFolder = findViewById(R.id.gDriveSelectorUp);
+        ImageButton back = findViewById(R.id.backUpload);
+        back.setOnClickListener(v -> onBackPressed());
         FloatingActionButton sdcardButton = findViewById(R.id.gDriveChangeStorage);
         sdcardButton.setOnClickListener(v -> {
             if (storagePaths.size() > 1) {
@@ -154,7 +158,6 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 File parent = new File(path).getParentFile();
                 boolean matches = false;
                 if(searchEnded){
-                    Log.d("searchEnded", "True");
                     parent = new File(path);
                     searchEnded = false;
                 } else {
@@ -166,6 +169,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     finish();
                 } else {
                     updateUI(adapter, fileView, parent);
+                    setStoragePath(parent.getPath());
                 }
             }
         });
@@ -193,6 +197,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 adapter.isSearching = true;
                 b1.setEnabled(false);
                 layout.setVisibility(View.GONE);
+                title.setVisibility(View.VISIBLE);
                 final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 search[0].setText(R.string.searching);
@@ -214,7 +219,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                                 HomeFragment.fadeIn(bar[0]);
                                 Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                             }
                         });
                     } else {
@@ -245,6 +250,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         };
         b1.setOnClickListener(v -> {
             if (layout.getVisibility() == View.GONE) {
+                title.setVisibility(View.INVISIBLE);
                 layout.setVisibility(View.VISIBLE);
                 layout.setOnKeyListener((v14, keyCode, event) -> {
                     if(event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
@@ -301,7 +307,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }
@@ -316,7 +322,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }
@@ -365,7 +371,6 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         float textWidth = text.getPaint().measureText(newText);
         int startIndex = 1;
         while (textWidth >= text.getMeasuredWidth()){
-            Log.d(String.valueOf(textWidth), String.valueOf(text.getMeasuredWidth()));
             newText = newText.substring(startIndex);
             textWidth = text.getPaint().measureText(newText);
             startIndex++;

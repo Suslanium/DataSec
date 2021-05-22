@@ -9,8 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.icu.text.DateFormat;
 
 import java.sql.Time;
@@ -21,6 +24,7 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -77,6 +82,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private String TB = "TB";
     private String Calc = "Calculating...";
     private String items = "items";
+    private ColorStateList defTint;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -169,7 +175,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                                 try {
                                                     Thread.sleep(10);
                                                 } catch (InterruptedException e) {
-                                                    e.printStackTrace();
+
                                                 }
                                             }
                                             Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
@@ -190,7 +196,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                                 try {
                                                     Thread.sleep(10);
                                                 } catch (InterruptedException e) {
-                                                    e.printStackTrace();
+
                                                 }
                                             }
                                             ((GoogleDriveUploadSelector) activity).currentOperationNumber--;
@@ -257,6 +263,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         public void setBitMap(Bitmap thumbnail) {
             fileImage.setImageBitmap(thumbnail);
         }
+        public void setTint(ColorStateList list){
+            fileImage.setImageTintList(list);
+        }
     }
 
     /**
@@ -283,6 +292,11 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         TB = activity.getString(R.string.tb);
         Calc = activity.getString(R.string.calculating);
         items = activity.getString(R.string.items);
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = activity.getTheme();
+        theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
+        @ColorInt int color = typedValue.data;
+        defTint = ColorStateList.valueOf(color);
     }
 
     // Create new views (invoked by the layout manager)
@@ -343,28 +357,29 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                 Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
                 String type = activity.getContentResolver().getType(uriForFile);
                 activity.runOnUiThread(() -> {
+                    viewHolder.setTint(defTint);
                     if (type.contains("text")) {
-                        viewHolder.setFile(R.drawable.plaintext);
+                        viewHolder.setFile(R.drawable.ic_text);
                     } else if (type.contains("audio")) {
-                        viewHolder.setFile(R.drawable.music);
+                        viewHolder.setFile(R.drawable.audiofile);
                     } else if (type.contains("image")) {
-                        viewHolder.setFile(R.drawable.image);
+                        viewHolder.setFile(R.drawable.ic_image);
                     } else if (type.contains("video")) {
-                        viewHolder.setFile(R.drawable.video);
+                        viewHolder.setFile(R.drawable.ic_movie);
                     } else if (type.contains("x-msdos-program")) {
                         //EXE
-                        viewHolder.setFile(R.drawable.app);
+                        viewHolder.setFile(R.drawable.exefile);
                     } else if (type.contains("vnd.android.package-archive")) {
-                        viewHolder.setFile(R.mipmap.ic_launcher);
+                        viewHolder.setFile(R.drawable.apk);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
-                        viewHolder.setFile(R.drawable.powerpoint);
+                        viewHolder.setFile(R.drawable.presentation);
                     } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {
                         //DOCX
-                        viewHolder.setFile(R.drawable.richtext);
+                        viewHolder.setFile(R.drawable.rtf);
                     } else if (type.contains("rar") || type.contains("zip") || type.contains("7z")) {
-                        viewHolder.setFile(R.drawable.zip);
+                        viewHolder.setFile(R.drawable.zipfile);
                     } else {
-                        viewHolder.setFile(R.drawable.file);
+                        viewHolder.setFile(R.drawable.ic_file);
                     }
                 });
                 double length = file.length();
@@ -409,7 +424,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+
                             Thread.currentThread().interrupt();
                         }
                     }
@@ -418,18 +433,19 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                         try {
                             Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getPath()), 128, 128);
                             if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
-                                activity.runOnUiThread(() -> viewHolder.setBitMap(thumbnail));
+                                activity.runOnUiThread(() -> {viewHolder.setTint(null);viewHolder.setBitMap(thumbnail);});
                             }
                             thumbnailLoadingCount--;
                         } catch (Exception e) {
-                            e.printStackTrace();
+
                             thumbnailLoadingCount--;
                         }
                     }
                 }
             } else {
                 activity.runOnUiThread(() -> {
-                    viewHolder.setFile(R.drawable.folder);
+                    viewHolder.setTint(defTint);
+                    viewHolder.setFile(R.drawable.ic_folder);
                     viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;

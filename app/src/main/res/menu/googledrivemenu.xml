@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_deleteFilesG"
-        android:icon="@android:drawable/ic_delete"
+        android:icon="@drawable/ic_baseline_delete_24"
         android:title="@string/delete" />
     <item
         android:id="@+id/action_decryptFilesG"
-        android:icon="@drawable/locked"
+        android:icon="@drawable/ic_baseline_lock_24"
         android:title="@string/decryptMessage" />
 </menu>

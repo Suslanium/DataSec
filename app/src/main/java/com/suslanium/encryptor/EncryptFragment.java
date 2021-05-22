@@ -96,7 +96,7 @@ public class EncryptFragment extends Fragment {
                                         } catch (Exception e2) {
                                             e2.printStackTrace();
                                         }
-                                        e.printStackTrace();
+
                                         isLoading = false;
                                         requireActivity().runOnUiThread(() -> bar.setVisibility(View.INVISIBLE));
                                     }
@@ -142,7 +142,7 @@ public class EncryptFragment extends Fragment {
                                         } catch (Exception e2) {
                                             e2.printStackTrace();
                                         }
-                                        e.printStackTrace();
+
                                         isLoading = false;
                                         requireActivity().runOnUiThread(() -> bar.setVisibility(View.INVISIBLE));
                                     }

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".SettingsFragment">
 
     <ScrollView
@@ -27,7 +28,9 @@
                 android:layout_height="100dp"
                 android:checked="false"
                 android:fontFamily="@font/ubuntu"
+                android:paddingLeft="15dp"
                 android:text="@string/darkTheme"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp"
                 tools:checked="false" />
 
@@ -36,7 +39,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
                 android:text="@string/deleteAfter1"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
             <Switch
@@ -45,7 +50,9 @@
                 android:layout_height="100dp"
                 android:fontFamily="@font/ubuntu"
                 android:lineSpacingExtra="2dp"
+                android:paddingStart="15dp"
                 android:text="@string/deleteAfter2"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
             <Switch
@@ -53,7 +60,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
                 android:text="@string/previews"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
             <Switch
@@ -61,7 +70,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
                 android:text="@string/showLogins"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
             <Switch
@@ -69,7 +80,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
                 android:text="@string/showHidden"
+                android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
             <Button
@@ -83,7 +96,7 @@
                 android:stateListAnimator="@null"
                 android:text="@string/changePass"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
+                android:textColor="@color/pseudoselector"
                 android:textSize="18sp" />
 
             <Button
@@ -97,7 +110,21 @@
                 android:stateListAnimator="@null"
                 android:text="@string/backupRestore"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
+                android:textColor="@color/pseudoselector"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/signOut"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:backgroundTint="#00FFFFFF"
+                android:fontFamily="@font/ubuntu"
+                android:gravity="start|center_vertical"
+                android:letterSpacing="0"
+                android:stateListAnimator="@null"
+                android:text="@string/signOut"
+                android:textAllCaps="false"
+                android:textColor="@color/pseudoselector"
                 android:textSize="18sp" />
 
         </LinearLayout>

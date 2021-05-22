@@ -14,7 +14,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -79,12 +81,20 @@ public class GoogleDriveManager extends AppCompatActivity {
         super.onStart();
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(R.string.menu_keyexchange);
+        Drawable drawable;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            drawable = ContextCompat.getDrawable(this, R.drawable.backarrow);
+        } else {
+            drawable = getResources().getDrawable(R.drawable.backarrow);
+        }
+        actionBar.setHomeAsUpIndicator(drawable);
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", false);
         if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark_ActionBar);
         else setTheme(R.style.Theme_Encryptor_Light_ActionBar);
         super.onCreate(savedInstanceState);
@@ -97,6 +107,17 @@ public class GoogleDriveManager extends AppCompatActivity {
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
         if (acct != null) {
             checkForGooglePermissions();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -155,15 +176,15 @@ public class GoogleDriveManager extends AppCompatActivity {
                 }
                 currentOperationNumber--;
             }
-            if(search){
+            if (search) {
                 runOnUiThread(() -> layout.setRefreshing(false));
             }
         } catch (Exception e) {
             currentOperationNumber--;
-            if(search){
+            if (search) {
                 runOnUiThread(() -> layout.setRefreshing(false));
             }
-            e.printStackTrace();
+
         }
     }
 
@@ -187,7 +208,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+
                             Thread.currentThread().interrupt();
                         }
                     }
@@ -203,7 +224,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+
                             Thread.currentThread().interrupt();
                         }
                     }
@@ -212,13 +233,9 @@ public class GoogleDriveManager extends AppCompatActivity {
                 thread.start();
             }
         } else {
-            Snackbar snackbar = Snackbar.make(sView, R.string.rootErr, Snackbar.LENGTH_LONG);
-            snackbar.setAction(R.string.exit, v -> {
-                Intent intent = new Intent(GoogleDriveManager.this, Explorer.class);
-                intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
-                startActivity(intent);
-            });
-            snackbar.show();
+            Intent intent = new Intent(GoogleDriveManager.this, Explorer.class);
+            intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
+            startActivity(intent);
         }
     }
 
@@ -245,6 +262,8 @@ public class GoogleDriveManager extends AppCompatActivity {
         pathView = findViewById(R.id.storagePathG);
         sizeView = findViewById(R.id.freeSpaceG);
         layout = findViewById(R.id.swipeGDrive);
+        layout.setColorSchemeColors(Color.parseColor("#171E21"));
+        layout.setProgressBackgroundColorSchemeColor(Color.parseColor("#90A4AE"));
         layout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -373,9 +392,6 @@ public class GoogleDriveManager extends AppCompatActivity {
             Intent intent = new Intent(GoogleDriveManager.this, GoogleDriveUploadSelector.class);
             intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
             intent.putExtra("gDriveFolder", currentFolderID);
-            if (currentFolderID == null) {
-                Log.d("aaa", "null");
-            } else Log.d("aaa", currentFolderID);
             startActivity(intent);
         });
         showRootFilesInDrive();
@@ -396,7 +412,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                         used = about.getStorageQuota().getUsage();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+
                 }
                 long free = 0;
                 if (total != 0 && used != 0) {
@@ -465,7 +481,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                     });
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+
             }
         });
         thread.start();

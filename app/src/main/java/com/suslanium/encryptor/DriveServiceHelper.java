@@ -69,7 +69,7 @@ public class DriveServiceHelper {
         try(OutputStream outputStream = new FileOutputStream(targetFile)) {
             mDriveService.files().get(fileId).executeMediaAndDownloadTo(outputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+
         }
     }
 

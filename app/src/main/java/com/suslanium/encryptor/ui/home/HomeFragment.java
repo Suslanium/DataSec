@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
+import android.provider.CalendarContract;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -83,7 +84,7 @@ public class HomeFragment extends Fragment {
     private ArrayList<String> storagePaths;
     private String currentStorageName;
     private String currentStoragePath;
-    public boolean showHiddenFiles = true;
+    public boolean showHiddenFiles = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -120,6 +121,8 @@ public class HomeFragment extends Fragment {
         ListIterator<String> pathIterator;
         RecyclerView fileView = requireActivity().findViewById(R.id.fileView);
         SwipeRefreshLayout swipeRefreshLayout = requireActivity().findViewById(R.id.swipeExplorer);
+        swipeRefreshLayout.setColorSchemeColors(Color.parseColor("#171E21"));
+        swipeRefreshLayout.setProgressBackgroundColorSchemeColor(Color.parseColor("#90A4AE"));
         storagePaths = new ArrayList<>();
         File[] dir = requireContext().getExternalFilesDirs(null);
         for (int i = 0; i < dir.length; i++) {
@@ -129,7 +132,7 @@ public class HomeFragment extends Fragment {
         currentStorageName = getString(R.string.intStorage);
         currentStoragePath = Environment.getExternalStorageDirectory().getPath();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        showHiddenFiles = preferences.getBoolean("showHidden", true);
+        showHiddenFiles = preferences.getBoolean("showHidden", false);
         final ViewTreeObserver vto = view.getViewTreeObserver();
         if (vto.isAlive()) {
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -185,9 +188,9 @@ public class HomeFragment extends Fragment {
         ImageButton b1 = new ImageButton(requireContext());
         Drawable drawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            drawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_search);
+            drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
         } else {
-            drawable = getResources().getDrawable(android.R.drawable.ic_menu_search);
+            drawable = getResources().getDrawable(R.drawable.ic_search);
         }
         b1.setImageDrawable(drawable);
         b1.setBackgroundColor(Color.parseColor("#00000000"));
@@ -264,7 +267,7 @@ public class HomeFragment extends Fragment {
                                     try {
                                         Thread.sleep(1);
                                     } catch (InterruptedException e) {
-                                        e.printStackTrace();
+
                                         Thread.currentThread().interrupt();
                                     }
                                 }
@@ -272,7 +275,7 @@ public class HomeFragment extends Fragment {
                                     try {
                                         Thread.sleep(100);
                                     } catch (InterruptedException e) {
-                                        e.printStackTrace();
+
                                         Thread.currentThread().interrupt();
                                     }
                                 }
@@ -296,7 +299,6 @@ public class HomeFragment extends Fragment {
                                 requireActivity().runOnUiThread(() -> {
                                     builder1[0].dismiss();
                                     if (finalMatch) {
-                                        Log.d("Adapter", "Call3");
                                         adapter.setNewData(pathAfter, fileList);
                                         fileView.smoothScrollToPosition(0);
                                     }
@@ -508,7 +510,7 @@ public class HomeFragment extends Fragment {
                 if (matches) {
                     ((Explorer) requireActivity()).incrementBackPressedCount();
                     Snackbar snackbar = Snackbar.make(v, R.string.pressToExit, Snackbar.LENGTH_LONG);
-                    snackbar.setAction(getString(R.string.swSt), v1 -> {try{changeStorage.performClick();}catch (Exception e){e.printStackTrace();}});
+                    snackbar.setAction(getString(R.string.swSt), v1 -> {try{changeStorage.performClick();}catch (Exception e){}});
                     snackbar.show();
                 } else {
                     updateUI(adapter, fileView, parent);
@@ -555,7 +557,7 @@ public class HomeFragment extends Fragment {
                                     adapter.setNewData(adapter.getPath(), fileList);
                                 });
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                                 requireActivity().runOnUiThread(() -> Snackbar.make(v12, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
                             }
                         });
@@ -601,7 +603,7 @@ public class HomeFragment extends Fragment {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+
                             Thread.currentThread().interrupt();
                         }
                     }
@@ -615,7 +617,7 @@ public class HomeFragment extends Fragment {
                                 bar[0].startAnimation(fadeIn);
                                 Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                             }
                         });
                     } else {
@@ -637,7 +639,7 @@ public class HomeFragment extends Fragment {
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+
                             Thread.currentThread().interrupt();
                         }
                     }
@@ -734,7 +736,7 @@ public class HomeFragment extends Fragment {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }
@@ -749,7 +751,7 @@ public class HomeFragment extends Fragment {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }
@@ -810,7 +812,7 @@ public class HomeFragment extends Fragment {
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             requireContext().startActivity(shareIntent);
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
     }
 
@@ -978,9 +980,6 @@ public class HomeFragment extends Fragment {
                         prep.dismiss();
                         cancel.performClick();
                     });
-                    for (int i = 0; i < checkedFiles2.size(); i++) {
-                        Log.d("Result", checkedFiles2.get(i));
-                    }
                     if (!checkedFiles2.isEmpty()) {
                         Intent intent = new Intent(requireContext(), EncryptorService.class);
                         EncryptorService.uniqueID++;
@@ -1032,7 +1031,7 @@ public class HomeFragment extends Fragment {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+
                 Thread.currentThread().interrupt();
             }
         }
@@ -1139,7 +1138,7 @@ public class HomeFragment extends Fragment {
                     .setTitle(R.string.warning)
                     .setView(checkBox)
                     .setCancelable(false)
-                    .setMessage(R.string.file+" " + fileName +" "+ getString(R.string.alreadyExistsSubStr) +" "+ folderName + getString(R.string.replaceFileEnding))
+                    .setMessage(getString(R.string.file)+" " + fileName +" "+ getString(R.string.alreadyExistsSubStr) +" "+ folderName + getString(R.string.replaceFileEnding))
                     .setPositiveButton(R.string.replace, (dialog, which) -> {
                         if (checkBox.isChecked()) {
                             result[0] = 1;
@@ -1173,7 +1172,7 @@ public class HomeFragment extends Fragment {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+
                 Thread.currentThread().interrupt();
             }
         }
@@ -1205,7 +1204,6 @@ public class HomeFragment extends Fragment {
             for (int i = 0; i < childs.length; i++) {
                 if (childs[i].getName().contains(fileName)) {
                     if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                        Log.d("add", childs[i].getName());
                         result.add(childs[i]);
                     }
                 }
@@ -1242,7 +1240,6 @@ public class HomeFragment extends Fragment {
         float textWidth = text.getPaint().measureText(newText);
         int startIndex = 1;
         while (textWidth >= text.getMeasuredWidth()){
-            Log.d(String.valueOf(textWidth), String.valueOf(text.getMeasuredWidth()));
             newText = newText.substring(startIndex);
             textWidth = text.getPaint().measureText(newText);
             startIndex++;

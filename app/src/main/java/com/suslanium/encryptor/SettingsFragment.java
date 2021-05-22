@@ -38,6 +38,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -88,12 +89,12 @@ public class SettingsFragment extends Fragment {
 
     private void updateUI() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", false);
         boolean autoDelete = preferences.getBoolean("auto_Delete", false);
         boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
         boolean showLogin = preferences.getBoolean("showLogins", true);
         boolean showPreview = preferences.getBoolean("showPreviews", true);
-        boolean showHide = preferences.getBoolean("showHidden", true);
+        boolean showHide = preferences.getBoolean("showHidden", false);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch darkTheme = requireActivity().findViewById(R.id.darkTheme);
         Button changePass = requireActivity().findViewById(R.id.changePassword);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter = requireActivity().findViewById(R.id.deleteAfter);
@@ -102,6 +103,7 @@ public class SettingsFragment extends Fragment {
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showLogins = requireActivity().findViewById(R.id.showLoginsSwitch);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showHidden = requireActivity().findViewById(R.id.hiddenFilesSwitch);
         Button backUpDataBase = requireActivity().findViewById(R.id.backUpDatabase);
+        Button signOut = requireActivity().findViewById(R.id.signOut);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).searchButton != null)
             t.removeView(((Explorer) requireActivity()).searchButton);
@@ -136,12 +138,8 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("showHidden", isChecked);
             editor.apply();
         });
-        if (dark_theme) {
+        if (dark_theme)
             darkTheme.setChecked(true);
-        } else {
-            changePass.setTextColor(Color.parseColor("#000000"));
-            backUpDataBase.setTextColor(Color.parseColor("#000000"));
-        }
         deleteAfter.setChecked(autoDelete);
         deleteAfter2.setChecked(autoDelete2);
         showPreviews.setChecked(showPreview);
@@ -209,7 +207,7 @@ public class SettingsFragment extends Fragment {
                                     startActivity(intent2);
                                 });
                             } catch (Exception e) {
-                                e.printStackTrace();
+
                             }
                         });
                         thread.start();
@@ -225,10 +223,10 @@ public class SettingsFragment extends Fragment {
         });
         backUpDataBase.setOnClickListener(v -> {
             ConnectivityManager cm =
-                    (ConnectivityManager)requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                    (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
 
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+            if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
                         .build();
@@ -239,6 +237,26 @@ public class SettingsFragment extends Fragment {
                 } else {
                     Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                     startActivityForResult(signInIntent, SIGNIN);
+                }
+            } else {
+                Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_LONG).show();
+            }
+        });
+        signOut.setOnClickListener(v -> {
+            ConnectivityManager cm =
+                    (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+                mGoogleSignInClient = GoogleSignIn.getClient(requireContext(), gso);
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
+                if (account != null) {
+                    mGoogleSignInClient.signOut().addOnCompleteListener(requireActivity(), task -> Snackbar.make(v, R.string.signOutSuccess, Snackbar.LENGTH_LONG).show());
+                } else {
+                    Snackbar.make(v, R.string.signOutErr, Snackbar.LENGTH_LONG).show();
                 }
             } else {
                 Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_LONG).show();
@@ -288,14 +306,14 @@ public class SettingsFragment extends Fragment {
                                             try {
                                                 Thread.sleep(1000);
                                             } catch (InterruptedException e) {
-                                                e.printStackTrace();
+
                                                 Thread.currentThread().interrupt();
                                             }
                                             while (EncryptorService.deletingFiles.containsValue(true)) {
                                                 try {
                                                     Thread.sleep(100);
                                                 } catch (InterruptedException e) {
-                                                    e.printStackTrace();
+
                                                     Thread.currentThread().interrupt();
                                                 }
                                             }
@@ -378,14 +396,14 @@ public class SettingsFragment extends Fragment {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+
                     Thread.currentThread().interrupt();
                 }
                 while (EncryptorService.deletingFiles.containsValue(true)) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+
                         Thread.currentThread().interrupt();
                     }
                 }

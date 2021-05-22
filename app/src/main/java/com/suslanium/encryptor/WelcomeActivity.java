@@ -6,7 +6,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 
-public class WelcomeActivity extends FragmentActivity {
+public class WelcomeActivity extends AppCompatActivity {
 
     WelcomeActivityAdapter messageCryptCollectionAdapter;
     ViewPager2 viewPager;

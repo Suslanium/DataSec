@@ -3,6 +3,7 @@ package com.suslanium.encryptor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -149,14 +150,14 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                             try {
                                                 Thread.sleep(10);
                                             } catch (Exception e) {
-                                                e.printStackTrace();
+
                                             }
                                         }
                                         ((GoogleDriveManager) context).currentOperationNumber--;
                                         ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
                                         ((GoogleDriveManager) context).setCurrentFolderID(id);
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+
                                     }
                                 });
                                 thread.start();
@@ -217,12 +218,12 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         } else {
             viewHolder.fileCheckBox.setChecked(true);
         }
-        viewHolder.getFileType().setImageResource(R.drawable.folder);
+        viewHolder.getFileType().setImageResource(R.drawable.ic_folder);
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         viewHolder.getTextView().setText(localDataSet.get(position));
         if (!mimeTypes.get(position).equals("application/vnd.google-apps.folder")) {
-            viewHolder.getFileType().setImageResource(R.drawable.file);
+            viewHolder.getFileType().setImageResource(R.drawable.ic_file);
             viewHolder.isFolder = false;
         } else {
             viewHolder.isFolder = true;

@@ -1,6 +1,7 @@
 package com.suslanium.encryptor;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -32,6 +33,7 @@ import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -89,7 +91,7 @@ public class passwordChange extends AppCompatActivity {
                     image = byteBuffer.array();
                     passwordChange.this.runOnUiThread(() -> icon.setImageBitmap(thumbnail));
                 } catch (IOException e) {
-                    e.printStackTrace();
+
                 }
             });
             thread.start();
@@ -98,9 +100,9 @@ public class passwordChange extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if(dark_theme) setTheme(R.style.Theme_Encryptor_Dark);
-        else setTheme(R.style.Theme_Encryptor_Light);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", false);
+        if(dark_theme) setTheme(R.style.Theme_Encryptor_Dark_Pass);
+        else setTheme(R.style.Theme_Encryptor_Light_Pass);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_change);
         Bundle b = getIntent().getExtras();
@@ -109,6 +111,17 @@ public class passwordChange extends AppCompatActivity {
         mediumPassword = getString(R.string.mediumPassword);
         strongPassword = getString(R.string.strongPassword);
         icon = findViewById(R.id.serviceChangeIcon);
+        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_rounded);
+        ProgressBar bar = new ProgressBar(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        bar.setLayoutParams(lp);
+        builder2.setTitle(R.string.wait);
+        builder2.setView(bar);
+        builder2.setCancelable(false);
+        AlertDialog alertDialog = builder2.create();
+        alertDialog.show();
         Thread thread = new Thread(() -> {
             try {
                 Intent intent = getIntent();
@@ -129,9 +142,10 @@ public class passwordChange extends AppCompatActivity {
                 }
                 Encryptor.closeDataBase(database);
             } catch (Exception e){
-                e.printStackTrace();
+
                 finish();
             }
+            passwordChange.this.runOnUiThread(alertDialog::dismiss);
         });
         thread.start();
         icon.setOnClickListener(v -> {
@@ -147,6 +161,17 @@ public class passwordChange extends AppCompatActivity {
         FloatingActionButton submit = findViewById(R.id.submit2);
         submit.setOnClickListener(v -> {
             if (!name.getText().toString().matches("")) {
+                MaterialAlertDialogBuilder builder3 = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_rounded);
+                ProgressBar bar2 = new ProgressBar(this);
+                LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                bar2.setLayoutParams(lp2);
+                builder3.setTitle(R.string.wait);
+                builder3.setView(bar2);
+                builder3.setCancelable(false);
+                AlertDialog alertDialog2 = builder3.create();
+                alertDialog2.show();
                 Thread thread1 = new Thread(() -> {
                     try {
                         Intent intent = getIntent();
@@ -165,15 +190,16 @@ public class passwordChange extends AppCompatActivity {
                                 thumbnail.copyPixelsToBuffer(byteBuffer);
                                 image = byteBuffer.array();
                             } catch (Exception e){
-                                e.printStackTrace();
+
                                 image = null;
                             }
                         }
                         Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image,website.getText().toString(),notes.getText().toString(),intent.getStringExtra("category"));
                         Encryptor.closeDataBase(database);
+                        runOnUiThread(alertDialog2::dismiss);
                         finish();
                     } catch (Exception e){
-                        e.printStackTrace();
+
                         runOnUiThread(() -> Snackbar.make(v, R.string.failedToUpdateEntry, Snackbar.LENGTH_LONG).show());
                     }
                 });
@@ -212,7 +238,7 @@ public class passwordChange extends AppCompatActivity {
                                 Encryptor.closeDataBase(database);
                                 finish();
                             } catch (Exception e){
-                                e.printStackTrace();
+
                                 runOnUiThread(() -> Snackbar.make(v, R.string.failedToDeleteEntry, Snackbar.LENGTH_LONG).show());
                             }
                         });
@@ -305,15 +331,15 @@ public class passwordChange extends AppCompatActivity {
                 if (passStrength >= 8) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(strongPassword);
-                    setPassBarColor(Color.parseColor("#00FF00"), strength);
+                    setPassBarColor(Color.parseColor("#4CAF50"), strength);
                 } else if (passStrength >= 5) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(mediumPassword);
-                    setPassBarColor(Color.parseColor("#FFFF00"), strength);
+                    setPassBarColor(Color.parseColor("#FBC02D"), strength);
                 } else if (passStrength <= 3) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(weakPassword);
-                    setPassBarColor(Color.parseColor("#FF0000"), strength);
+                    setPassBarColor(Color.parseColor("#EF5350"), strength);
                 }
             }
         });

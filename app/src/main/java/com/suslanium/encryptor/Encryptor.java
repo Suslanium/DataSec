@@ -81,7 +81,7 @@ public final class Encryptor {
             byteBuffer.put(encrypted);
             return byteBuffer.array();
         } catch (Exception e) {
-            e.printStackTrace();
+
             throw new RuntimeException(e);
         }
     }
@@ -345,7 +345,7 @@ public final class Encryptor {
             return hexString.toString();
 
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+
         }
         return "";
     }
@@ -491,7 +491,7 @@ public final class Encryptor {
             database.close();
             return true;
         } catch (Exception | Error e){
-            e.printStackTrace();
+
             return false;
         }
     }

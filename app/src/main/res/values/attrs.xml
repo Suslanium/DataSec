@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="navigationViewBackgroundColor" format="reference"/>
+    <attr name="navSelectedItemTextColor" format="reference"/>
+    <attr name="navTitleColor" format="reference"/>
+    <attr name="dialogButtonColor" format="reference"/>
+    <attr name="dialogTitleColor" format="reference"/>
+    <attr name="bottomBarColor" format="reference"/>
+    <attr name="titleColor" format="reference"/>
+    <attr name="inputColor" format="reference"/>
+    <attr name="explorerIconColor" format="reference"/>
+</resources>

@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -28,8 +29,11 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.webkit.URLUtil;
 import android.widget.Button;
@@ -40,9 +44,11 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -88,7 +94,7 @@ public class passwordAdd extends AppCompatActivity {
                     image = byteBuffer.array();
                     passwordAdd.this.runOnUiThread(() -> addServiceIcon.setImageBitmap(thumbnail));
                 } catch (IOException e) {
-                    e.printStackTrace();
+
                 }
             });
             thread.start();
@@ -98,9 +104,9 @@ public class passwordAdd extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean dark_theme = preferences.getBoolean("dark_Theme", true);
-        if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark);
-        else setTheme(R.style.Theme_Encryptor_Light);
+        boolean dark_theme = preferences.getBoolean("dark_Theme", false);
+        if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark_Pass);
+        else setTheme(R.style.Theme_Encryptor_Light_Pass);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_add);
         addServiceIcon = findViewById(R.id.serviceAddIcon);
@@ -135,6 +141,17 @@ public class passwordAdd extends AppCompatActivity {
         });
         submit.setOnClickListener(v -> {
             if (!name.getText().toString().matches("")) {
+                MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_rounded);
+                ProgressBar bar = new ProgressBar(this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                bar.setLayoutParams(lp);
+                builder2.setTitle(R.string.wait);
+                builder2.setView(bar);
+                builder2.setCancelable(false);
+                AlertDialog alertDialog = builder2.create();
+                alertDialog.show();
                 Thread thread = new Thread(() -> {
                     try {
                         Intent intent = getIntent();
@@ -153,15 +170,16 @@ public class passwordAdd extends AppCompatActivity {
                                 thumbnail.copyPixelsToBuffer(byteBuffer);
                                 image = byteBuffer.array();
                             } catch (Exception e){
-                                e.printStackTrace();
+
                                 image = null;
                             }
                         }
                         Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent.getStringExtra("category"));
                         Encryptor.closeDataBase(database);
+                        runOnUiThread(alertDialog::dismiss);
                         finish();
                     } catch (Exception e) {
-                        e.printStackTrace();
+
                         runOnUiThread(() -> Snackbar.make(v, R.string.failedToAddEntry, Snackbar.LENGTH_LONG).show());
                     }
                 });
@@ -253,15 +271,15 @@ public class passwordAdd extends AppCompatActivity {
                 if (passStrength >= 8) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(strongPassword);
-                    setPassBarColor(Color.parseColor("#00FF00"), strength);
+                    setPassBarColor(Color.parseColor("#4CAF50"), strength);
                 } else if (passStrength >= 5) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(mediumPassword);
-                    setPassBarColor(Color.parseColor("#FFFF00"), strength);
+                    setPassBarColor(Color.parseColor("#FBC02D"), strength);
                 } else if (passStrength <= 3) {
                     passLayout.setHelperTextEnabled(true);
                     passLayout.setHelperText(weakPassword);
-                    setPassBarColor(Color.parseColor("#FF0000"), strength);
+                    setPassBarColor(Color.parseColor("#EF5350"), strength);
                 }
             }
         });
