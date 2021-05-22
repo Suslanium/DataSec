@@ -213,7 +213,7 @@
     <string name="grantStorage">GRANT STORAGE PERMISSION</string>
     <string name="confirmPass">Confirm password</string>
     <string name="welcomeToEncryptor">Welcome to DataCrypt!</string>
-    <string name="welcomeToEncryptorText">DataSec is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager.</string>
+    <string name="welcomeToEncryptorText">DataCrypt is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager.</string>
     <string name="swSt">Switch storage</string>
     <string name="letsSetupPermissions">Lets setup required permissions</string>
     <string name="letsSetupPermissionsText">Before using this app, you need to grant some permissions.</string>

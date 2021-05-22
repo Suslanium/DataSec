@@ -198,6 +198,7 @@ public class EncryptorService extends Service {
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
+                        e.printStackTrace();
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     }
