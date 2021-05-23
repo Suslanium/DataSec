@@ -229,4 +229,5 @@
     <string name="signOut">Sign out from Google Drive</string>
     <string name="signOutSuccess">Signed out successfully</string>
     <string name="signOutErr">You are not signed in.</string>
+    <string name="fileTooBig">File size is too big</string>
 </resources>

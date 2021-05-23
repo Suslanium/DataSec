@@ -30,6 +30,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
@@ -293,7 +295,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             if (!isDoingFileOperations) {
                                 CharSequence[] items = null;
                                 if (encrypted) {
-                                    items = new CharSequence[]{activity.getString(R.string.decryptFile)};
+                                    items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile)};
                                 } else {
                                     items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile)};
                                 }
@@ -376,22 +378,81 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                 }
                                                 break;
                                             case 1:
-                                                try {
-                                                    File file = new File(filePath);
-                                                    Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
-                                                    String type = activity.getContentResolver().getType(uriForFile);
-                                                    Intent intent = new Intent();
-                                                    intent.setAction(Intent.ACTION_VIEW);
-                                                    intent.setDataAndType(uriForFile, type);
-                                                    //if(type.contains("vnd.android.package-archive")){
-                                                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                    //} else {
-                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                    //}
-                                                    activity.startActivity(intent);
-                                                } catch (Exception e) {
-
-                                                    Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                if(!encrypted) {
+                                                    try {
+                                                        File file = new File(filePath);
+                                                        Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
+                                                        String type = activity.getContentResolver().getType(uriForFile);
+                                                        Intent intent = new Intent();
+                                                        intent.setAction(Intent.ACTION_VIEW);
+                                                        intent.setDataAndType(uriForFile, type);
+                                                        //if(type.contains("vnd.android.package-archive")){
+                                                        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        //} else {
+                                                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                        //}
+                                                        activity.startActivity(intent);
+                                                    } catch (Exception e) {
+                                                        Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                    }
+                                                } else {
+                                                    File encrypted = new File(filePath);
+                                                    if(encrypted.length() <= 15 * 1024 * 1024) {
+                                                        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(fragment.requireContext(), R.style.MaterialAlertDialog_rounded);
+                                                        ProgressBar bar = new ProgressBar(fragment.requireContext());
+                                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                LinearLayout.LayoutParams.WRAP_CONTENT);
+                                                        bar.setLayoutParams(lp);
+                                                        builder2.setTitle(R.string.wait);
+                                                        builder2.setMessage(R.string.decrypting);
+                                                        builder2.setView(bar);
+                                                        builder2.setCancelable(false);
+                                                        AlertDialog alertDialog = builder2.create();
+                                                        alertDialog.show();
+                                                        File cached = new File((activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).substring(0, (activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).length() - 4));
+                                                        Thread thread = new Thread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                try {
+                                                                    cached.getParentFile().mkdirs();
+                                                                    cached.delete();
+                                                                    String password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                                    Encryptor.decryptFileAES256(encrypted, password,cached);
+                                                                    Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
+                                                                    String type = activity.getContentResolver().getType(uriForFile);
+                                                                    Intent intent = new Intent();
+                                                                    intent.setAction(Intent.ACTION_VIEW);
+                                                                    intent.setDataAndType(uriForFile, type);
+                                                                    //if(type.contains("vnd.android.package-archive")){
+                                                                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                    //} else {
+                                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                                    //}
+                                                                    activity.runOnUiThread(new Runnable() {
+                                                                        @Override
+                                                                        public void run() {
+                                                                            alertDialog.dismiss();
+                                                                            activity.startActivityForResult(intent, 101);
+                                                                        }
+                                                                    });
+                                                                } catch (Exception e){
+                                                                    e.printStackTrace();
+                                                                    cached.delete();
+                                                                    activity.runOnUiThread(new Runnable() {
+                                                                        @Override
+                                                                        public void run() {
+                                                                            alertDialog.dismiss();
+                                                                            Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+                                                        });
+                                                        thread.start();
+                                                    } else {
+                                                        Snackbar.make(v, R.string.fileTooBig,Snackbar.LENGTH_LONG).show();
+                                                    }
                                                 }
                                                 break;
                                             default:

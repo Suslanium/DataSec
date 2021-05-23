@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -33,6 +34,9 @@ import com.suslanium.encryptor.ui.gallery.GalleryFragment;
 import com.suslanium.encryptor.ui.home.HomeFragment;
 import com.suslanium.encryptor.ui.slideshow.SlideshowFragment;
 
+import java.io.File;
+import java.util.ArrayList;
+
 public class Explorer extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -48,6 +52,14 @@ public class Explorer extends AppCompatActivity {
     public boolean settingsVisible = false;
     private View navExplorer;
     private int backPressedCount = 0;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 101){
+            deleteFiles(getFilesDir()+File.separator+".temp");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,5 +187,37 @@ public class Explorer extends AppCompatActivity {
 
     public Intent getIntent2() {
         return intent;
+    }
+
+    private void deleteFiles(ArrayList<String> paths) {
+        for (int i = 0; i < paths.size(); i++) {
+            File file = new File(paths.get(i));
+            if (!file.isFile()) {
+                File[] files = file.listFiles();
+                if (files != null && files.length > 0) {
+                    ArrayList<String> subPaths = new ArrayList<>();
+                    for (int j = 0; j < files.length; j++) {
+                        subPaths.add(files[j].getPath());
+                    }
+                    deleteFiles(subPaths);
+                }
+            }
+            file.delete();
+        }
+    }
+
+    private void deleteFiles(String path) {
+        File file = new File(path);
+        if (!file.isFile()) {
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0) {
+                ArrayList<String> subPaths = new ArrayList<>();
+                for (int j = 0; j < files.length; j++) {
+                    subPaths.add(files[j].getPath());
+                }
+                deleteFiles(subPaths);
+            }
+        }
+        file.delete();
     }
 }

@@ -224,4 +224,5 @@
     <string name="signOut">Выйти из Google Диска</string>
     <string name="signOutSuccess">Выход выполнен</string>
     <string name="signOutErr">Вы не вошли в аккаунт</string>
+    <string name="fileTooBig">Файл слишком большой</string>
 </resources>
