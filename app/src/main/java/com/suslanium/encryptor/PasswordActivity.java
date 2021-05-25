@@ -34,15 +34,15 @@ public class PasswordActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!preferences.getBoolean("setupComplete", false)){
+            Intent intent = new Intent(this, WelcomeActivity.class);
+            startActivity(intent);
+        }
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password);
-        if(!preferences.getBoolean("setupComplete", false)){
-            Intent intent = new Intent(this, WelcomeActivity.class);
-            startActivity(intent);
-        }
     }
 
     public void checkForPermissionsPassword(View v) {

@@ -169,9 +169,11 @@ public class GoogleDriveManager extends AppCompatActivity {
                             names[1].add(file1.getId());
                             names[2].add(file1.getMimeType());
                         }
+                        runOnUiThread(() -> recyclerView.stopScroll());
                         adapter.setNewData(names[0], names[1], names[2]);
                     }
                 } else {
+                    runOnUiThread(() -> recyclerView.stopScroll());
                     adapter.setNewData(names[0], names[1], names[2]);
                 }
                 currentOperationNumber--;
@@ -196,6 +198,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             constructAndSetPath();
             if (currentOperationNumber == 0) {
                 currentOperationNumber++;
+                recyclerView.stopScroll();
                 Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
                 fadeIn.setDuration(200);
                 fadeIn.setFillAfter(true);
