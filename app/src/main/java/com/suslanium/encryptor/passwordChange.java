@@ -22,6 +22,7 @@ import android.graphics.PathEffect;
 import android.graphics.Typeface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -29,6 +30,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.autofill.AutofillManager;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.EditText;
@@ -196,10 +198,13 @@ public class passwordChange extends AppCompatActivity {
                         }
                         Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image,website.getText().toString(),notes.getText().toString(),intent.getStringExtra("category"));
                         Encryptor.closeDataBase(database);
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
+                            EncryptorAutofillService.pass = intent.getByteArrayExtra("pass");
+                        }
                         runOnUiThread(alertDialog2::dismiss);
                         finish();
                     } catch (Exception e){
-
+                        e.printStackTrace();
                         runOnUiThread(() -> Snackbar.make(v, R.string.failedToUpdateEntry, Snackbar.LENGTH_LONG).show());
                     }
                 });

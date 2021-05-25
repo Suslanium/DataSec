@@ -18,9 +18,13 @@ import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.text.InputType;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -705,6 +709,7 @@ public class HomeFragment extends Fragment {
 
     public void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
         if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+            if(adapter.getSearchEnded()) cancelSearch();
             fileView.stopScroll();
             ((Explorer) requireActivity()).currentOperationNumber++;
             Animation fadeIn1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_out_right);

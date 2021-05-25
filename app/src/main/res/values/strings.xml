@@ -230,4 +230,13 @@
     <string name="signOutSuccess">Signed out successfully</string>
     <string name="signOutErr">You are not signed in.</string>
     <string name="fileTooBig">File size is too big</string>
+    <string name="decryptionRunning">Decryption is in progress. This may take some time.</string>
+    <string name="enableAutofill">Enable autofill service</string>
+    <string name="autofillEnabled">Autofill is already enabled</string>
+    <string name="authRequired">Authentication required</string>
+    <string name="enterPassAuth">Please enter your password to use autofill</string>
+    <string name="noResultsAutofill">No results</string>
+    <string name="autofillService">DataCrypt Autofill</string>
+    <string name="autofillWarning">In some cases, this function may be insecure. It is recommended to manually copy and paste data from the password manager. Are you sure you want to enable this feature?</string>
+    <string name="selectAll">Select all</string>
 </resources>

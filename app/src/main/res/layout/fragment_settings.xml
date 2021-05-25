@@ -84,6 +84,15 @@
                 android:text="@string/showHidden"
                 android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
+            <Switch
+                android:id="@+id/autofillSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
+                android:text="@string/enableAutofill"
+                android:textColor="?android:attr/textColor"
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/changePassword"

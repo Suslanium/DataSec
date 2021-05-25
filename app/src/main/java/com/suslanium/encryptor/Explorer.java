@@ -63,6 +63,10 @@ public class Explorer extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if(getIntent().getByteArrayExtra("pass") == null){
+            Intent pass = new Intent(this, PasswordActivity.class);
+            startActivity(pass);
+        }
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);

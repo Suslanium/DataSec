@@ -95,6 +95,10 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
             iconView.setImageResource(R.drawable.ic_folder);
         }
 
+        public void setNonCategory(){
+            isCategory = false;
+        }
+
         public void removeTint(){
             iconView.setImageTintList(null);
         }
@@ -146,6 +150,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         } else {
             viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
             viewHolder.getLoginView().setText("");
+            viewHolder.setNonCategory();
             if (localLogins.get(position - localCategories.size()) != null && showLogins) {
                 viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
             }

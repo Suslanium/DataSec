@@ -225,4 +225,13 @@
     <string name="signOutSuccess">Выход выполнен</string>
     <string name="signOutErr">Вы не вошли в аккаунт</string>
     <string name="fileTooBig">Файл слишком большой</string>
+    <string name="decryptionRunning">Идёт дешифроавние. Это может занять некоторое время.</string>
+    <string name="enableAutofill">Включить сервис автозаполнения</string>
+    <string name="autofillEnabled">Автозаполнение уже включено</string>
+    <string name="authRequired">Требуется аутентификация</string>
+    <string name="enterPassAuth">Введите свой пароль, чтобы использовать автозаполнение</string>
+    <string name="noResultsAutofill">Нет результатов</string>
+    <string name="autofillService">Автозаполнение DataCrypt</string>
+    <string name="autofillWarning">В некоторых случаях эта функция может быть небезопасной. Рекомендуется вручную копировать и вставлять данные из хранилища паролей. Вы уверены, что хотите включить данную функцию?</string>
+    <string name="selectAll">Выбрать всё</string>
 </resources>

@@ -5,10 +5,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,11 +23,14 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -97,6 +103,7 @@ public class SettingsFragment extends Fragment {
         boolean showHide = preferences.getBoolean("showHidden", false);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch darkTheme = requireActivity().findViewById(R.id.darkTheme);
         Button changePass = requireActivity().findViewById(R.id.changePassword);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch enableAutofill = requireActivity().findViewById(R.id.autofillSwitch);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter = requireActivity().findViewById(R.id.deleteAfter);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch deleteAfter2 = requireActivity().findViewById(R.id.deleteAfter2);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showPreviews = requireActivity().findViewById(R.id.previewSwitch);
@@ -113,6 +120,50 @@ public class SettingsFragment extends Fragment {
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(requireView().getWindowToken(), 0);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AutofillManager autofillManager = requireContext().getSystemService(AutofillManager.class);
+            if (autofillManager.isAutofillSupported()) {
+                if (autofillManager.hasEnabledAutofillServices()) {
+                    enableAutofill.setChecked(true);
+                } else {
+                    enableAutofill.setChecked(false);
+                }
+            } else {
+                enableAutofill.setEnabled(false);
+            }
+        } else {
+            enableAutofill.setText(getString(R.string.enableAutofill) + "(Android 8+)");
+            enableAutofill.setEnabled(false);
+        }
+        enableAutofill.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (isChecked) {
+                    AutofillManager autofillManager = requireContext().getSystemService(AutofillManager.class);
+                    if (autofillManager.isAutofillSupported()) {
+                        if (!autofillManager.hasEnabledAutofillServices()) {
+                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                                    .setTitle(R.string.warning)
+                                    .setCancelable(false)
+                                    .setMessage(R.string.autofillWarning)
+                                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                        Uri uri = Uri.parse("package:" + requireContext().getPackageName());
+                                        Intent i = new Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE, uri);
+                                        startActivityForResult(i, 111);
+                                    })
+                                    .setNegativeButton(R.string.no, (dialog, which) -> {enableAutofill.setChecked(false);dialog.dismiss();});
+                            builder.show();
+                        }
+                    }
+                } else {
+                    AutofillManager autofillManager = requireContext().getSystemService(AutofillManager.class);
+                    if (autofillManager.isAutofillSupported()) {
+                        if (autofillManager.hasEnabledAutofillServices()) {
+                            autofillManager.disableAutofillServices();
+                        }
+                    }
+                }
+            }
+        });
         deleteAfter2.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
             editor.putBoolean("auto_Delete2", isChecked);
@@ -138,6 +189,11 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("showHidden", isChecked);
             editor.apply();
         });
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            darkTheme.setChecked(false);
+            darkTheme.setEnabled(false);
+            darkTheme.setText(getString(R.string.darkTheme)+"(Android 10+)");
+        }
         if (dark_theme)
             darkTheme.setChecked(true);
         deleteAfter.setChecked(autoDelete);

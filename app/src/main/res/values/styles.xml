@@ -73,6 +73,10 @@
     <style name="SwitchTextAppearanceDark" parent="@android:style/TextAppearance.Small">
         <item name="android:textColor">#CFD8DC</item>
     </style>
+    <style name="AutofillAppearance" parent="@android:style/TextAppearance.Small">
+        <item name="fontFamily">@font/ubuntu</item>
+        <item name="android:fontFamily">@font/ubuntu</item>
+    </style>
     <style name="UbuntuTextStyleNav">
         <item name="android:fontFamily">@font/ubuntu_medium</item>
     </style>

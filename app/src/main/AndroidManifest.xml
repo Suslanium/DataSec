@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.suslanium.encryptor">
+    package="com.suslanium.encryptor" >
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -19,7 +19,9 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/icon_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Encryptor.Light">
+        android:theme="@style/Theme.Encryptor.Light" >
+        <activity android:name=".AutofillAuthActivity" >
+        </activity>
         <activity
             android:name=".WelcomeActivity"
             android:theme="@style/Theme.Encryptor.Light" />
@@ -28,7 +30,7 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.suslanium.encryptor.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true" >
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
@@ -47,12 +49,12 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_explorer"
             android:theme="@style/Theme.Encryptor.Light"
-            android:windowSoftInputMode="adjustNothing">
+            android:windowSoftInputMode="adjustNothing" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.suslanium.encryptor.Explorer" />
         </activity>
-        <activity android:name=".PasswordActivity">
+        <activity android:name=".PasswordActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,6 +63,18 @@
         </activity>
 
         <service android:name=".EncryptorService" />
+        <service
+            android:name=".EncryptorAutofillService"
+            android:label="@string/autofillService"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE" >
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.autofill"
+                android:resource="@xml/autofill" />
+        </service>
 
         <meta-data
             android:name="preloaded_fonts"

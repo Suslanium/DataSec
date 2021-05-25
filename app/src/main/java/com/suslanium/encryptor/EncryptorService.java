@@ -12,6 +12,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.autofill.AutofillManager;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -651,6 +652,7 @@ public class EncryptorService extends Service {
                 byte[] newPassEnc = intent.getByteArrayExtra("newPass");
                 Thread thread = new Thread(() -> {
                     File toDownload = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
+                    toDownload.mkdirs();
                     File origin = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
                     String password = null;
                     try {
@@ -702,8 +704,11 @@ public class EncryptorService extends Service {
                                 SharedPreferences.Editor edit = editor.edit();
                                 edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                                 edit.apply();
+                                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
+                                    EncryptorAutofillService.pass = newPassEnc;
+                                }
                             } catch (Exception e) {
-
+                                e.printStackTrace();
                                 if (toDownload.exists() && !origin.exists()) {
                                     try (InputStream in = new BufferedInputStream(new FileInputStream(toDownload)); OutputStream out = new BufferedOutputStream(new FileOutputStream(origin))) {
                                         byte[] buffer = new byte[256 * 1024];
@@ -894,6 +899,7 @@ public class EncryptorService extends Service {
                             }
                             if (driveFileNames.contains("database.db")) {
                                 File toDownload = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
+                                toDownload.getParentFile().mkdirs();
                                 if (toDownload.exists())
                                     deleteFiles(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
                                 for (int j = 0; j < driveFiles.size(); j++) {

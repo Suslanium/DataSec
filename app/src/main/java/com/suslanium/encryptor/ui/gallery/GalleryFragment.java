@@ -305,7 +305,6 @@ public class GalleryFragment extends Fragment {
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<String> logins = new ArrayList<>();
         categories.clear();
-        //categories.addAll(Encryptor.getCategories(database));
         Thread thread = new Thread(() -> {
             try {
                 byte[] pass = intent2.getByteArrayExtra("pass");
@@ -343,6 +342,7 @@ public class GalleryFragment extends Fragment {
                     }
                 }
                 if((currentSearchQuery == null || currentSearchQuery.matches("")) && (currentCategory == null || currentCategory.matches(""))) {
+                    categories.clear();
                     categories.addAll(Encryptor.getCategories(database));
                     requireActivity().runOnUiThread(new Runnable() {
                         @Override
@@ -380,7 +380,6 @@ public class GalleryFragment extends Fragment {
                 adapter.setIcons(bitmapArrayList);
                 Encryptor.closeDataBase(database);
             } catch (Exception e){
-
                 requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
             }
         });

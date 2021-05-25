@@ -21,6 +21,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -35,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.view.autofill.AutofillManager;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -176,6 +178,9 @@ public class passwordAdd extends AppCompatActivity {
                         }
                         Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent.getStringExtra("category"));
                         Encryptor.closeDataBase(database);
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
+                            EncryptorAutofillService.pass = intent.getByteArrayExtra("pass");
+                        }
                         runOnUiThread(alertDialog::dismiss);
                         finish();
                     } catch (Exception e) {

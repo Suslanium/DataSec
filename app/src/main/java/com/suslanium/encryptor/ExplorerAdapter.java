@@ -92,6 +92,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private String Calc = "Calculating...";
     private String items = "items";
     private ColorStateList defTint;
+    private String password = null;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -137,6 +138,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             }
                         }
                     }
+                }
+            });
+            checkBoxButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    selectAll();
+                    return true;
                 }
             });
             fileButton.setOnLongClickListener(new View.OnLongClickListener() {
@@ -397,7 +405,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     }
                                                 } else {
                                                     File encrypted = new File(filePath);
-                                                    if(encrypted.length() <= 15 * 1024 * 1024) {
+                                                    if(encrypted.length() <= 50 * 1024 * 1024) {
                                                         MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(fragment.requireContext(), R.style.MaterialAlertDialog_rounded);
                                                         ProgressBar bar = new ProgressBar(fragment.requireContext());
                                                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -405,48 +413,46 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                                 LinearLayout.LayoutParams.WRAP_CONTENT);
                                                         bar.setLayoutParams(lp);
                                                         builder2.setTitle(R.string.wait);
-                                                        builder2.setMessage(R.string.decrypting);
+                                                        builder2.setMessage(R.string.decryptionRunning);
                                                         builder2.setView(bar);
                                                         builder2.setCancelable(false);
+                                                        builder2.setPositiveButton(R.string.bckgnd, (dialog15, which15) -> dialog15.dismiss());
                                                         AlertDialog alertDialog = builder2.create();
                                                         alertDialog.show();
                                                         File cached = new File((activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).substring(0, (activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).length() - 4));
-                                                        Thread thread = new Thread(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                try {
-                                                                    cached.getParentFile().mkdirs();
-                                                                    cached.delete();
-                                                                    String password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                                                    Encryptor.decryptFileAES256(encrypted, password,cached);
-                                                                    Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
-                                                                    String type = activity.getContentResolver().getType(uriForFile);
-                                                                    Intent intent = new Intent();
-                                                                    intent.setAction(Intent.ACTION_VIEW);
-                                                                    intent.setDataAndType(uriForFile, type);
-                                                                    //if(type.contains("vnd.android.package-archive")){
-                                                                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                                    //} else {
-                                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                                    //}
-                                                                    activity.runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            alertDialog.dismiss();
-                                                                            activity.startActivityForResult(intent, 101);
-                                                                        }
-                                                                    });
-                                                                } catch (Exception e){
-                                                                    e.printStackTrace();
-                                                                    cached.delete();
-                                                                    activity.runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            alertDialog.dismiss();
-                                                                            Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
-                                                                        }
-                                                                    });
-                                                                }
+                                                        Thread thread = new Thread(() -> {
+                                                            try {
+                                                                cached.getParentFile().mkdirs();
+                                                                cached.delete();
+                                                                if(password == null) password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                                Encryptor.decryptFileAES256(encrypted, password,cached);
+                                                                Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
+                                                                String type = activity.getContentResolver().getType(uriForFile);
+                                                                Intent intent = new Intent();
+                                                                intent.setAction(Intent.ACTION_VIEW);
+                                                                intent.setDataAndType(uriForFile, type);
+                                                                //if(type.contains("vnd.android.package-archive")){
+                                                                //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                //} else {
+                                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                                //}
+                                                                activity.runOnUiThread(new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        alertDialog.dismiss();
+                                                                        activity.startActivityForResult(intent, 101);
+                                                                    }
+                                                                });
+                                                            } catch (Exception e){
+                                                                e.printStackTrace();
+                                                                cached.delete();
+                                                                activity.runOnUiThread(new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        alertDialog.dismiss();
+                                                                        Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                                    }
+                                                                });
                                                             }
                                                         });
                                                         thread.start();
@@ -578,6 +584,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         }
     }
 
+    public boolean getSearchEnded(){
+        return searchEnded;
+    }
+
     public void deselectAll() {
         CheckedId.clear();
         if (!holders.isEmpty()) {
@@ -618,6 +628,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
         @ColorInt int color = typedValue.data;
         defTint = ColorStateList.valueOf(color);
+        service.submit(() -> {
+            try {
+                password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // Create new views (invoked by the layout manager)
@@ -774,6 +791,36 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " " + items));
             }
         });
+    }
+
+    public void selectAll(){
+        if (!isDoingFileOperations) {
+            if (canSelect) {
+                if (!localDataSet.equals(CheckedId)) {
+                    if (!holders.isEmpty()) {
+                        for (int i = 0; i < holders.size(); i++) {
+                            holders.get(i).fileCheckbox.setChecked(true);
+                        }
+                    }
+                    CheckedId.clear();
+                    openBottomBar();
+                    if (localDataSet != null && !localDataSet.isEmpty()) {
+                        CheckedId.addAll(localDataSet);
+                    }
+                } else {
+                    if (!holders.isEmpty()) {
+                        for (int i = 0; i < holders.size(); i++) {
+                            holders.get(i).fileCheckbox.setChecked(false);
+                        }
+                    }
+                    CheckedId.clear();
+                    closeBottomBar();
+                    if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE && CheckedId.isEmpty()) {
+                        fragment.showAddButton(true);
+                    }
+                }
+            }
+        }
     }
 
     public ArrayList<String> getLocalDataSet() {
