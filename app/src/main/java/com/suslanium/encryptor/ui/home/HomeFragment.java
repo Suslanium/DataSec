@@ -17,6 +17,7 @@ import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.text.InputType;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Gravity;
@@ -67,8 +68,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
@@ -1203,18 +1206,30 @@ public class HomeFragment extends Fragment {
 
     private ArrayList<File> searchFiles(String path, String fileName) {
         ArrayList<File> result = new ArrayList<>();
-        File parent = new File(path);
-        File[] childs = parent.listFiles();
-        if (childs != null && childs.length > 0) {
-            for (int i = 0; i < childs.length; i++) {
-                if (childs[i].getName().contains(fileName)) {
-                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                        result.add(childs[i]);
+        if(!fileName.toLowerCase().equals(getString(R.string.fav).toLowerCase())) {
+            File parent = new File(path);
+            File[] childs = parent.listFiles();
+            if (childs != null && childs.length > 0) {
+                for (int i = 0; i < childs.length; i++) {
+                    if (childs[i].getName().contains(fileName)) {
+                        if ((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                            result.add(childs[i]);
+                        }
+                    }
+                    if (childs[i].isDirectory()) {
+                        if ((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
+                            result.addAll(searchFiles(childs[i].getPath(), fileName));
+                        }
                     }
                 }
-                if (childs[i].isDirectory()) {
-                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                        result.addAll(searchFiles(childs[i].getPath(), fileName));
+            }
+        } else {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+            ArrayList<String> paths = new ArrayList<>(preferences.getStringSet("fav", new HashSet<>()));
+            if(!paths.isEmpty()){
+                for(int i=0;i<paths.size();i++){
+                    if(paths.get(i).startsWith(path)){
+                        result.add(new File(paths.get(i)));
                     }
                 }
             }

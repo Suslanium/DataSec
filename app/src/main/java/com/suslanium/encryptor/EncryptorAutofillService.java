@@ -32,6 +32,7 @@ import com.google.android.material.snackbar.Snackbar;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,12 +49,12 @@ public class EncryptorAutofillService extends AutofillService {
             List<FillContext> context = request.getFillContexts();
             AssistStructure structure = context.get(context.size() - 1).getStructure();
             String appPackageName = structure.getActivityComponent().getPackageName();
-            if(!appPackageName.equals(getPackageName())) {
+            if (!appPackageName.equals(getPackageName())) {
                 String appName;
                 PackageManager pm = getApplicationContext().getPackageManager();
                 ApplicationInfo ai;
                 try {
-                    ai = pm.getApplicationInfo( this.getPackageName(), 0);
+                    ai = pm.getApplicationInfo(this.getPackageName(), 0);
                 } catch (final PackageManager.NameNotFoundException e) {
                     ai = null;
                 }
@@ -111,7 +112,7 @@ public class EncryptorAutofillService extends AutofillService {
                                     if (!ids.isEmpty()) {
                                         ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                                         for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(1) != null) {
+                                            if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
                                                 Dataset.Builder builder = new Dataset.Builder();
                                                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                                 views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
@@ -137,7 +138,7 @@ public class EncryptorAutofillService extends AutofillService {
                                     if (!ids.isEmpty()) {
                                         ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                                         for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(2) != null) {
+                                            if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
                                                 Dataset.Builder builder = new Dataset.Builder();
                                                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                                 views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
@@ -163,7 +164,7 @@ public class EncryptorAutofillService extends AutofillService {
                                     if (!ids.isEmpty()) {
                                         ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                                         for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(1) != null) {
+                                            if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
                                                 Dataset.Builder builder = new Dataset.Builder();
                                                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                                 views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
@@ -172,7 +173,7 @@ public class EncryptorAutofillService extends AutofillService {
                                                 }
                                                 datasets.add(builder);
                                             }
-                                            if (integerArrayListHashMap.get(i).get(2) != null) {
+                                            if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
                                                 Dataset.Builder builder = new Dataset.Builder();
                                                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                                 views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
@@ -217,7 +218,7 @@ public class EncryptorAutofillService extends AutofillService {
                     callback.onSuccess(response);
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -228,22 +229,22 @@ public class EncryptorAutofillService extends AutofillService {
     }
 
     public void parseAutoFillFields(AssistStructure.ViewNode node, List<AssistStructure.ViewNode> loginNodes, boolean passwords) {
-            String[] hints = node.getAutofillHints();
-            String viewId = node.getIdEntry();
-            String hint = node.getHint();
-            boolean hintsContain = false;
-            if (hints != null && hints.length > 0) {
-                for (int i = 0; i < hints.length; i++) {
-                    if (!passwords && checkStringForLogin(hints[i])) {
-                        hintsContain = true;
-                    } else if (passwords && checkStringForPassword(hints[i])) {
-                        hintsContain = true;
-                    }
+        String[] hints = node.getAutofillHints();
+        String viewId = node.getIdEntry();
+        String hint = node.getHint();
+        boolean hintsContain = false;
+        if (hints != null && hints.length > 0) {
+            for (int i = 0; i < hints.length; i++) {
+                if (!passwords && checkStringForLogin(hints[i])) {
+                    hintsContain = true;
+                } else if (passwords && checkStringForPassword(hints[i])) {
+                    hintsContain = true;
                 }
             }
-            if (((!passwords && checkStringForLogin(hint)) || (!passwords && checkStringForLogin(viewId)) || hintsContain || (passwords && checkStringForPassword(hint)) || (passwords && checkStringForPassword(viewId))) && node.isFocused() && node.getVisibility() == View.VISIBLE && node.getHeight() > 2 && node.getWidth() > 2 && node.getAlpha() > 0f) {
-                loginNodes.add(node);
-            }
+        }
+        if (((!passwords && checkStringForLogin(hint)) || (!passwords && checkStringForLogin(viewId)) || hintsContain || (passwords && checkStringForPassword(hint)) || (passwords && checkStringForPassword(viewId))) && node.isFocused() && node.getVisibility() == View.VISIBLE && node.getHeight() > 2 && node.getWidth() > 2 && node.getAlpha() > 0f) {
+            loginNodes.add(node);
+        }
         if (node.getChildCount() > 0) {
             for (int i = 0; i < node.getChildCount(); i++) {
                 parseAutoFillFields(node.getChildAt(i), loginNodes, passwords);
@@ -251,26 +252,32 @@ public class EncryptorAutofillService extends AutofillService {
         }
     }
 
-    public void getPossibleAppNames(AssistStructure.ViewNode node, List<String> names){
-        if(node.getClassName() != null && node.getClassName().contains("TextView")){
-            CharSequence text = node.getText();
-            if(text != null){
-                String textString = text.toString();
-                names.add(textString);
-            }
+    public void getPossibleAppNames(AssistStructure.ViewNode node, List<String> names) {
+        CharSequence text = node.getText();
+        String viewId = node.getIdEntry();
+        String hint = node.getHint();
+        String[] hints = node.getAutofillHints();
+        if (text != null) {
+            String textString = text.toString();
+            names.add(textString);
         }
+        if(hints != null && hints.length>0){
+            names.addAll(Arrays.asList(hints));
+        }
+        if(viewId != null) names.add(viewId);
+        if(hint != null) names.add(hint);
         if (node.getChildCount() > 0) {
             for (int i = 0; i < node.getChildCount(); i++) {
-                 getPossibleAppNames(node.getChildAt(i), names);
+                getPossibleAppNames(node.getChildAt(i), names);
             }
         }
     }
 
-    public static boolean checkForAppName(List<String> texts, String toCheck){
+    public static boolean checkForAppName(List<String> texts, String toCheck) {
         boolean contains = false;
-        if(texts != null && !texts.isEmpty()) {
+        if (texts != null && !texts.isEmpty()) {
             for (int i = 0; i < texts.size(); i++) {
-                if(texts.get(i).toLowerCase().contains(toCheck.toLowerCase()) || texts.get(i).contains(toCheck)){
+                if (texts.get(i).toLowerCase().contains(toCheck.toLowerCase()) || texts.get(i).contains(toCheck)) {
                     contains = true;
                 }
             }
@@ -300,9 +307,9 @@ public class EncryptorAutofillService extends AutofillService {
         return contains;
     }
 
-    public static String generateMaskedPass(int length){
+    public static String generateMaskedPass(int length) {
         StringBuilder pass = new StringBuilder();
-        for(int i=0;i<length;i++){
+        for (int i = 0; i < length; i++) {
             pass.append("●");
         }
         return pass.toString();

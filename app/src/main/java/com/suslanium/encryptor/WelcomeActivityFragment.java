@@ -2,6 +2,7 @@ package com.suslanium.encryptor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +29,7 @@ import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -60,6 +63,19 @@ public class WelcomeActivityFragment extends Fragment {
         ViewPager2 pager2 = requireActivity().findViewById(R.id.welcomePager);
         switch (position) {
             case 1:
+                if(WelcomeActivity.isDeviceRooted()){
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.warning)
+                            .setMessage(R.string.rootWarning)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.cont, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    builder.show();
+                }
                 //Welcome
                 confPass.setVisibility(View.GONE);
                 pass.setVisibility(View.GONE);

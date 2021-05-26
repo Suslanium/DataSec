@@ -239,4 +239,8 @@
     <string name="autofillService">DataCrypt Autofill</string>
     <string name="autofillWarning">In some cases, this function may be insecure. It is recommended to manually copy and paste data from the password manager. Are you sure you want to enable this feature?</string>
     <string name="selectAll">Select all</string>
+    <string name="addToFav">Add to favourites</string>
+    <string name="rmFromFav">Remove from favorites</string>
+    <string name="fav">Favorites</string>
+    <string name="rootWarning">You are most likely using a rooted device. Using this application on rooted devices is EXTREMELY NOT RECOMMENDED as it may leak your data. If you have root rights, use the application at your own risk.</string>
 </resources>

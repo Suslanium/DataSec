@@ -262,7 +262,7 @@ public class AutofillAuthActivity extends AppCompatActivity {
                         if (!ids.isEmpty()) {
                             ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                             for (Integer i : integers) {
-                                if (integerArrayListHashMap.get(i).get(1) != null) {
+                                if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
                                     Dataset.Builder builder = new Dataset.Builder();
                                     RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                     views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
@@ -285,7 +285,7 @@ public class AutofillAuthActivity extends AppCompatActivity {
                         if (!ids.isEmpty()) {
                             ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                             for (Integer i : integers) {
-                                if (integerArrayListHashMap.get(i).get(2) != null) {
+                                if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
                                     Dataset.Builder builder = new Dataset.Builder();
                                     RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                     views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
@@ -308,7 +308,7 @@ public class AutofillAuthActivity extends AppCompatActivity {
                         if (!ids.isEmpty()) {
                             ArrayList<Dataset.Builder> datasets = new ArrayList<>();
                             for (Integer i : integers) {
-                                if (integerArrayListHashMap.get(i).get(1) != null) {
+                                if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
                                     Dataset.Builder builder = new Dataset.Builder();
                                     RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                     views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
@@ -317,7 +317,7 @@ public class AutofillAuthActivity extends AppCompatActivity {
                                     }
                                     datasets.add(builder);
                                 }
-                                if (integerArrayListHashMap.get(i).get(2) != null) {
+                                if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
                                     Dataset.Builder builder = new Dataset.Builder();
                                     RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                                     views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));

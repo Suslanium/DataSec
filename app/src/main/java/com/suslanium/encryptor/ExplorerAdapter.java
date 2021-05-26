@@ -44,6 +44,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.collect.Lists;
 import com.suslanium.encryptor.ui.home.HomeFragment;
 
 import org.jetbrains.annotations.NotNull;
@@ -52,9 +53,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,6 +96,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private String items = "items";
     private ColorStateList defTint;
     private String password = null;
+    private Set<String> favorites = new HashSet<>();
 
     /**
      * Provide a reference to the type of views that you are using
@@ -303,9 +307,17 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             if (!isDoingFileOperations) {
                                 CharSequence[] items = null;
                                 if (encrypted) {
-                                    items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile)};
+                                    if(!favorites.contains(filePath)) {
+                                        items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile), activity.getString(R.string.addToFav)};
+                                    } else {
+                                        items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile), activity.getString(R.string.rmFromFav)};
+                                    }
                                 } else {
-                                    items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile)};
+                                    if(!favorites.contains(filePath)) {
+                                        items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile), activity.getString(R.string.addToFav)};
+                                    } else {
+                                        items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile), activity.getString(R.string.rmFromFav)};
+                                    }
                                 }
                                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
                                 builder.setTitle(R.string.choose);
@@ -460,6 +472,16 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                         Snackbar.make(v, R.string.fileTooBig,Snackbar.LENGTH_LONG).show();
                                                     }
                                                 }
+                                                break;
+                                            case 2:
+                                                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext()).edit();
+                                                if(favorites.contains(filePath)){
+                                                    favorites.remove(filePath);
+                                                } else {
+                                                    favorites.add(filePath);
+                                                }
+                                                preferences.putStringSet("fav", favorites);
+                                                preferences.apply();
                                                 break;
                                             default:
                                                 break;
@@ -635,6 +657,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 e.printStackTrace();
             }
         });
+        favorites.addAll(preferences.getStringSet("fav", new HashSet<>()));
     }
 
     // Create new views (invoked by the layout manager)
