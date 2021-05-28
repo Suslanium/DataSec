@@ -697,6 +697,23 @@ public class EncryptorService extends Service {
                                 Encryptor.closeDataBase(database);
                                 Encryptor.closeDataBase(downloadedDatabase);
                                 toDownload.delete();
+                                File parentFolder = new File(getBaseContext().getFilesDir().getPath() + File.separator + "Notes");
+                                parentFolder.mkdirs();
+                                File[] noteFiles = parentFolder.listFiles();
+                                if(noteFiles != null && noteFiles.length > 0){
+                                    for(int i=0;i<noteFiles.length;i++){
+                                        try {
+                                            File temp = new File(getApplicationInfo().dataDir + File.separator + "noteTemp" + File.separator + noteFiles[i].getName().substring(0, noteFiles[i].getName().length() - 4));
+                                            temp.delete();
+                                            Encryptor.decryptFileAES256(noteFiles[i], password, temp);
+                                            noteFiles[i].delete();
+                                            Encryptor.encryptFileAES256(temp, newPass, noteFiles[i]);
+                                            temp.delete();
+                                        } catch (Exception e){
+
+                                        }
+                                    }
+                                }
                                 MasterKey mainKey = new MasterKey.Builder(getBaseContext())
                                         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                                         .build();

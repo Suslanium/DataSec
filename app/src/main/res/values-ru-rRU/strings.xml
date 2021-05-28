@@ -238,4 +238,21 @@
     <string name="rmFromFav">Удалить из избранного</string>
     <string name="fav">Избранное</string>
     <string name="rootWarning">Скорее всего, вы используете рутированное устройство. Использование этого приложения на устройствах с root-доступом КРАЙНЕ НЕ РЕКОМЕНДУЕТСЯ, так как это может привести к утечке ваших данных. Если у вас есть root права, используйте приложение на свой страх и риск.</string>
+    <string name="calcApp">Калькулятор</string>
+    <string name="playStoreApp">Play Маркет</string>
+    <string name="changeIcon">Изменить иконку и название приложения</string>
+    <string name="selectApp">Выберите приложение</string>
+    <string name="defApp">По умолчанию(DataCrypt)</string>
+    <string name="selectIconMsg">Приложение будет закрыто после того, как вы выберете новую иконку. Вам нужно будет перезапустить приложение.</string>
+    <string name="cameraApp">Камера</string>
+    <string name="appWillClose">Приложение будет закрыто, вам нужно будет его перезапустить.</string>
+    <string name="enterName">Название заметки</string>
+    <string name="noteText">Текст</string>
+    <string name="deleteNoteMsg">Вы собираетесь удалить эту заметку. Вы уверены, что хотите продолжить?</string>
+    <string name="failedToSaveNote">Не удалось сохранить заметку</string>
+    <string name="noteAlreadyExists">Заметка с таким же именем уже существует. Вы хотите удалить её?</string>
+    <string name="notes">Заметка</string>
+    <string name="enterNote">Введите название и текст заметки</string>
+    <string name="notesMenu">Заметки</string>
+    <string name="noteInvalidName">Недопустимое имя заметки</string>
 </resources>

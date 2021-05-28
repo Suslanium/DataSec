@@ -96,108 +96,108 @@ public class EncryptorAutofillService extends AutofillService {
                             e.printStackTrace();
                         }
                     }
-                    if (password != null) {
-                        SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
-                        HashMap<Integer, ArrayList<String>> integerArrayListHashMap = Encryptor.readPasswordData(database);
-                        Encryptor.closeDataBase(database);
-                        ArrayList<Integer> integers = new ArrayList<>();
-                        for (Integer i : integerArrayListHashMap.keySet()) {
-                            if (appPackageName.toLowerCase().contains(integerArrayListHashMap.get(i).get(0).toLowerCase()) || checkForAppName(texts, integerArrayListHashMap.get(i).get(0)) || appName.contains(integerArrayListHashMap.get(i).get(0))) {
-                                integers.add(i);
-                            }
+                }
+                if (password != null) {
+                    SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), password);
+                    HashMap<Integer, ArrayList<String>> integerArrayListHashMap = Encryptor.readPasswordData(database);
+                    Encryptor.closeDataBase(database);
+                    ArrayList<Integer> integers = new ArrayList<>();
+                    for (Integer i : integerArrayListHashMap.keySet()) {
+                        if (appPackageName.toLowerCase().contains(integerArrayListHashMap.get(i).get(0).toLowerCase()) || appPackageName.contains(integerArrayListHashMap.get(i).get(0)) || checkForAppName(texts, integerArrayListHashMap.get(i).get(0)) || appName.contains(integerArrayListHashMap.get(i).get(0)) || appName.toLowerCase().contains(integerArrayListHashMap.get(i).get(0).toLowerCase())) {
+                            integers.add(i);
                         }
-                        if (!integers.isEmpty()) {
-                            switch (type) {
-                                case 2:
-                                    if (!ids.isEmpty()) {
-                                        ArrayList<Dataset.Builder> datasets = new ArrayList<>();
-                                        for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
-                                                Dataset.Builder builder = new Dataset.Builder();
-                                                RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
-                                                views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
-                                                for (int j = 0; j < ids.size(); j++) {
-                                                    builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(1)), views);
-                                                }
-                                                datasets.add(builder);
+                    }
+                    if (!integers.isEmpty()) {
+                        switch (type) {
+                            case 2:
+                                if (!ids.isEmpty()) {
+                                    ArrayList<Dataset.Builder> datasets = new ArrayList<>();
+                                    for (Integer i : integers) {
+                                        if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
+                                            Dataset.Builder builder = new Dataset.Builder();
+                                            RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
+                                            views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
+                                            for (int j = 0; j < ids.size(); j++) {
+                                                builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(1)), views);
                                             }
+                                            datasets.add(builder);
                                         }
-                                        if (!datasets.isEmpty()) {
-                                            FillResponse.Builder builder = new FillResponse.Builder();
-                                            for (int i = 0; i < datasets.size(); i++) {
-                                                builder.addDataset(datasets.get(i).build());
-                                            }
-                                            FillResponse response = builder.build();
-                                            callback.onSuccess(response);
-                                        }
-                                    } else {
-                                        return;
                                     }
-                                    break;
-                                case 3:
-                                    if (!ids.isEmpty()) {
-                                        ArrayList<Dataset.Builder> datasets = new ArrayList<>();
-                                        for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
-                                                Dataset.Builder builder = new Dataset.Builder();
-                                                RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
-                                                views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
-                                                for (int j = 0; j < ids.size(); j++) {
-                                                    builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(2)), views);
-                                                }
-                                                datasets.add(builder);
-                                            }
+                                    if (!datasets.isEmpty()) {
+                                        FillResponse.Builder builder = new FillResponse.Builder();
+                                        for (int i = 0; i < datasets.size(); i++) {
+                                            builder.addDataset(datasets.get(i).build());
                                         }
-                                        if (!datasets.isEmpty()) {
-                                            FillResponse.Builder builder = new FillResponse.Builder();
-                                            for (int i = 0; i < datasets.size(); i++) {
-                                                builder.addDataset(datasets.get(i).build());
-                                            }
-                                            FillResponse response = builder.build();
-                                            callback.onSuccess(response);
-                                        }
-                                    } else {
-                                        return;
+                                        FillResponse response = builder.build();
+                                        callback.onSuccess(response);
                                     }
-                                    break;
-                                case 1:
-                                    if (!ids.isEmpty()) {
-                                        ArrayList<Dataset.Builder> datasets = new ArrayList<>();
-                                        for (Integer i : integers) {
-                                            if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
-                                                Dataset.Builder builder = new Dataset.Builder();
-                                                RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
-                                                views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
-                                                for (int j = 0; j < ids.size(); j++) {
-                                                    builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(1)), views);
-                                                }
-                                                datasets.add(builder);
+                                } else {
+                                    return;
+                                }
+                                break;
+                            case 3:
+                                if (!ids.isEmpty()) {
+                                    ArrayList<Dataset.Builder> datasets = new ArrayList<>();
+                                    for (Integer i : integers) {
+                                        if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
+                                            Dataset.Builder builder = new Dataset.Builder();
+                                            RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
+                                            views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
+                                            for (int j = 0; j < ids.size(); j++) {
+                                                builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(2)), views);
                                             }
-                                            if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
-                                                Dataset.Builder builder = new Dataset.Builder();
-                                                RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
-                                                views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
-                                                for (int j = 0; j < ids.size(); j++) {
-                                                    builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(2)), views);
-                                                }
-                                                datasets.add(builder);
-                                            }
+                                            datasets.add(builder);
                                         }
-                                        if (!datasets.isEmpty()) {
-                                            FillResponse.Builder builder = new FillResponse.Builder();
-                                            for (int i = 0; i < datasets.size(); i++) {
-                                                builder.addDataset(datasets.get(i).build());
-                                            }
-                                            FillResponse response = builder.build();
-                                            callback.onSuccess(response);
-                                        }
-                                    } else {
-                                        return;
                                     }
-                                    break;
-                                default:
-                                    break;
-                            }
+                                    if (!datasets.isEmpty()) {
+                                        FillResponse.Builder builder = new FillResponse.Builder();
+                                        for (int i = 0; i < datasets.size(); i++) {
+                                            builder.addDataset(datasets.get(i).build());
+                                        }
+                                        FillResponse response = builder.build();
+                                        callback.onSuccess(response);
+                                    }
+                                } else {
+                                    return;
+                                }
+                                break;
+                            case 1:
+                                if (!ids.isEmpty()) {
+                                    ArrayList<Dataset.Builder> datasets = new ArrayList<>();
+                                    for (Integer i : integers) {
+                                        if (integerArrayListHashMap.get(i).get(1) != null && !integerArrayListHashMap.get(i).get(1).matches("")) {
+                                            Dataset.Builder builder = new Dataset.Builder();
+                                            RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
+                                            views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + integerArrayListHashMap.get(i).get(1));
+                                            for (int j = 0; j < ids.size(); j++) {
+                                                builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(1)), views);
+                                            }
+                                            datasets.add(builder);
+                                        }
+                                        if (integerArrayListHashMap.get(i).get(2) != null && !integerArrayListHashMap.get(i).get(2).matches("")) {
+                                            Dataset.Builder builder = new Dataset.Builder();
+                                            RemoteViews views = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
+                                            views.setTextViewText(R.id.textToSet, integerArrayListHashMap.get(i).get(0) + ": " + generateMaskedPass(integerArrayListHashMap.get(i).get(2).length()));
+                                            for (int j = 0; j < ids.size(); j++) {
+                                                builder.setValue(ids.get(j), AutofillValue.forText(integerArrayListHashMap.get(i).get(2)), views);
+                                            }
+                                            datasets.add(builder);
+                                        }
+                                    }
+                                    if (!datasets.isEmpty()) {
+                                        FillResponse.Builder builder = new FillResponse.Builder();
+                                        for (int i = 0; i < datasets.size(); i++) {
+                                            builder.addDataset(datasets.get(i).build());
+                                        }
+                                        FillResponse response = builder.build();
+                                        callback.onSuccess(response);
+                                    }
+                                } else {
+                                    return;
+                                }
+                                break;
+                            default:
+                                break;
                         }
                     }
                 } else if (!ids.isEmpty()) {
@@ -219,7 +219,17 @@ public class EncryptorAutofillService extends AutofillService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(pass != null){
+                try {
+                    String password2 = Encryptor.rsadecrypt(pass);
+                    if(!password2.equals(password)){
+                        password = password2;
+                        onFillRequest(request,cancellationSignal,callback);
+                    }
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
     }
 
@@ -261,11 +271,11 @@ public class EncryptorAutofillService extends AutofillService {
             String textString = text.toString();
             names.add(textString);
         }
-        if(hints != null && hints.length>0){
+        if (hints != null && hints.length > 0) {
             names.addAll(Arrays.asList(hints));
         }
-        if(viewId != null) names.add(viewId);
-        if(hint != null) names.add(hint);
+        if (viewId != null) names.add(viewId);
+        if (hint != null) names.add(hint);
         if (node.getChildCount() > 0) {
             for (int i = 0; i < node.getChildCount(); i++) {
                 getPossibleAppNames(node.getChildAt(i), names);

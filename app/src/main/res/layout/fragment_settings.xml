@@ -135,6 +135,19 @@
                 android:textAllCaps="false"
                 android:textColor="@color/pseudoselector"
                 android:textSize="18sp" />
+            <Button
+                android:id="@+id/changeIc"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:backgroundTint="#00FFFFFF"
+                android:fontFamily="@font/ubuntu"
+                android:gravity="start|center_vertical"
+                android:letterSpacing="0"
+                android:stateListAnimator="@null"
+                android:text="@string/changeIcon"
+                android:textAllCaps="false"
+                android:textColor="@color/pseudoselector"
+                android:textSize="18sp" />
 
         </LinearLayout>
     </ScrollView>

@@ -24,6 +24,11 @@
         tools:layout="@layout/fragment_slideshow" />
 
     <fragment
+        android:id="@+id/nav_notes"
+        android:name="com.suslanium.encryptor.Notebook"
+        android:label="@string/notesMenu"
+        tools:layout="@layout/fragment_notebook" />
+    <fragment
         android:id="@+id/nav_messagecrypt"
         android:name="com.suslanium.encryptor.MessageFragment"
         android:label="Messagecrypt"

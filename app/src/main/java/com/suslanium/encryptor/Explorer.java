@@ -50,6 +50,7 @@ public class Explorer extends AppCompatActivity {
     public boolean passwordVaultVisible = false;
     public boolean messageCryptVisible = false;
     public boolean settingsVisible = false;
+    public boolean notesVisible = false;
     private View navExplorer;
     private int backPressedCount = 0;
 
@@ -81,7 +82,7 @@ public class Explorer extends AppCompatActivity {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setItemTextAppearance(R.style.Theme_Encryptor_Dark_Nav);
-        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange, R.id.nav_messagecrypt, R.id.nav_settings)
+        mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange,R.id.nav_notes, R.id.nav_messagecrypt, R.id.nav_settings)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -117,6 +118,10 @@ public class Explorer extends AppCompatActivity {
                             break;
                         case R.id.nav_keyexchange:
                             navController.navigate(R.id.nav_keyexchange);
+                            break;
+                        case R.id.nav_notes:
+                            if(!notesVisible)
+                                navController.navigate(R.id.nav_notes);
                             break;
                         case R.id.nav_messagecrypt:
                             if (!messageCryptVisible)

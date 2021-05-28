@@ -1,6 +1,7 @@
 package com.suslanium.encryptor;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -111,6 +112,49 @@ public class SettingsFragment extends Fragment {
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showHidden = requireActivity().findViewById(R.id.hiddenFilesSwitch);
         Button backUpDataBase = requireActivity().findViewById(R.id.backUpDatabase);
         Button signOut = requireActivity().findViewById(R.id.signOut);
+        Button changeIc = requireActivity().findViewById(R.id.changeIc);
+        changeIc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.selectIcon)
+                        .setItems(new CharSequence[]{getString(R.string.defApp), getString(R.string.calcApp), getString(R.string.playStoreApp), getString(R.string.cameraApp)}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case 0:
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        break;
+                                    case 1:
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        break;
+                                    case 2:
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        break;
+                                    case 3:
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                Snackbar.make(v, R.string.appWillClose,Snackbar.LENGTH_LONG).show();
+                            }
+                        });
+                builder.show();
+            }
+        });
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).searchButton != null)
             t.removeView(((Explorer) requireActivity()).searchButton);

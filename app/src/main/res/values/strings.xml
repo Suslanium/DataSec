@@ -243,4 +243,21 @@
     <string name="rmFromFav">Remove from favorites</string>
     <string name="fav">Favorites</string>
     <string name="rootWarning">You are most likely using a rooted device. Using this application on rooted devices is EXTREMELY NOT RECOMMENDED as it may leak your data. If you have root rights, use the application at your own risk.</string>
+    <string name="calcApp">Calculator</string>
+    <string name="playStoreApp">Play Store</string>
+    <string name="changeIcon">Change app icon and name</string>
+    <string name="selectApp">Select app</string>
+    <string name="defApp">Default(DataCrypt)</string>
+    <string name="selectIconMsg">The app will close after you select a new icon. You will need to restart the application.</string>
+    <string name="cameraApp">Camera</string>
+    <string name="appWillClose">The application will be closed, you will need to restart it.</string>
+    <string name="enterName">Note name</string>
+    <string name="noteText">Text</string>
+    <string name="deleteNoteMsg">You are about to delete this note. Are you sure you want to continue?</string>
+    <string name="failedToSaveNote">Failed to save note</string>
+    <string name="noteAlreadyExists">Note with same name already exists. Do you want to delete it?</string>
+    <string name="notes">Note</string>
+    <string name="enterNote">Please enter note name and text</string>
+    <string name="notesMenu">Notes</string>
+    <string name="noteInvalidName">Invalid note name</string>
 </resources>

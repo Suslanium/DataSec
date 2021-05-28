@@ -17,6 +17,10 @@
             android:icon="@drawable/cloud"
             android:title="@string/menu_keyexchange" />
         <item
+            android:id="@+id/nav_notes"
+            android:icon="@drawable/ic_text"
+            android:title="@string/notesMenu" />
+        <item
             android:id="@+id/nav_messagecrypt"
             android:icon="@drawable/message"
             android:title="MessageCrypt" />

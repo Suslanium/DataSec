@@ -205,7 +205,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
 
                                                 });
                                             } catch (Exception e) {
-
                                                 activity.runOnUiThread(() -> Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
                                             }
                                         });

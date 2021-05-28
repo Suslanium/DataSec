@@ -194,9 +194,9 @@ public class GoogleDriveManager extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (lists.size() > 1) {
-            folders.remove(folders.get(folders.size() - 1));
-            constructAndSetPath();
             if (currentOperationNumber == 0) {
+                folders.remove(folders.get(folders.size() - 1));
+                constructAndSetPath();
                 currentOperationNumber++;
                 recyclerView.stopScroll();
                 Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
