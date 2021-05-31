@@ -149,6 +149,7 @@ public class NotebookActivity extends AppCompatActivity {
                                 });
                             }
                         });
+                        Encryptor.wipeFile(tempNote);
                         tempNote.delete();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -206,6 +207,7 @@ public class NotebookActivity extends AppCompatActivity {
                                                             outputStreamWriter.close();
                                                             encNote.delete();
                                                             Encryptor.encryptFileAES256(tempNote, password, encNote);
+                                                            Encryptor.wipeFile(tempNote);
                                                             tempNote.delete();
                                                             runOnUiThread(() -> {
                                                                 alertDialog.dismiss();
@@ -242,6 +244,7 @@ public class NotebookActivity extends AppCompatActivity {
                                     if (originEncNote != null) originEncNote.delete();
                                     encNote.delete();
                                     Encryptor.encryptFileAES256(tempNote, password, encNote);
+                                    Encryptor.wipeFile(tempNote);
                                     tempNote.delete();
                                     runOnUiThread(() -> {
                                         alertDialog.dismiss();

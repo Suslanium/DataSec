@@ -32,6 +32,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
     private RecyclerView recyclerView;
     private ArrayList<String> checkedId = new ArrayList<>();
     private boolean canSelect = true;
+    private ArrayList<ViewHolder> holders = new ArrayList<>();
 
     /**
      * Provide a reference to the type of views that you are using
@@ -66,6 +67,13 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                         checkedId.add(textView.getText().toString());
                         ((GoogleDriveManager) context).checkFileBar();
                     }
+                }
+            });
+            checkBoxButton.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    selectAll();
+                    return true;
                 }
             });
             fileButton.setOnClickListener(v -> {
@@ -113,6 +121,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                 fadeIn.setFillAfter(true);
                                 recyclerView.startAnimation(fadeIn);
                                 ((GoogleDriveManager) context).currentOperationNumber++;
+                                holders.clear();
                                 checkedId.clear();
                                 ((GoogleDriveManager) context).checkFileBar();
                                 Thread thread = new Thread(() -> {
@@ -230,6 +239,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         }
         viewHolder.getFileSize().setVisibility(View.INVISIBLE);
         viewHolder.getFileModDate().setVisibility(View.INVISIBLE);
+        holders.add(viewHolder);
     }
 
     public void setCanSelect(boolean canSelect) {
@@ -241,6 +251,30 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
     public int getItemCount() {
         if (localDataSet == null) return 0;
         else return localDataSet.size();
+    }
+    public void selectAll() {
+        if (((GoogleDriveManager) context).currentOperationNumber == 0) {
+            if (!localDataSet.equals(checkedId)) {
+                if (!holders.isEmpty()) {
+                    for (int i = 0; i < holders.size(); i++) {
+                        holders.get(i).fileCheckBox.setChecked(true);
+                    }
+                }
+                checkedId.clear();
+                if (localDataSet != null && !localDataSet.isEmpty()) {
+                    checkedId.addAll(localDataSet);
+                }
+                ((GoogleDriveManager) context).checkFileBar();
+            } else {
+                if (!holders.isEmpty()) {
+                    for (int i = 0; i < holders.size(); i++) {
+                        holders.get(i).fileCheckBox.setChecked(false);
+                    }
+                }
+                checkedId.clear();
+                ((GoogleDriveManager) context).checkFileBar();
+            }
+        }
     }
 
     public ArrayList<String> getCheckedIds() {
@@ -288,6 +322,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         localDataSet = dataSet;
         this.ids = ids;
         this.mimeTypes = mimeTypes;
+        holders.clear();
         checkedId.clear();
         ((GoogleDriveManager) context).runOnUiThread(() -> {
             notifyDataSetChanged();

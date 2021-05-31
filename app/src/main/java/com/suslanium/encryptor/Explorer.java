@@ -36,6 +36,9 @@ import com.suslanium.encryptor.ui.slideshow.SlideshowFragment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Explorer extends AppCompatActivity {
 
@@ -53,12 +56,13 @@ public class Explorer extends AppCompatActivity {
     public boolean notesVisible = false;
     private View navExplorer;
     private int backPressedCount = 0;
+    private ExecutorService service;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 101){
-            deleteFiles(getFilesDir()+File.separator+".temp");
+            service.submit(() -> deleteFiles(getFilesDir()+File.separator+".temp"));
         }
     }
 
@@ -68,6 +72,7 @@ public class Explorer extends AppCompatActivity {
             Intent pass = new Intent(this, PasswordActivity.class);
             startActivity(pass);
         }
+        service = Executors.newCachedThreadPool();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
@@ -211,6 +216,7 @@ public class Explorer extends AppCompatActivity {
                     deleteFiles(subPaths);
                 }
             }
+            Encryptor.wipeFile(file);
             file.delete();
         }
     }
@@ -227,6 +233,7 @@ public class Explorer extends AppCompatActivity {
                 deleteFiles(subPaths);
             }
         }
+        Encryptor.wipeFile(file);
         file.delete();
     }
 }

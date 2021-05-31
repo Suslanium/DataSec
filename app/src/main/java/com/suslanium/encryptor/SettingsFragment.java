@@ -97,8 +97,8 @@ public class SettingsFragment extends Fragment {
     private void updateUI() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
-        boolean autoDelete = preferences.getBoolean("auto_Delete", false);
-        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
+        boolean autoDelete = preferences.getBoolean("auto_Delete", true);
+        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", true);
         boolean showLogin = preferences.getBoolean("showLogins", true);
         boolean showPreview = preferences.getBoolean("showPreviews", true);
         boolean showHide = preferences.getBoolean("showHidden", false);

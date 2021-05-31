@@ -59,7 +59,7 @@ public final class Encryptor {
         try {
             SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "AndroidOpenSSL");
             SecretKeyFactory factory;
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             } else {
                 factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
@@ -96,7 +96,7 @@ public final class Encryptor {
             byte[] cipherBytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(cipherBytes);
             SecretKeyFactory factory;
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             } else {
                 factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
@@ -125,7 +125,7 @@ public final class Encryptor {
                 GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
                 cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec);
                 return cipher.doFinal(cipherBytes);
-            } catch (Exception e2){
+            } catch (Exception e2) {
                 e2.printStackTrace();
                 throw new RuntimeException(e2);
             }
@@ -143,13 +143,15 @@ public final class Encryptor {
                     encryptedSplit.add(new File(split.get(i).getPath() + ".enc"));
                 }
                 zip(fileToSave, encryptedSplit);
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new Exception(e);
             } finally {
                 for (int i = 0; i < split.size(); i++) {
+                    wipeFile(split.get(i));
                     split.get(i).delete();
                 }
                 for (int i = 0; i < encryptedSplit.size(); i++) {
+                    wipeFile(encryptedSplit.get(i));
                     encryptedSplit.get(i).delete();
                 }
             }
@@ -178,13 +180,15 @@ public final class Encryptor {
                     decryptedSplit.add(new File(split.get(i).getPath() + "dec"));
                 }
                 mergeFiles(decryptedSplit, fileToSave);
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new Exception(e);
             } finally {
                 for (int i = 0; i < split.size(); i++) {
+                    wipeFile(split.get(i));
                     split.get(i).delete();
                 }
                 for (int i = 0; i < decryptedSplit.size(); i++) {
+                    wipeFile(decryptedSplit.get(i));
                     decryptedSplit.get(i).delete();
                 }
             }
@@ -206,19 +210,19 @@ public final class Encryptor {
         boolean autoDelete = false;
         if (context != null) {
             SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
-            autoDelete = editor.getBoolean("auto_Delete", false);
+            autoDelete = editor.getBoolean("auto_Delete", true);
         }
         folderToSave.mkdirs();
         if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
             File[] filesInFolder = folder.listFiles();
-            if(filesInFolder != null) {
+            if (filesInFolder != null) {
                 for (int i = 0; i < filesInFolder.length; i++) {
                     if (filesInFolder[i].isFile()) {
                         encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
-                        if (autoDelete) filesInFolder[i].delete();
+                        if (autoDelete){ wipeFile(filesInFolder[i]);filesInFolder[i].delete();}
                     } else if (filesInFolder[i].isDirectory()) {
                         encryptFolderAESGCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
-                        if (autoDelete) filesInFolder[i].delete();
+                        if (autoDelete) { wipeFile(filesInFolder[i]);filesInFolder[i].delete();}
                     }
                 }
             }
@@ -229,12 +233,12 @@ public final class Encryptor {
         boolean autoDelete2 = false;
         if (context != null) {
             SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(context);
-            autoDelete2 = editor.getBoolean("auto_Delete2", false);
+            autoDelete2 = editor.getBoolean("auto_Delete2", true);
         }
         folderToSave.mkdirs();
         if (folderToSave.isDirectory() && folder.exists() && folder.isDirectory()) {
             File[] filesInFolder = folder.listFiles();
-            if(filesInFolder != null) {
+            if (filesInFolder != null) {
                 for (int i = 0; i < filesInFolder.length; i++) {
                     if (filesInFolder[i].isFile()) {
                         decryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName().substring(0, filesInFolder[i].getName().length() - 4)));
@@ -397,7 +401,7 @@ public final class Encryptor {
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
         if (cursor.moveToFirst()) {
             do {
-                if(cursor.getInt(8) == 0) {
+                if (cursor.getInt(8) == 0) {
                     ArrayList<String> strings = new ArrayList<>();
                     strings.add(cursor.getString(1));
                     strings.add(cursor.getString(2));
@@ -414,7 +418,7 @@ public final class Encryptor {
         return table;
     }
 
-    public static void createCategoryStub(SQLiteDatabase database,String categoryName){
+    public static void createCategoryStub(SQLiteDatabase database, String categoryName) {
         ContentValues cv = new ContentValues();
         cv.put("name", categoryName + "stub");
         cv.put("login", (String) null);
@@ -423,16 +427,16 @@ public final class Encryptor {
         cv.put("website", (String) null);
         cv.put("notes", (String) null);
         cv.put("category", categoryName);
-        cv.put("isstub",1);
+        cv.put("isstub", 1);
         database.insert("passwordTable", null, cv);
     }
 
-    public static ArrayList<String> getCategories(SQLiteDatabase database){
+    public static ArrayList<String> getCategories(SQLiteDatabase database) {
         ArrayList<String> result = new ArrayList<>();
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
         if (cursor.moveToFirst()) {
             do {
-                if(cursor.getInt(8) == 1) {
+                if (cursor.getInt(8) == 1) {
                     result.add(cursor.getString(7));
                 }
             } while (cursor.moveToNext());
@@ -441,12 +445,12 @@ public final class Encryptor {
         return result;
     }
 
-    public static HashMap<Integer, byte[]> readPasswordIcons(SQLiteDatabase database){
+    public static HashMap<Integer, byte[]> readPasswordIcons(SQLiteDatabase database) {
         HashMap<Integer, byte[]> table = new HashMap<>();
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
         if (cursor.moveToFirst()) {
             do {
-                if(cursor.getInt(8) == 0) {
+                if (cursor.getInt(8) == 0) {
                     Integer id = cursor.getInt(0);
                     table.put(id, cursor.getBlob(4));
                 }
@@ -475,6 +479,7 @@ public final class Encryptor {
 
     public static void deleteDatabase(Context context) {
         File databaseFile = new File(context.getApplicationInfo().dataDir + File.separator + "database.db");
+        wipeFile(databaseFile);
         databaseFile.delete();
     }
 
@@ -482,7 +487,7 @@ public final class Encryptor {
         database.close();
     }
 
-    public static boolean checkDatabase(File databaseFile, String password, Context context){
+    public static boolean checkDatabase(File databaseFile, String password, Context context) {
         try {
             SQLiteDatabase.loadLibs(context);
             SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
@@ -490,13 +495,13 @@ public final class Encryptor {
             readPasswordIcons(database);
             database.close();
             return true;
-        } catch (Exception | Error e){
+        } catch (Exception | Error e) {
 
             return false;
         }
     }
 
-    public static SQLiteDatabase openDownloadedTable(File databaseFile, String password, Context context){
+    public static SQLiteDatabase openDownloadedTable(File databaseFile, String password, Context context) {
         SQLiteDatabase.loadLibs(context);
         return SQLiteDatabase.openOrCreateDatabase(databaseFile, password, null);
     }
@@ -519,6 +524,21 @@ public final class Encryptor {
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
         return new String(decryptedBytes);
+    }
+
+    public static void wipeFile(File file) {
+        if (file.exists() && file.isFile()) {
+            long length = file.length();
+            if(length >= 4096){
+                length = 4096;
+            }
+            try (FileOutputStream stream = new FileOutputStream(file,false)){
+                byte[] emptyData = new byte[(int)length];
+                stream.write(emptyData);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
     //endregion
 }

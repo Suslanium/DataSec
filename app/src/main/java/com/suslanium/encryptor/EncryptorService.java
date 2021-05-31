@@ -107,7 +107,7 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     try {
                         SharedPreferences editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        boolean autoDelete = editor.getBoolean("auto_Delete", false);
+                        boolean autoDelete = editor.getBoolean("auto_Delete", true);
                         ArrayList<String> encryptedPaths = new ArrayList<>();
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -140,7 +140,9 @@ public class EncryptorService extends Service {
                                     try {
                                         File file1 = new File(currentPath + "Enc");
                                         Encryptor.encryptFolderAESGCM(file, password, file1, getBaseContext());
-                                        if (autoDelete) file.delete();
+                                        if (autoDelete){
+                                            file.delete();
+                                        }
                                         encryptedPaths.add(file1.getPath());
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -158,7 +160,10 @@ public class EncryptorService extends Service {
                                     try {
                                         File file1 = new File(currentPath + ".enc");
                                         Encryptor.encryptFileAES256(file, password, file1);
-                                        if (autoDelete) file.delete();
+                                        if (autoDelete){
+                                            Encryptor.wipeFile(file);
+                                            file.delete();
+                                        }
                                         encryptedPaths.add(file1.getPath());
                                     } catch (Exception e) {
                                         NotificationCompat.Builder builder22 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -211,7 +216,7 @@ public class EncryptorService extends Service {
                 Thread thread = new Thread(() -> {
                     try {
                         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", false);
+                        boolean autoDelete2 = preferences.getBoolean("auto_Delete2", true);
                         String password = Encryptor.rsadecrypt(pass);
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_baseline_lock_24)
@@ -244,9 +249,10 @@ public class EncryptorService extends Service {
                                                 for (int i = 0; i < currNames.length; i++) {
                                                     String filePath = currNames[i].getPath();
                                                     File pre = new File(filePath);
-                                                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName()))
+                                                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName())) {
+                                                        Encryptor.wipeFile(pre);
                                                         pre.delete();
-                                                    else if (pre.exists() && pre.isDirectory() && encNames.contains(pre.getName() + "Dir"))
+                                                    } else if (pre.exists() && pre.isDirectory() && encNames.contains(pre.getName() + "Dir"))
                                                         deleteDecDir(pre, new File(currPath + File.separator + pre.getName() + "Enc"));
                                                 }
                                             }
@@ -306,9 +312,9 @@ public class EncryptorService extends Service {
             }
             case "gDriveE": {
                 Thread thread = new Thread(() -> {
+                    ArrayList<File> encryptedFiles = new ArrayList<>();
                     try {
                         String password = Encryptor.rsadecrypt(pass);
-                        ArrayList<File> encryptedFiles = new ArrayList<>();
                         NotificationCompat.Builder builder1 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.encrypting))
@@ -438,12 +444,6 @@ public class EncryptorService extends Service {
                                 }
                             }
                         }
-                        for (int i = 0; i < encryptedFiles.size(); i++) {
-                            if (encryptedFiles.get(i).isFile()) encryptedFiles.get(i).delete();
-                            else {
-                                deleteFolder(encryptedFiles.get(i));
-                            }
-                        }
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGEncSuccess))
@@ -452,10 +452,7 @@ public class EncryptorService extends Service {
                             builder3.setContentText(getString(R.string.errors) + errorsCount[0]);
                         NotificationManagerCompat notificationManager3 = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager3.notify(operationID, builder3.build());
-                        isRunning.remove(true);
-                        if (!isRunning.contains(true)) stopSelf();
                     } catch (Exception e) {
-
                         NotificationCompat.Builder builder2 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_baseline_lock_24)
                                 .setContentTitle(getString(R.string.serviceGEncError))
@@ -463,6 +460,13 @@ public class EncryptorService extends Service {
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
                         NotificationManagerCompat notificationManager2 = NotificationManagerCompat.from(EncryptorService.this);
                         notificationManager2.notify(operationID, builder2.build());
+                    } finally {
+                        for (int i = 0; i < encryptedFiles.size(); i++) {
+                            if (encryptedFiles.get(i).isFile()) {Encryptor.wipeFile(encryptedFiles.get(i));encryptedFiles.get(i).delete();}
+                            else {
+                                deleteFolder(encryptedFiles.get(i));
+                            }
+                        }
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     }
@@ -533,8 +537,10 @@ public class EncryptorService extends Service {
                                                 for (int i = 0; i < currNames.length; i++) {
                                                     String filePath = currNames[i].getPath();
                                                     File pre = new File(filePath);
-                                                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName()))
+                                                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName())) {
+                                                        Encryptor.wipeFile(pre);
                                                         pre.delete();
+                                                    }
                                                     else if (pre.exists() && pre.isDirectory() && encNames.contains(pre.getName() + "Dir"))
                                                         deleteDecDir(pre, new File(currPath + File.separator + pre.getName() + "Enc"));
                                                 }
@@ -555,6 +561,7 @@ public class EncryptorService extends Service {
                                         }
                                     } else {
                                         File file1 = new File(currPath.substring(0, (currPath).length() - 4));
+                                        Encryptor.wipeFile(file1);
                                         file1.delete();
                                         try {
                                             Encryptor.decryptFileAES256(file, password, file1);
@@ -678,6 +685,7 @@ public class EncryptorService extends Service {
                                     out.flush();
                                 }
                                 in.close();
+                                Encryptor.wipeFile(origin);
                                 origin.delete();
                                 SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
                                 SQLiteDatabase database = Encryptor.initDataBase(getBaseContext(), newPass);
@@ -696,6 +704,7 @@ public class EncryptorService extends Service {
                                 cursor.close();
                                 Encryptor.closeDataBase(database);
                                 Encryptor.closeDataBase(downloadedDatabase);
+                                Encryptor.wipeFile(toDownload);
                                 toDownload.delete();
                                 File parentFolder = new File(getBaseContext().getFilesDir().getPath() + File.separator + "Notes");
                                 parentFolder.mkdirs();
@@ -708,6 +717,7 @@ public class EncryptorService extends Service {
                                             Encryptor.decryptFileAES256(noteFiles[i], password, temp);
                                             noteFiles[i].delete();
                                             Encryptor.encryptFileAES256(temp, newPass, noteFiles[i]);
+                                            Encryptor.wipeFile(temp);
                                             temp.delete();
                                         } catch (Exception e){
 
@@ -735,6 +745,7 @@ public class EncryptorService extends Service {
                                             out.flush();
                                         }
                                         in.close();
+                                        Encryptor.wipeFile(toDownload);
                                         toDownload.delete();
                                     } catch (Exception e0) {
                                         e0.printStackTrace();
@@ -937,6 +948,7 @@ public class EncryptorService extends Service {
                                                     out.flush();
                                                 }
                                                 in.close();
+                                                Encryptor.wipeFile(toDownload);
                                                 toDownload.delete();
                                             } catch (Exception e) {
 
@@ -962,9 +974,11 @@ public class EncryptorService extends Service {
                                             cursor.close();
                                             Encryptor.closeDataBase(database);
                                             Encryptor.closeDataBase(downloadedDatabase);
+                                            Encryptor.wipeFile(toDownload);
                                             toDownload.delete();
                                         }
                                     } else {
+                                        Encryptor.wipeFile(toDownload);
                                         toDownload.delete();
                                         EncryptorService.backupRestoreReturn = 1;
                                         //Password doesn't match
@@ -1043,7 +1057,10 @@ public class EncryptorService extends Service {
                     }
                 }
                 if (!original.getPath().matches(Pattern.quote(copied.getPath()))) {
-                    if (copied.exists() && copied.isFile() && !rename) copied.delete();
+                    if (copied.exists() && copied.isFile() && !rename){
+                        Encryptor.wipeFile(copied);
+                        copied.delete();
+                    }
                     if (original.canRead() && original.canWrite()) {
                         try {
                             copied.getParentFile().mkdirs();
@@ -1062,7 +1079,10 @@ public class EncryptorService extends Service {
 
                             errorCount++;
                         } finally {
-                            if (cut && errorCountBefore == errorCount) original.delete();
+                            if (cut && errorCountBefore == errorCount){
+                                Encryptor.wipeFile(original);
+                                original.delete();
+                            }
                         }
                     }
                 } else {
@@ -1115,6 +1135,7 @@ public class EncryptorService extends Service {
                     deleteFiles(subPaths);
                 }
             }
+            Encryptor.wipeFile(file);
             file.delete();
         }
     }
@@ -1131,6 +1152,7 @@ public class EncryptorService extends Service {
                 deleteFiles(subPaths);
             }
         }
+        Encryptor.wipeFile(file);
         file.delete();
     }
 
@@ -1210,9 +1232,10 @@ public class EncryptorService extends Service {
                 for (int i = 0; i < currentNames.length; i++) {
                     String filePath = currentNames[i].getPath();
                     File pre = new File(filePath);
-                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName()))
+                    if (pre.exists() && pre.isFile() && encNames.contains(pre.getName())) {
+                        Encryptor.wipeFile(pre);
                         pre.delete();
-                    else if (pre.exists() && pre.isDirectory() && encNames.contains(pre.getName() + "Dir"))
+                    } else if (pre.exists() && pre.isDirectory() && encNames.contains(pre.getName() + "Dir"))
                         deleteDecDir(pre, new File(origin.getPath() + File.separator + pre.getName() + "Enc"));
                 }
             }
@@ -1234,7 +1257,7 @@ public class EncryptorService extends Service {
         File[] files = folder.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                if (files[i].isFile()) files[i].delete();
+                if (files[i].isFile()) {Encryptor.wipeFile(files[i]);files[i].delete();}
                 else deleteFolder(files[i]);
             }
         }
