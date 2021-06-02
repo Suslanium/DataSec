@@ -1,27 +1,53 @@
 package com.suslanium.encryptor.ui.explorer;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
+import android.os.StatFs;
 import android.preference.PreferenceManager;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.EncryptorService;
+import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ExplorerAdapter;
 import com.suslanium.encryptor.R;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ExplorerViewModel extends AndroidViewModel {
     private MutableLiveData<ArrayList<String>> paths;
-    private boolean showHiddenFiles = false;
+    private boolean showHiddenFiles;
     private MutableLiveData<String> currentPath;
+    private MutableLiveData<double[]> freeSpace;
+    private MutableLiveData<String> currentStoragePath;
+    private MutableLiveData<String> currentStorageName;
+    private String password = null;
 
     public ExplorerViewModel(@NonNull Application application) {
         super(application);
@@ -51,7 +77,7 @@ public class ExplorerViewModel extends AndroidViewModel {
         for (int i = 0; i < filesSorted13.size(); i++) {
             fileNames2.add(filesSorted13.get(i).getName());
         }
-        paths.setValue(fileNames2);
+        paths.postValue(fileNames2);
         setPath(parent);
         return paths;
     }
@@ -59,44 +85,26 @@ public class ExplorerViewModel extends AndroidViewModel {
     public LiveData<ArrayList<String>> getCurrentNames(){
         if(paths == null){
             paths = new MutableLiveData<>();
-            File internalStorageDir = Environment.getExternalStorageDirectory();
-            File[] files = internalStorageDir.listFiles();
-            ArrayList<String> paths = new ArrayList<>();
-            for (int i = 0; i < files.length; i++) {
-                paths.add(files[i].getPath());
-            }
-            List<String> sorted = sortFiles(paths);
-            ArrayList<File> filesSorted = new ArrayList<>();
-            for (int i = 0; i < sorted.size(); i++) {
-                File toAdd = new File(sorted.get(i));
-                if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                    filesSorted.add(toAdd);
-                }
-            }
-            ArrayList<String> fileNames = new ArrayList<>();
-            for (int i = 0; i < filesSorted.size(); i++) {
-                fileNames.add(filesSorted.get(i).getName());
-            }
-            setPath(internalStorageDir);
-            this.paths.setValue(fileNames);
-            return this.paths;
-        } else {
-            return paths;
         }
+        return paths;
     }
 
     public void setPath(File parent){
         if(currentPath == null){
             currentPath = new MutableLiveData<>();
         }
-        currentPath.setValue(parent.getPath());
+        currentPath.postValue(parent.getPath());
     }
 
     public LiveData<String> getPath(){
         if(currentPath == null){
             currentPath = new MutableLiveData<>();
             File internalStorageDir = Environment.getExternalStorageDirectory();
-            currentPath.setValue(internalStorageDir.getPath());
+            try {
+                currentPath.setValue(internalStorageDir.getPath());
+            } catch (Exception e){
+                currentPath.postValue(internalStorageDir.getPath());
+            }
         }
         return currentPath;
     }
@@ -108,11 +116,33 @@ public class ExplorerViewModel extends AndroidViewModel {
             fileNamesResult.add(searchResult.get(i).getPath().substring(getPath().getValue().length() + 1));
         }
         if(!fileNamesResult.isEmpty()) {
-            paths.setValue(fileNamesResult);
+            paths.postValue(fileNamesResult);
             return true;
         } else {
             return false;
         }
+    }
+
+    public void setCurrentStoragePath(String path){
+        currentStoragePath.setValue(path);
+    }
+    public void setCurrentStorageName(String name){
+        currentStorageName.setValue(name);
+    }
+
+    public LiveData<String> getCurrentStorageName(){
+        if(currentStorageName == null){
+            currentStorageName = new MutableLiveData<>();
+            currentStorageName.setValue(getApplication().getBaseContext().getString(R.string.intStorage));
+        }
+        return currentStorageName;
+    }
+    public LiveData<String> getCurrentStoragePath(){
+        if(currentStoragePath == null){
+            currentStoragePath = new MutableLiveData<>();
+            currentStoragePath.setValue(Environment.getExternalStorageDirectory().getPath());
+        }
+        return currentStoragePath;
     }
 
     private ArrayList<File> searchFiles(String path, String fileName) {
@@ -165,5 +195,85 @@ public class ExplorerViewModel extends AndroidViewModel {
             sortedFiles.addAll(originFiles);
         }
         return sortedFiles;
+    }
+
+    public LiveData<double[]> calculateFreeSpace(String path){
+        if(freeSpace == null)freeSpace = new MutableLiveData<>();
+        StatFs fs = new StatFs(path);
+        double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
+        int spaceDivisonCount = 0;
+        while (freeSpace > 1024){
+            freeSpace = freeSpace/1024;
+            spaceDivisonCount++;
+        }
+        freeSpace = (double) Math.round(freeSpace * 100) / 100;
+        this.freeSpace.setValue(new double[]{spaceDivisonCount,freeSpace});
+        return this.freeSpace;
+    }
+    public LiveData<double[]> getFreeSpace(){
+        if(freeSpace == null)freeSpace = new MutableLiveData<>();
+        return freeSpace;
+    }
+    public ArrayList<String> constructFilePaths(ArrayList<String> paths) {
+        ArrayList<String> pathsWithFolders = new ArrayList<>();
+        for (int i = 0; i < paths.size(); i++) {
+            if (new File(paths.get(i)).isDirectory()) {
+                File[] files = new File(paths.get(i)).listFiles();
+                ArrayList<String> subPaths = new ArrayList<>();
+                for (int j = 0; j < files.length; j++) {
+                    subPaths.add(files[j].getPath());
+                }
+                pathsWithFolders.addAll(constructFilePaths(subPaths));
+            } else {
+                pathsWithFolders.add(paths.get(i));
+            }
+        }
+        return pathsWithFolders;
+    }
+    public ArrayList<String> getSubFiles(File file) {
+        ArrayList<String> paths = new ArrayList<>();
+        File[] subFiles = file.listFiles();
+        int subFolderCount = 0;
+        if (subFiles != null && subFiles.length > 0) {
+            for (int x = 0; x < subFiles.length; x++) {
+                if (subFiles[x].isFile()) {
+                    paths.add(subFiles[x].getPath());
+                } else {
+                    subFolderCount++;
+                    paths.addAll(getSubFiles(subFiles[x]));
+                }
+            }
+        }
+        if (subFiles != null && (subFiles.length == 0 || subFolderCount == subFiles.length)) {
+            paths.add(file.getPath());
+        }
+        return paths;
+    }
+    public ArrayList<String> getStoragePaths(){
+        ArrayList<String> storagePaths = new ArrayList<>();
+        File[] dir = getApplication().getBaseContext().getExternalFilesDirs(null);
+        for (int i = 0; i < dir.length; i++) {
+            storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
+        }
+        storagePaths.add(getApplication().getBaseContext().getFilesDir().getPath());
+        return storagePaths;
+    }
+
+    public void decryptTemp(File encrypted, File cached, Activity activity, AlertDialog alertDialog) throws Exception {
+        if(password == null) password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+        Encryptor.decryptFileAES256(encrypted, password,cached);
+        Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
+        String type = activity.getContentResolver().getType(uriForFile);
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setDataAndType(uriForFile, type);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                alertDialog.dismiss();
+                activity.startActivityForResult(intent, 101);
+            }
+        });
     }
 }

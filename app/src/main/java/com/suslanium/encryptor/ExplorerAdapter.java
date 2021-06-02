@@ -44,6 +44,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -93,6 +94,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private ColorStateList defTint;
     private String password = null;
     private Set<String> favorites = new HashSet<>();
+    private ExplorerViewModel viewModel;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -231,66 +233,14 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                     Thread thread = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            File[] files = new File(filePath).listFiles();
-                                            ArrayList<String> paths = new ArrayList<>();
-                                            if (files != null) {
-                                                for (int i = 0; i < files.length; i++) {
-                                                    paths.add(files[i].getPath());
-                                                }
-                                            }
-                                            List<String> sorted = sortFiles(paths);
-                                            ArrayList<File> filesSorted = new ArrayList<>();
-                                            for (int i = 0; i < sorted.size(); i++) {
-                                                File toAdd = new File(sorted.get(i));
-                                                if ((fragment.showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                                                    filesSorted.add(toAdd);
-                                                }
-                                            }
-                                            ArrayList<String> fileNames = new ArrayList<>();
-                                            for (int i = 0; i < filesSorted.size(); i++) {
-                                                fileNames.add(filesSorted.get(i).getName());
-                                            }
-                                            for (int i = 0; i < holders.size(); i++) {
-                                                holders.get(i).fileCheckbox.setChecked(false);
-                                            }
-                                            CheckedId.clear();
-                                            holders.clear();
+                                            viewModel.getFileNames(new File(filePath));
                                             if (searchEnded) {
                                                 fragment.cancelSearch();
                                                 searchEnded = false;
                                             }
-                                            closeBottomBar();
                                             if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
                                                 activity.runOnUiThread(() -> fragment.showAddButton(true));
                                             }
-                                            int position = getAdapterPosition();
-                                            localDataSet = fileNames;
-                                            path = filePath;
-                                            while (!fadeIn.hasEnded()) {
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-
-                                                    Thread.currentThread().interrupt();
-                                                }
-                                            }
-                                            Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
-                                            fadeOut.setDuration(200);
-                                            activity.runOnUiThread(() -> {
-                                                fragment.setStoragePath(path);
-                                                notifyDataSetChanged();
-                                                recyclerView.scrollToPosition(0);
-                                                recyclerView.startAnimation(fadeOut);
-                                            });
-                                            while (!fadeOut.hasEnded()) {
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-
-                                                    Thread.currentThread().interrupt();
-                                                }
-                                            }
-                                            ((Explorer) activity).currentOperationNumber--;
                                         }
                                     });
                                     thread.start();
@@ -401,11 +351,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                         Intent intent = new Intent();
                                                         intent.setAction(Intent.ACTION_VIEW);
                                                         intent.setDataAndType(uriForFile, type);
-                                                        //if(type.contains("vnd.android.package-archive")){
-                                                        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                        //} else {
                                                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                        //}
                                                         activity.startActivity(intent);
                                                     } catch (Exception e) {
                                                         Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
@@ -431,25 +377,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             try {
                                                                 cached.getParentFile().mkdirs();
                                                                 cached.delete();
-                                                                if(password == null) password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                                                Encryptor.decryptFileAES256(encrypted, password,cached);
-                                                                Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
-                                                                String type = activity.getContentResolver().getType(uriForFile);
-                                                                Intent intent = new Intent();
-                                                                intent.setAction(Intent.ACTION_VIEW);
-                                                                intent.setDataAndType(uriForFile, type);
-                                                                //if(type.contains("vnd.android.package-archive")){
-                                                                //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                                //} else {
-                                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                                //}
-                                                                activity.runOnUiThread(new Runnable() {
-                                                                    @Override
-                                                                    public void run() {
-                                                                        alertDialog.dismiss();
-                                                                        activity.startActivityForResult(intent, 101);
-                                                                    }
-                                                                });
+                                                                viewModel.decryptTemp(encrypted,cached,activity,alertDialog);
                                                             } catch (Exception e){
                                                                 e.printStackTrace();
                                                                 cached.delete();
@@ -620,7 +548,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar, ExplorerFragment fragment) {
+    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar, ExplorerFragment fragment, ExplorerViewModel model) {
         localDataSet = dataSet;
         this.path = path;
         recyclerView = view;
@@ -653,6 +581,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             }
         });
         favorites.addAll(preferences.getStringSet("fav", new HashSet<>()));
+        viewModel = model;
     }
 
     // Create new views (invoked by the layout manager)

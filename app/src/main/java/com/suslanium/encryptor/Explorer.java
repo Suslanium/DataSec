@@ -19,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -50,17 +53,19 @@ public class Explorer extends AppCompatActivity {
     private View navExplorer;
     private int backPressedCount = 0;
     private ExecutorService service;
+    private ExplorerActivityViewModel viewModel;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 101){
-            service.submit(() -> deleteFiles(getFilesDir()+File.separator+".temp"));
+            service.submit(() -> viewModel.deleteFiles(getFilesDir()+File.separator+".temp"));
         }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(ExplorerActivityViewModel.class);
         if(getIntent().getByteArrayExtra("pass") == null){
             Intent pass = new Intent(this, PasswordActivity.class);
             startActivity(pass);
@@ -83,12 +88,22 @@ public class Explorer extends AppCompatActivity {
         mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_explorer, R.id.nav_datavault, R.id.nav_keyexchange,R.id.nav_notes, R.id.nav_messagecrypt, R.id.nav_settings)
                 .setDrawerLayout(drawer)
                 .build();
+        LiveData<Integer> id = viewModel.getID();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         if (isFromSettings) {
             navController.navigate(R.id.nav_settings);
+            intent.removeExtra("fromSettings");
         }
+        if(id.getValue() != 0){navController.navigate(id.getValue());}
+        final Observer<Integer> integerObserver = new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                if(integer != 0) navController.navigate(integer);
+            }
+        };
+        id.observe(this,integerObserver);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -108,25 +123,25 @@ public class Explorer extends AppCompatActivity {
                 new Handler().postDelayed(() -> {
                     switch (itemID) {
                         case R.id.nav_explorer:
-                            if (!explorerVisible) navController.navigate(R.id.nav_explorer);
+                            if (!explorerVisible) viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_datavault:
                             if (!passwordVaultVisible)
-                                navController.navigate(R.id.nav_datavault);
+                                viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_keyexchange:
-                            navController.navigate(R.id.nav_keyexchange);
+                            viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_notes:
                             if(!notesVisible)
-                                navController.navigate(R.id.nav_notes);
+                                viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_messagecrypt:
                             if (!messageCryptVisible)
-                                navController.navigate(R.id.nav_messagecrypt);
+                                viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_settings:
-                            if (!settingsVisible) navController.navigate(R.id.nav_settings);
+                            if (!settingsVisible) viewModel.setCurrentFragmentID(itemID);
                             break;
                         default:
                             break;
@@ -197,37 +212,5 @@ public class Explorer extends AppCompatActivity {
         return intent;
     }
 
-    private void deleteFiles(ArrayList<String> paths) {
-        for (int i = 0; i < paths.size(); i++) {
-            File file = new File(paths.get(i));
-            if (!file.isFile()) {
-                File[] files = file.listFiles();
-                if (files != null && files.length > 0) {
-                    ArrayList<String> subPaths = new ArrayList<>();
-                    for (int j = 0; j < files.length; j++) {
-                        subPaths.add(files[j].getPath());
-                    }
-                    deleteFiles(subPaths);
-                }
-            }
-            Encryptor.wipeFile(file);
-            file.delete();
-        }
-    }
 
-    private void deleteFiles(String path) {
-        File file = new File(path);
-        if (!file.isFile()) {
-            File[] files = file.listFiles();
-            if (files != null && files.length > 0) {
-                ArrayList<String> subPaths = new ArrayList<>();
-                for (int j = 0; j < files.length; j++) {
-                    subPaths.add(files[j].getPath());
-                }
-                deleteFiles(subPaths);
-            }
-        }
-        Encryptor.wipeFile(file);
-        file.delete();
-    }
 }

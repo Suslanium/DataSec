@@ -5,22 +5,19 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StatFs;
-import android.preference.PreferenceManager;
+import android.os.Handler;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -40,6 +37,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
@@ -78,9 +77,7 @@ public class ExplorerFragment extends Fragment {
     private TextView storagePath;
     private TextView freeSpace;
     private ArrayList<String> storagePaths;
-    private String currentStorageName;
-    private String currentStoragePath;
-    public boolean showHiddenFiles = false;
+    private ExplorerViewModel viewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -95,11 +92,16 @@ public class ExplorerFragment extends Fragment {
         super.onAttach(context);
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.requireActivity().getApplication())).get(ExplorerViewModel.class);
+    }
+
     public View.OnClickListener getUpFolderAction() {
         return upFolderAction;
     }
 
-    
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Override
@@ -119,48 +121,10 @@ public class ExplorerFragment extends Fragment {
         SwipeRefreshLayout swipeRefreshLayout = requireActivity().findViewById(R.id.swipeExplorer);
         swipeRefreshLayout.setColorSchemeColors(Color.parseColor("#171E21"));
         swipeRefreshLayout.setProgressBackgroundColorSchemeColor(Color.parseColor("#90A4AE"));
-        storagePaths = new ArrayList<>();
-        File[] dir = requireContext().getExternalFilesDirs(null);
-        for (int i = 0; i < dir.length; i++) {
-            storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
-        }
-        storagePaths.add(requireContext().getFilesDir().getPath());
-        currentStorageName = getString(R.string.intStorage);
-        currentStoragePath = Environment.getExternalStorageDirectory().getPath();
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        showHiddenFiles = preferences.getBoolean("showHidden", false);
-        final ViewTreeObserver vto = view.getViewTreeObserver();
-        if (vto.isAlive()) {
-            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    setStoragePath(Environment.getExternalStorageDirectory().getPath());
-                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-            });
-        }
-        calculateFreeSpace(Environment.getExternalStorageDirectory().getPath());
+        storagePaths = viewModel.getStoragePaths();
         pathIterator = storagePaths.listIterator();
         pathIterator.next();
-        File internalStorageDir = Environment.getExternalStorageDirectory();
-        File[] files = internalStorageDir.listFiles();
-        ArrayList<String> paths = new ArrayList<>();
-        for (int i = 0; i < files.length; i++) {
-            paths.add(files[i].getPath());
-        }
-        List<String> sorted = sortFiles(paths);
-        ArrayList<File> filesSorted = new ArrayList<>();
-        for (int i = 0; i < sorted.size(); i++) {
-            File toAdd = new File(sorted.get(i));
-            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                filesSorted.add(toAdd);
-            }
-        }
-        ArrayList<String> fileNames = new ArrayList<>();
-        for (int i = 0; i < filesSorted.size(); i++) {
-            fileNames.add(filesSorted.get(i).getName());
-        }
-        fileList.addAll(fileNames);
+        LiveData<ArrayList<String>> currentNames = viewModel.getCurrentNames();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
         } else {
@@ -201,19 +165,82 @@ public class ExplorerFragment extends Fragment {
         final ProgressBar[] bar = {requireActivity().findViewById(R.id.progressBarSearch)};
         search[0].setVisibility(View.INVISIBLE);
         bar[0].setVisibility(View.INVISIBLE);
-        //-------------
-        ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, requireActivity(), bottomBar, this);
+        ExplorerAdapter adapter = new ExplorerAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, requireActivity(), bottomBar, this, viewModel);
         LinearLayoutManager manager = new LinearLayoutManager(requireContext());
         manager.setSmoothScrollbarEnabled(true);
         fileView.setLayoutManager(manager);
         fileView.setAdapter(adapter);
+        LiveData<double[]> freeSpaces = viewModel.getFreeSpace();
+        final Observer<double[]> spaceObserver = new Observer<double[]>() {
+            @Override
+            public void onChanged(double[] doubles) {
+                double freeSpace1 = doubles[1];
+                double spaceDivisionCount = doubles[0];
+                switch ((int) spaceDivisionCount) {
+                    case 0:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
+                        break;
+                    case 1:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
+                        break;
+                    case 2:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
+                        break;
+                    case 3:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
+                        break;
+                    case 4:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        freeSpaces.observe(getViewLifecycleOwner(), spaceObserver);
+        viewModel.calculateFreeSpace(viewModel.getPath().getValue());
+        final Observer<ArrayList<String>> pathsObserver = new Observer<ArrayList<String>>() {
+            @Override
+            public void onChanged(ArrayList<String> strings) {
+                fileList.clear();
+                fileList.addAll(strings);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Animation fadeOut1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_in_left);
+                        fadeOut1.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {}
+                            @Override
+                            public void onAnimationEnd(Animation animation) {((Explorer) requireActivity()).currentOperationNumber=0; }
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {}
+                        });
+                        fadeOut1.setDuration(200);
+                        adapter.setNewData(viewModel.getPath().getValue(), fileList);
+                        fileView.scrollToPosition(0);
+                        setStoragePath(viewModel.getPath().getValue());
+                        fileView.startAnimation(fadeOut1);
+                    }
+                }, 200);
+            }
+        };
+        currentNames.observe(getViewLifecycleOwner(),pathsObserver);
+        if(currentNames.getValue() != null && !currentNames.getValue().isEmpty()){
+            fileList.addAll(currentNames.getValue());
+            adapter.setNewData(viewModel.getPath().getValue(), fileList);
+            fileView.scrollToPosition(0);
+            setStoragePath(viewModel.getPath().getValue());
+        } else {
+            viewModel.getFileNames(new File(viewModel.getPath().getValue()));
+        }
         Intent intent2 = ((Explorer) requireActivity()).getIntent2();
         FloatingActionButton confirm = requireActivity().findViewById(R.id.confirmButton);
         FloatingActionButton cancel = requireActivity().findViewById(R.id.cancelButton);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                updateUI(adapter, fileView, new File(adapter.getPath()));
+                updateUI(adapter, fileView, new File(viewModel.getPath().getValue()));
                 cancelSearch();
                 if (!adapter.getDoingFileOperations() && getAddButtonState() == View.GONE) {
                     showAddButton(true);
@@ -249,7 +276,7 @@ public class ExplorerFragment extends Fragment {
                             adapter.closeBottomBar();
                             showAddButton(true);
                             Thread thread = new Thread(() -> {
-                                String pathBefore = adapter.getPath();
+                                String pathBefore = viewModel.getPath().getValue();
                                 Intent intent = new Intent(requireContext(), EncryptorService.class);
                                 intent.putExtra(ACTIONTYPE, "delete");
                                 EncryptorService.uniqueID++;
@@ -275,7 +302,7 @@ public class ExplorerFragment extends Fragment {
                                         Thread.currentThread().interrupt();
                                     }
                                 }
-                                String pathAfter = adapter.getPath();
+                                String pathAfter = viewModel.getPath().getValue();
                                 boolean match = false;
                                 ArrayList<String> localDataSet;
                                 if (pathBefore.matches(Pattern.quote(pathAfter))) {
@@ -309,7 +336,7 @@ public class ExplorerFragment extends Fragment {
                 case R.id.action_shareFiles:
                     try {
                         ArrayList<String> checkedFiles1 = adapter.getCheckedFiles();
-                        ArrayList<String> pathswSub = constructFilePaths(checkedFiles1);
+                        ArrayList<String> pathswSub = viewModel.constructFilePaths(checkedFiles1);
                         ArrayList<Uri> uris = new ArrayList<>();
                         if (!pathswSub.isEmpty()) {
                             for (int i = 0; i < pathswSub.size(); i++) {
@@ -322,7 +349,7 @@ public class ExplorerFragment extends Fragment {
                         adapter.deselectAll();
                         adapter.closeBottomBar();
                         showAddButton(true);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
                     }
                     break;
@@ -463,15 +490,14 @@ public class ExplorerFragment extends Fragment {
                         path = pathIterator.next();
                         if (new File(path).canWrite()) {
                             if (path.equals(requireContext().getFilesDir().getPath())) {
-                                currentStorageName = getString(R.string.privateFolder);
+                                viewModel.setCurrentStorageName(getString(R.string.privateFolder));
                                 Snackbar.make(v, getString(R.string.swPrivate), Snackbar.LENGTH_LONG).show();
                             } else {
-                                currentStorageName = getString(R.string.extStorage) + " " + (pathIterator.previousIndex());
+                                viewModel.setCurrentStorageName(getString(R.string.extStorage) + " " + (pathIterator.previousIndex()));
                                 Snackbar.make(v, getString(R.string.swExt) + " " + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
                             }
-                            currentStoragePath = path;
-                            setStoragePath(path);
-                            calculateFreeSpace(path);
+                            viewModel.setCurrentStoragePath(path);
+                            viewModel.calculateFreeSpace(path);
                         } else {
                             changeStorageListener.onClick(v);
                         }
@@ -480,10 +506,9 @@ public class ExplorerFragment extends Fragment {
                             pathIterator.previous();
                         }
                         path = pathIterator.next();
-                        currentStorageName = getString(R.string.intStorage);
-                        currentStoragePath = path;
-                        setStoragePath(path);
-                        calculateFreeSpace(path);
+                        viewModel.setCurrentStorageName(getString(R.string.intStorage));
+                        viewModel.setCurrentStoragePath(path);
+                        viewModel.calculateFreeSpace(path);
                         Snackbar.make(v, getString(R.string.swInt), Snackbar.LENGTH_LONG).show();
                     }
                     File parent = new File(path);
@@ -497,7 +522,7 @@ public class ExplorerFragment extends Fragment {
         upFolderAction = v -> {
             if (((Explorer) requireActivity()).currentOperationNumber == 0) {
                 fileView.stopScroll();
-                String path = adapter.getPath();
+                String path = viewModel.getPath().getValue();
                 File parent = new File(path).getParentFile();
                 boolean matches = false;
                 for (int i = 0; i < storagePaths.size(); i++) {
@@ -506,11 +531,15 @@ public class ExplorerFragment extends Fragment {
                 if (matches) {
                     ((Explorer) requireActivity()).incrementBackPressedCount();
                     Snackbar snackbar = Snackbar.make(v, R.string.pressToExit, Snackbar.LENGTH_LONG);
-                    snackbar.setAction(getString(R.string.swSt), v1 -> {try{changeStorage.performClick();}catch (Exception e){}});
+                    snackbar.setAction(getString(R.string.swSt), v1 -> {
+                        try {
+                            changeStorage.performClick();
+                        } catch (Exception e) {
+                        }
+                    });
                     snackbar.show();
                 } else {
                     updateUI(adapter, fileView, parent);
-                    setStoragePath(parent.getPath());
                 }
             }
         };
@@ -522,7 +551,6 @@ public class ExplorerFragment extends Fragment {
                 input.setTypeface(ubuntu);
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
                 input.setSingleLine(true);
-                //Translation end
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
                         .setTitle(R.string.createFolder)
                         .setView(input)
@@ -543,17 +571,16 @@ public class ExplorerFragment extends Fragment {
                     } else {
                         Thread thread = new Thread(() -> {
                             try {
-                                File testing = new File(adapter.getPath() + File.separator + newName);
+                                File testing = new File(viewModel.getPath().getValue() + File.separator + newName);
                                 testing.mkdirs();
                                 requireActivity().runOnUiThread(() -> {
                                     dialog.dismiss();
                                     ArrayList<String> currentSet = adapter.getLocalDataSet();
                                     currentSet.add(newName);
                                     fileList = currentSet;
-                                    adapter.setNewData(adapter.getPath(), fileList);
+                                    adapter.setNewData(viewModel.getPath().getValue(), fileList);
                                 });
                             } catch (Exception e) {
-
                                 requireActivity().runOnUiThread(() -> Snackbar.make(v12, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
                             }
                         });
@@ -592,9 +619,9 @@ public class ExplorerFragment extends Fragment {
                 bar[0].setVisibility(View.VISIBLE);
                 search[0].startAnimation(fadeOut);
                 bar[0].startAnimation(fadeOut);
-                String path = adapter.getPath();
+                String path = viewModel.getPath().getValue();
                 Thread thread = new Thread(() -> {
-                    ArrayList<File> searchResult = searchFiles(path, fileName);
+                    boolean hasResults = viewModel.searchFile(path, fileName);
                     while (!fadeOut.hasEnded()) {
                         try {
                             Thread.sleep(10);
@@ -603,11 +630,9 @@ public class ExplorerFragment extends Fragment {
                             Thread.currentThread().interrupt();
                         }
                     }
-                    final boolean[] noResults = {false};
-                    if (searchResult.isEmpty()) {
+                    if (!hasResults) {
                         requireActivity().runOnUiThread(() -> {
                             try {
-                                noResults[0] = true;
                                 fileView.startAnimation(fadeOut);
                                 search[0].startAnimation(fadeIn);
                                 bar[0].startAnimation(fadeIn);
@@ -617,16 +642,7 @@ public class ExplorerFragment extends Fragment {
                             }
                         });
                     } else {
-                        ArrayList<String> fileNamesResult = new ArrayList<>();
-                        for (int i = 0; i < searchResult.size(); i++) {
-                            fileNamesResult.add(searchResult.get(i).getPath().substring(adapter.getPath().length() + 1));
-                        }
-                        fileList.clear();
-                        fileList.addAll(fileNamesResult);
                         requireActivity().runOnUiThread(() -> {
-                            adapter.setNewData(adapter.getPath(), fileList);
-                            fileView.scrollToPosition(0);
-                            fileView.startAnimation(fadeOut);
                             search[0].startAnimation(fadeIn);
                             bar[0].startAnimation(fadeIn);
                         });
@@ -647,10 +663,10 @@ public class ExplorerFragment extends Fragment {
                         b1.setEnabled(true);
                         newFolder.setEnabled(true);
                         changeStorage.setEnabled(true);
-                        if(!noResults[0]) {
+                        if (hasResults) {
                             newFolder.setImageDrawable(finalCancelDrawable);
                             newFolder.setOnClickListener(v13 -> {
-                                File parent = new File(adapter.getPath());
+                                File parent = new File(viewModel.getPath().getValue());
                                 updateUI(adapter, fileView, parent);
                                 newFolder.setImageDrawable(finalCreateDrawable);
                                 newFolder.setOnClickListener(newFolderListener);
@@ -677,7 +693,7 @@ public class ExplorerFragment extends Fragment {
                 t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layout.setFocusableInTouchMode(true);
                 layout.setOnKeyListener((v14, keyCode, event) -> {
-                    if(event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                         searchListener.onClick(v14);
                         return true;
                     }
@@ -701,7 +717,7 @@ public class ExplorerFragment extends Fragment {
 
     public void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
         if (((Explorer) requireActivity()).currentOperationNumber == 0) {
-            if(adapter.getSearchEnded()) cancelSearch();
+            if (adapter.getSearchEnded()) cancelSearch();
             fileView.stopScroll();
             ((Explorer) requireActivity()).currentOperationNumber++;
             Animation fadeIn1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_out_right);
@@ -709,50 +725,7 @@ public class ExplorerFragment extends Fragment {
             fadeIn1.setFillAfter(true);
             fileView.startAnimation(fadeIn1);
             Thread thread1 = new Thread(() -> {
-                File[] files2 = parent.listFiles();
-                ArrayList<String> paths14 = new ArrayList<>();
-                for (int i = 0; i < files2.length; i++) {
-                    paths14.add(files2[i].getPath());
-                }
-                List<String> sorted13 = sortFiles(paths14);
-                ArrayList<File> filesSorted13 = new ArrayList<>();
-                for (int i = 0; i < sorted13.size(); i++) {
-                    //-----------------------------------------------
-                    File toAdd = new File(sorted13.get(i));
-                    if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                        filesSorted13.add(toAdd);
-                    }
-                }
-                ArrayList<String> fileNames2 = new ArrayList<>();
-                for (int i = 0; i < filesSorted13.size(); i++) {
-                    fileNames2.add(filesSorted13.get(i).getName());
-                }
-                fileList.clear();
-                fileList.addAll(fileNames2);
-                while (!fadeIn1.hasEnded()) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                Animation fadeOut1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_in_left);
-                fadeOut1.setDuration(200);
-                requireActivity().runOnUiThread(() -> {
-                    adapter.setNewData(parent.getPath(), fileList);
-                    fileView.scrollToPosition(0);
-                    fileView.startAnimation(fadeOut1);
-                });
-                while (!fadeOut1.hasEnded()) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                ((Explorer) requireActivity()).currentOperationNumber--;
+                viewModel.getFileNames(parent);
             });
             thread1.start();
         }
@@ -815,7 +788,7 @@ public class ExplorerFragment extends Fragment {
 
     private void copyFiles(boolean cut, ExplorerAdapter adapter, Toolbar t, ImageButton b1, FloatingActionButton confirm, FloatingActionButton cancel) {
         ArrayList<String> checkedFiles2 = adapter.getCheckedFiles();
-        String originalPath = adapter.getPath();
+        String originalPath = viewModel.getPath().getValue();
         if (!checkedFiles2.isEmpty()) {
             if (newFolder.getDrawable() == cancelDrawable) newFolder.performClick();
             if (!cut) t.setTitle(R.string.copyTo);
@@ -848,7 +821,7 @@ public class ExplorerFragment extends Fragment {
                         .setCancelable(false)
                         .create();
                 prep.show();
-                String path = adapter.getPath();
+                String path = viewModel.getPath().getValue();
                 Thread thread = new Thread(() -> {
                     ArrayList<String> originalSelected = null;
                     if (cut) {
@@ -966,7 +939,7 @@ public class ExplorerFragment extends Fragment {
                             if (copyInto.exists() && !whiteList.contains(file.getPath())) {
                                 tempArrayList.addAll(checkReplacements(copyPath, file.getPath(), skip, lp));
                             } else {
-                                tempArrayList.addAll(getSubFiles(file));
+                                tempArrayList.addAll(viewModel.getSubFiles(file));
                             }
                         }
 
@@ -1006,7 +979,7 @@ public class ExplorerFragment extends Fragment {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
                     .setTitle(R.string.warning)
                     .setCancelable(false)
-                    .setMessage(getString(R.string.folder)+" " + name + " "+getString(R.string.alreadyExistsSubStr)+" " + substring + getString(R.string.replaceFolderEnding))
+                    .setMessage(getString(R.string.folder) + " " + name + " " + getString(R.string.alreadyExistsSubStr) + " " + substring + getString(R.string.replaceFolderEnding))
                     .setPositiveButton(R.string.merge, (dialog, which) -> {
                         result[0] = 1;
                         dialogVisible[0] = false;
@@ -1035,25 +1008,7 @@ public class ExplorerFragment extends Fragment {
         return result[0];
     }
 
-    private ArrayList<String> getSubFiles(File file) {
-        ArrayList<String> paths = new ArrayList<>();
-        File[] subFiles = file.listFiles();
-        int subFolderCount = 0;
-        if (subFiles != null && subFiles.length > 0) {
-            for (int x = 0; x < subFiles.length; x++) {
-                if (subFiles[x].isFile()) {
-                    paths.add(subFiles[x].getPath());
-                } else {
-                    subFolderCount++;
-                    paths.addAll(getSubFiles(subFiles[x]));
-                }
-            }
-        }
-        if (subFiles != null && (subFiles.length == 0 || subFolderCount == subFiles.length)) {
-            paths.add(file.getPath());
-        }
-        return paths;
-    }
+
 
     private ArrayList<String> checkReplacements(String toCopyPath, String path, final Integer[] sk, ViewGroup.LayoutParams lp) {
         File parent = new File(toCopyPath);
@@ -1113,7 +1068,7 @@ public class ExplorerFragment extends Fragment {
                     if (names.contains(file.getName())) {
                         tempArrayLists.addAll(checkReplacements(toCopyPath + File.separator + file.getName(), file.getPath(), sk, lp));
                     } else {
-                        tempArrayLists.addAll(getSubFiles(file));
+                        tempArrayLists.addAll(viewModel.getSubFiles(file));
                     }
                 }
 
@@ -1135,7 +1090,7 @@ public class ExplorerFragment extends Fragment {
                     .setTitle(R.string.warning)
                     .setView(checkBox)
                     .setCancelable(false)
-                    .setMessage(getString(R.string.file)+" " + fileName +" "+ getString(R.string.alreadyExistsSubStr) +" "+ folderName + getString(R.string.replaceFileEnding))
+                    .setMessage(getString(R.string.file) + " " + fileName + " " + getString(R.string.alreadyExistsSubStr) + " " + folderName + getString(R.string.replaceFileEnding))
                     .setPositiveButton(R.string.replace, (dialog, which) -> {
                         if (checkBox.isChecked()) {
                             result[0] = 1;
@@ -1176,55 +1131,7 @@ public class ExplorerFragment extends Fragment {
         return result[0];
     }
 
-    private ArrayList<String> constructFilePaths(ArrayList<String> paths) {
-        ArrayList<String> pathsWithFolders = new ArrayList<>();
-        for (int i = 0; i < paths.size(); i++) {
-            if (new File(paths.get(i)).isDirectory()) {
-                File[] files = new File(paths.get(i)).listFiles();
-                ArrayList<String> subPaths = new ArrayList<>();
-                for (int j = 0; j < files.length; j++) {
-                    subPaths.add(files[j].getPath());
-                }
-                pathsWithFolders.addAll(constructFilePaths(subPaths));
-            } else {
-                pathsWithFolders.add(paths.get(i));
-            }
-        }
-        return pathsWithFolders;
-    }
 
-    private ArrayList<File> searchFiles(String path, String fileName) {
-        ArrayList<File> result = new ArrayList<>();
-        if(!fileName.toLowerCase().equals(getString(R.string.fav).toLowerCase())) {
-            File parent = new File(path);
-            File[] childs = parent.listFiles();
-            if (childs != null && childs.length > 0) {
-                for (int i = 0; i < childs.length; i++) {
-                    if (childs[i].getName().contains(fileName)) {
-                        if ((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                            result.add(childs[i]);
-                        }
-                    }
-                    if (childs[i].isDirectory()) {
-                        if ((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                            result.addAll(searchFiles(childs[i].getPath(), fileName));
-                        }
-                    }
-                }
-            }
-        } else {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-            ArrayList<String> paths = new ArrayList<>(preferences.getStringSet("fav", new HashSet<>()));
-            if(!paths.isEmpty()){
-                for(int i=0;i<paths.size();i++){
-                    if(paths.get(i).startsWith(path)){
-                        result.add(new File(paths.get(i)));
-                    }
-                }
-            }
-        }
-        return result;
-    }
 
     public static List<String> sortFiles(List<String> filePaths) {
         ArrayList<String> sortedFiles = new ArrayList<>();
@@ -1245,51 +1152,26 @@ public class ExplorerFragment extends Fragment {
         }
         return sortedFiles;
     }
-    public static String fitString (TextView text, String newText) {
-        float textWidth = text.getPaint().measureText(newText);
-        int startIndex = 1;
-        while (textWidth >= text.getMeasuredWidth()){
-            newText = newText.substring(startIndex);
-            textWidth = text.getPaint().measureText(newText);
-            startIndex++;
+
+    public static String fitString(TextView text, String newText) {
+        try {
+            float textWidth = text.getPaint().measureText(newText);
+            int startIndex = 1;
+            while (textWidth >= text.getMeasuredWidth()) {
+                newText = newText.substring(startIndex);
+                textWidth = text.getPaint().measureText(newText);
+                startIndex++;
+            }
+        } catch (Exception e){
+
         }
         return newText;
     }
 
-    public void setStoragePath(String path){
-        String pathToShow = path.replace(currentStoragePath, currentStorageName);
+    public void setStoragePath(String path) {
+        String pathToShow = path.replace(viewModel.getCurrentStoragePath().getValue(), viewModel.getCurrentStorageName().getValue());
         pathToShow = fitString(storagePath, pathToShow);
         storagePath.setText(pathToShow);
-    }
-
-    private void calculateFreeSpace(String path){
-        StatFs fs = new StatFs(path);
-        double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
-        int spaceDivisonCount = 0;
-        while (freeSpace > 1024){
-            freeSpace = freeSpace/1024;
-            spaceDivisonCount++;
-        }
-        freeSpace = (double) Math.round(freeSpace * 100) / 100;
-        switch (spaceDivisonCount){
-            case 0:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.bytes));
-                break;
-            case 1:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.kbytes));
-                break;
-            case 2:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.mbytes));
-                break;
-            case 3:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.gbytes));
-                break;
-            case 4:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.tbytes));
-                break;
-            default:
-                break;
-        }
     }
 
     @Override

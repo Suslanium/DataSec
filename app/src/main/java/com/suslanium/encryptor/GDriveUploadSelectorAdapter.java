@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private String Calc = "Calculating...";
     private String items = "items";
     private ColorStateList defTint;
+    private ExplorerViewModel viewModel;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -83,10 +85,6 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         public String realPath;
         public boolean encrypted;
         public int loadingCount = 0;
-
-        //TODO: add progress bar on encryption/decryption
-        //TODO: add option to store encrypted/decrypted files in separate folder(ex. /storage/emulated/0/EncryptedFiles/)(на будущее)
-        //TODO: checkbox multiple encryption/decryption
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
@@ -134,7 +132,8 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                     Thread thread = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            File[] files = new File(path + File.separator + realPath).listFiles();
+                                            viewModel.getFileNames(new File(path + File.separator + realPath));
+                                            /*File[] files = new File(path + File.separator + realPath).listFiles();
                                             //if(files != null){}
                                             ArrayList<String> paths = new ArrayList<>();
                                             for (int i = 0; i < files.length; i++) {
@@ -169,11 +168,11 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                                 }
                                             }
                                             Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
-                                            fadeOut.setDuration(200);
+                                            fadeOut.setDuration(200);*/
                                             if (((GoogleDriveUploadSelector) activity).searchEnded) {
                                                 ((GoogleDriveUploadSelector) activity).searchEnded = false;
                                             }
-                                            activity.runOnUiThread(new Runnable() {
+                                            /*activity.runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     ((GoogleDriveUploadSelector) activity).setStoragePath(path);
@@ -189,7 +188,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
 
                                                 }
                                             }
-                                            ((GoogleDriveUploadSelector) activity).currentOperationNumber--;
+                                            ((GoogleDriveUploadSelector) activity).currentOperationNumber--;*/
                                         }
                                     });
                                     thread.start();
@@ -272,7 +271,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public GDriveUploadSelectorAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity) {
+    public GDriveUploadSelectorAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, ExplorerViewModel viewModel) {
         localDataSet = dataSet;
         this.path = path;
         Recview = view;
@@ -295,6 +294,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
         @ColorInt int color = typedValue.data;
         defTint = ColorStateList.valueOf(color);
+        this.viewModel = viewModel;
     }
 
     // Create new views (invoked by the layout manager)

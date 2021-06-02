@@ -43,6 +43,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/ubuntu_medium"
         android:singleLine="true"
+        android:text="@string/intStorage"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/freeSpace"

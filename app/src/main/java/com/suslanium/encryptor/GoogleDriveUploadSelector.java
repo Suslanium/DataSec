@@ -2,6 +2,9 @@ package com.suslanium.encryptor;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,7 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StatFs;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.View;
@@ -25,6 +28,7 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,11 +44,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
     public int currentOperationNumber = 0;
     private TextView storagePath;
     private TextView freeSpace;
-    private String currentStorageName;
-    private String currentStoragePath;
     public boolean searchEnded = false;
     public boolean showHiddenFiles = false;
     private TextView title;
+    private ExplorerViewModel viewModel;
 
 
     @Override
@@ -54,9 +57,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(ExplorerViewModel.class);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
-        if(darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
+        if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_upload_selector);
@@ -71,87 +75,131 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         search[0].setVisibility(View.GONE);
         showHiddenFiles = preferences.getBoolean("showHidden", false);
         RecyclerView fileView = findViewById(R.id.deviceFiles);
-        File[] dir = getExternalFilesDirs(null);
-        ArrayList<String> storagePaths = new ArrayList<>();
-        for (int i = 0; i < dir.length; i++) {
-            //Recaclulate substring end index after changing package name
-            storagePaths.add(dir[i].getPath().substring(0, dir[i].getPath().length() - 43));
-        }
-        storagePaths.add(this.getFilesDir().getPath());
-        currentStorageName = getString(R.string.intStorage);
-        currentStoragePath = Environment.getExternalStorageDirectory().getPath();
-        calculateFreeSpace(currentStoragePath);
+        ArrayList<String> storagePaths;
+        storagePaths = viewModel.getStoragePaths();
         ListIterator<String> pathIterator = storagePaths.listIterator();
         pathIterator.next();
-        File internalStorageDir = Environment.getExternalStorageDirectory();
-        File[] files = internalStorageDir.listFiles();
-        ArrayList<String> paths = new ArrayList<>();
-        for(int i=0; i<files.length;i++){
-            paths.add(files[i].getPath());
-        }
-        List<String> sorted = sortFiles(paths);
-        ArrayList<File> filesSorted = new ArrayList<>();
-        for(int i=0;i<sorted.size();i++){
-            File toAdd = new File(sorted.get(i));
-            if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                filesSorted.add(toAdd);
-            }
-        }
-        ArrayList<String> fileNames = new ArrayList<>();
-        for (int i = 0; i < filesSorted.size(); i++) {
-            fileNames.add(filesSorted.get(i).getName());
-        }
-        fileList.addAll(fileNames);
-        GDriveUploadSelectorAdapter adapter = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, this);
+        GDriveUploadSelectorAdapter adapter = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, this, viewModel);
         fileView.setLayoutManager(new LinearLayoutManager(this));
         fileView.setAdapter(adapter);
+        LiveData<double[]> freeSpaces = viewModel.getFreeSpace();
+        final Observer<double[]> spaceObserver = new Observer<double[]>() {
+            @Override
+            public void onChanged(double[] doubles) {
+                double freeSpace1 = doubles[1];
+                double spaceDivisionCount = doubles[0];
+                switch ((int) spaceDivisionCount) {
+                    case 0:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
+                        break;
+                    case 1:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
+                        break;
+                    case 2:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
+                        break;
+                    case 3:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
+                        break;
+                    case 4:
+                        freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        freeSpaces.observe(this, spaceObserver);
+        LiveData<ArrayList<String>> currentNames = viewModel.getCurrentNames();
+        viewModel.calculateFreeSpace(viewModel.getPath().getValue());
+        final Observer<ArrayList<String>> pathsObserver = new Observer<ArrayList<String>>() {
+            @Override
+            public void onChanged(ArrayList<String> strings) {
+                fileList.clear();
+                fileList.addAll(strings);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
+                        fadeOut1.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                currentOperationNumber = 0;
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+                            }
+                        });
+                        fadeOut1.setDuration(200);
+                        adapter.setNewData(viewModel.getPath().getValue(), fileList);
+                        fileView.scrollToPosition(0);
+                        setStoragePath(viewModel.getPath().getValue());
+                        fileView.startAnimation(fadeOut1);
+                    }
+                }, 200);
+            }
+        };
+        currentNames.observe(this, pathsObserver);
+        if(currentNames.getValue() != null && !currentNames.getValue().isEmpty()){
+            fileList.addAll(currentNames.getValue());
+            adapter.setNewData(viewModel.getPath().getValue(), fileList);
+            fileView.scrollToPosition(0);
+            setStoragePath(viewModel.getPath().getValue());
+        } else {
+            viewModel.getFileNames(new File(viewModel.getPath().getValue()));
+        }
         upFolder = findViewById(R.id.gDriveSelectorUp);
         ImageButton back = findViewById(R.id.backUpload);
         back.setOnClickListener(v -> onBackPressed());
         FloatingActionButton sdcardButton = findViewById(R.id.gDriveChangeStorage);
         sdcardButton.setOnClickListener(v -> {
-            if (storagePaths.size() > 1) {
-                String path;
-                if (pathIterator.hasNext()) {
-                    path = pathIterator.next();
-                    if (new File(path).canWrite()) {
-                        if(path.equals(this.getFilesDir().getPath())){
-                            currentStorageName = getString(R.string.privateFolder);
-                            Snackbar.make(v, R.string.swPrivate, Snackbar.LENGTH_LONG).show();
+            if (currentOperationNumber == 0) {
+                if (storagePaths.size() > 1) {
+                    String path;
+                    if (pathIterator.hasNext()) {
+                        path = pathIterator.next();
+                        if (new File(path).canWrite()) {
+                            if (path.equals(this.getFilesDir().getPath())) {
+                                viewModel.setCurrentStorageName(getString(R.string.privateFolder));
+                                Snackbar.make(v, R.string.swPrivate, Snackbar.LENGTH_LONG).show();
+                            } else {
+                                viewModel.setCurrentStorageName(getString(R.string.extStorage) + " " + (pathIterator.previousIndex()));
+                                Snackbar.make(v, getString(R.string.swExt) + "" + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                            }
+                            viewModel.setCurrentStoragePath(path);
+                            viewModel.calculateFreeSpace(path);
                         } else {
-                            currentStorageName = getString(R.string.extStorage)+" " + (pathIterator.previousIndex());
-                            Snackbar.make(v, getString(R.string.swExt)+"" + (pathIterator.previousIndex()), Snackbar.LENGTH_LONG).show();
+                            sdcardButton.performClick();
                         }
-                        currentStoragePath = path;
-                        setStoragePath(path);
-                        calculateFreeSpace(path);
                     } else {
-                        sdcardButton.performClick();
+                        while (pathIterator.hasPrevious()) {
+                            pathIterator.previous();
+                        }
+                        path = pathIterator.next();
+                        viewModel.setCurrentStorageName(getString(R.string.intStorage));
+                        viewModel.setCurrentStoragePath(path);
+                        viewModel.calculateFreeSpace(path);
+                        Snackbar.make(v, R.string.swInt, Snackbar.LENGTH_LONG).show();
                     }
-                } else {
-                    while (pathIterator.hasPrevious()) {
-                        pathIterator.previous();
+                    File parent = new File(path);
+                    if (parent.canWrite()) {
+                        updateUI(fileView, parent);
                     }
-                    path = pathIterator.next();
-                    currentStorageName = getString(R.string.intStorage);
-                    currentStoragePath = path;
-                    setStoragePath(path);
-                    calculateFreeSpace(path);
-                    Snackbar.make(v, R.string.swInt, Snackbar.LENGTH_LONG).show();
-                }
-                File parent = new File(path);
-                if (parent.canWrite()) {
-                    updateUI(adapter, fileView, parent);
                 }
             }
         });
         upFolder.setOnClickListener(v -> {
             if (currentOperationNumber == 0) {
                 fileView.stopScroll();
-                String path = adapter.getPath();
+                String path = viewModel.getPath().getValue();
                 File parent = new File(path).getParentFile();
                 boolean matches = false;
-                if(searchEnded){
+                if (searchEnded) {
                     parent = new File(path);
                     searchEnded = false;
                 } else {
@@ -162,15 +210,14 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 if (matches) {
                     finish();
                 } else {
-                    updateUI(adapter, fileView, parent);
-                    setStoragePath(parent.getPath());
+                    updateUI(fileView, parent);
                 }
             }
         });
         FloatingActionButton upload = findViewById(R.id.gDriveSubmit);
         upload.setOnClickListener(v -> {
             ArrayList<String> paths13 = adapter.getCheckedFiles();
-            if(!paths13.isEmpty()) {
+            if (!paths13.isEmpty()) {
                 Intent intent = new Intent(GoogleDriveUploadSelector.this, EncryptorService.class);
                 intent.putExtra("actionType", "gDriveE");
                 EncryptorService.uniqueID++;
@@ -195,20 +242,25 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 search[0].setText(R.string.searching);
-                ExplorerFragment.fadeIn(fileView);
+                Animation fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
+                fadeIn.setFillAfter(true);
+                Animation fadeOut = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+                fadeOut.setDuration(200);
+                fadeIn.setDuration(200);
+                fileView.startAnimation(fadeIn);
                 search[0] = findViewById(R.id.searchTextUploadProgress);
                 bar[0] = findViewById(R.id.progressBarSearchUpload);
                 search[0].setVisibility(View.VISIBLE);
                 bar[0].setVisibility(View.VISIBLE);
                 ExplorerFragment.fadeOut(search[0]);
                 ExplorerFragment.fadeOut(bar[0]);
-                String path = adapter.getPath();
+                String path = viewModel.getPath().getValue();
                 Thread thread = new Thread(() -> {
-                    ArrayList<File> searchResult = searchFiles(path, fileName);
-                    if (searchResult.isEmpty()) {
+                    boolean hasResults = viewModel.searchFile(path, fileName);
+                    if (!hasResults) {
                         runOnUiThread(() -> {
                             try {
-                                ExplorerFragment.fadeOut(fileView);
+                                fileView.startAnimation(fadeOut);
                                 ExplorerFragment.fadeIn(search[0]);
                                 ExplorerFragment.fadeIn(bar[0]);
                                 Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
@@ -217,16 +269,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                             }
                         });
                     } else {
-                        ArrayList<String> fileNamesResult = new ArrayList<>();
-                        for (int i = 0; i < searchResult.size(); i++) {
-                            fileNamesResult.add(searchResult.get(i).getPath().substring(adapter.getPath().length() + 1));
-                        }
-                        fileList.clear();
-                        fileList.addAll(fileNamesResult);
                         runOnUiThread(() -> {
-                            adapter.setNewData(adapter.getPath(), fileList);
-                            fileView.scrollToPosition(0);
-                            ExplorerFragment.fadeOut(fileView);
                             ExplorerFragment.fadeIn(search[0]);
                             ExplorerFragment.fadeIn(bar[0]);
                         });
@@ -247,7 +290,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 title.setVisibility(View.INVISIBLE);
                 layout.setVisibility(View.VISIBLE);
                 layout.setOnKeyListener((v14, keyCode, event) -> {
-                    if(event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                         searchListener.onClick(v14);
                         return true;
                     }
@@ -268,7 +311,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         super.onResume();
     }
 
-    public void updateUI(GDriveUploadSelectorAdapter adapter, RecyclerView fileView, File parent) {
+    public void updateUI(RecyclerView fileView, File parent) {
         if (currentOperationNumber == 0) {
             fileView.stopScroll();
             currentOperationNumber++;
@@ -276,120 +319,25 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             fadeIn1.setDuration(200);
             fadeIn1.setFillAfter(true);
             fileView.startAnimation(fadeIn1);
-            Thread thread1 = new Thread(() -> {
-                File[] files2 = parent.listFiles();
-                ArrayList<String> paths14 = new ArrayList<>();
-                for (int i = 0; i < files2.length; i++) {
-                    paths14.add(files2[i].getPath());
-                }
-                List<String> sorted13 = sortFiles(paths14);
-                ArrayList<File> filesSorted13 = new ArrayList<>();
-                for (int i = 0; i < sorted13.size(); i++) {
-                    //-----------------------------------------------
-                    File toAdd = new File(sorted13.get(i));
-                    if((showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                        filesSorted13.add(toAdd);
-                    }
-                }
-                ArrayList<String> fileNames2 = new ArrayList<>();
-                for (int i = 0; i < filesSorted13.size(); i++) {
-                    fileNames2.add(filesSorted13.get(i).getName());
-                }
-                fileList.clear();
-                fileList.addAll(fileNames2);
-                while (!fadeIn1.hasEnded()) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
-                fadeOut1.setDuration(200);
-                runOnUiThread(() -> {
-                    adapter.setNewData(parent.getPath(), fileList);
-                    fileView.scrollToPosition(0);
-                    fileView.startAnimation(fadeOut1);
-                });
-                while (!fadeOut1.hasEnded()) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                currentOperationNumber--;
-            });
+            Thread thread1 = new Thread(() -> viewModel.getFileNames(parent));
             thread1.start();
         }
     }
 
-    public void setStoragePath(String path){
-        String pathToShow = path.replace(currentStoragePath, currentStorageName);
+    public void setStoragePath(String path) {
+        String pathToShow = path.replace(viewModel.getCurrentStoragePath().getValue(), viewModel.getCurrentStorageName().getValue());
         pathToShow = fitString(storagePath, pathToShow);
         storagePath.setText(pathToShow);
     }
 
-    private void calculateFreeSpace(String path){
-        StatFs fs = new StatFs(path);
-        double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
-        int spaceDivisonCount = 0;
-        while (freeSpace > 1024){
-            freeSpace = freeSpace/1024;
-            spaceDivisonCount++;
-        }
-        freeSpace = (double) Math.round(freeSpace * 100) / 100;
-        switch (spaceDivisonCount){
-            case 0:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.bytes));
-                break;
-            case 1:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.kbytes));
-                break;
-            case 2:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.mbytes));
-                break;
-            case 3:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.gbytes));
-                break;
-            case 4:
-                this.freeSpace.setText(freeSpace + " "+getString(R.string.tbytes));
-                break;
-            default:
-                break;
-        }
-    }
-    private String fitString (TextView text, String newText) {
+    private String fitString(TextView text, String newText) {
         float textWidth = text.getPaint().measureText(newText);
         int startIndex = 1;
-        while (textWidth >= text.getMeasuredWidth()){
+        while (textWidth >= text.getMeasuredWidth()) {
             newText = newText.substring(startIndex);
             textWidth = text.getPaint().measureText(newText);
             startIndex++;
         }
         return newText;
-    }
-
-    private ArrayList<File> searchFiles(String path, String fileName) {
-        ArrayList<File> result = new ArrayList<>();
-        File parent = new File(path);
-        File[] childs = parent.listFiles();
-        if (childs != null && childs.length > 0) {
-            for (int i = 0; i < childs.length; i++) {
-                if (childs[i].getName().contains(fileName)) {
-                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                        result.add(childs[i]);
-                    }
-                }
-                if (childs[i].isDirectory()) {
-                    if((showHiddenFiles && childs[i].getName().startsWith(".")) || !childs[i].getName().startsWith(".")) {
-                        result.addAll(searchFiles(childs[i].getPath(), fileName));
-                    }
-                }
-            }
-        }
-        return result;
     }
 }

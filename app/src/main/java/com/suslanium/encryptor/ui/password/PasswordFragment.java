@@ -27,6 +27,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,9 +55,6 @@ import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 public class PasswordFragment extends Fragment {
     private boolean isOnResume = false;
     private Intent intent2 = null;
-    private String currentSearchQuery;
-    private String currentCategory;
-    private ArrayList<String> categories = new ArrayList<>();
     private ProgressBar searchProgress;
     private TextView searchText;
     private RecyclerView recyclerView;
@@ -66,6 +66,14 @@ public class PasswordFragment extends Fragment {
     private FloatingActionButton fab;
     private PasswordAdapter adapter = null;
     private FloatingActionButton newCategory;
+    private PasswordViewModel viewModel;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication())).get(PasswordViewModel.class);
+        viewModel.setIntent(((Explorer) requireActivity()).getIntent2());
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,7 +87,7 @@ public class PasswordFragment extends Fragment {
     }
 
     public void setCategory(String category){
-        currentCategory = category;
+        viewModel.setCurrentCategory(category);
         updateView(requireView());
     }
 
@@ -131,7 +139,7 @@ public class PasswordFragment extends Fragment {
             String searchQuery = ((Explorer) requireActivity()).searchBar.getText().toString();
             if(!searchQuery.matches("")){
                 b1.setEnabled(false);
-                currentSearchQuery = searchQuery;
+                viewModel.setCurrentSearchQuery(searchQuery);
                 updateView(v);
                 if (((Explorer) requireActivity()).searchBar != null) {
                     t.removeView(((Explorer) requireActivity()).searchBar);
@@ -176,14 +184,14 @@ public class PasswordFragment extends Fragment {
         addDataListener = v -> {
             Intent intent = new Intent(requireActivity(), PasswordEntry.class);
             intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
-            intent.putExtra("category", currentCategory);
+            intent.putExtra("category", viewModel.getCurrentCategory().getValue());
             intent.putExtra("newEntry", true);
             startActivity(intent);
         };
         fab.setOnClickListener(addDataListener);
         cancelSearchListener = v -> {
             fab.setImageDrawable(createDrawable);
-            currentSearchQuery = "";
+            viewModel.setCurrentSearchQuery("");
             updateView(v);
             fab.setOnClickListener(addDataListener);
         };
@@ -191,6 +199,14 @@ public class PasswordFragment extends Fragment {
         searchProgress = requireView().findViewById(R.id.passwordSearchProgress);
         searchText = requireView().findViewById(R.id.passwordSearchText);
         newCategory = requireActivity().findViewById(R.id.newCategory);
+        LiveData<ArrayList<Integer>> ids = viewModel.getIds();
+        final Observer<ArrayList<Integer>> idObserver = new Observer<ArrayList<Integer>>() {
+            @Override
+            public void onChanged(ArrayList<Integer> integers) {
+                onThreadDone(viewModel.getNames().getValue(),integers, viewModel.getLogins().getValue(), viewModel.getIcons().getValue());
+            }
+        };
+        ids.observe(getViewLifecycleOwner(),idObserver);
         updateView(view);
         newCategory.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,12 +228,8 @@ public class PasswordFragment extends Fragment {
                                         @Override
                                         public void run() {
                                             try {
-                                                byte[] pass = intent2.getByteArrayExtra("pass");
-                                                String password = Encryptor.rsadecrypt(pass);
-                                                SQLiteDatabase database = Encryptor.initDataBase(requireContext(), password);
-                                                ArrayList<String> categories = Encryptor.getCategories(database);
-                                                if(!categories.contains(name)){
-                                                    Encryptor.createCategoryStub(database, name);
+                                                boolean created = viewModel.createCategory(name);
+                                                if(created){
                                                     requireActivity().runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
@@ -249,19 +261,20 @@ public class PasswordFragment extends Fragment {
         });
     }
 
-    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins){
+    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins, ArrayList<Bitmap> icons){
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         if(adapter == null) {
-            adapter = new PasswordAdapter(strings2, id,logins,categories, intent2, requireActivity(), this);
+            adapter = new PasswordAdapter(strings2, id,logins,viewModel.getCategories().getValue(), intent2, requireActivity(), this);
         } else {
-            adapter.setNewData(strings2, id,logins,categories);
+            adapter.setNewData(strings2, id,logins,viewModel.getCategories().getValue());
         }
+        adapter.setIcons(icons);
         recyclerView.setAdapter(adapter);
         requireActivity().runOnUiThread(() -> {
             fadeIn(searchProgress);
             fadeIn(searchText);
             fadeOut(recyclerView);
-            if(currentSearchQuery != null && !currentSearchQuery.matches("")) {
+            if(viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
                 b1.setEnabled(true);
                 fab.setOnClickListener(cancelSearchListener);
                 fab.setImageDrawable(cancelDrawable);
@@ -271,13 +284,13 @@ public class PasswordFragment extends Fragment {
     }
 
     public void backPress(){
-        if(currentSearchQuery != null && !currentSearchQuery.matches("")){
+        if(viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")){
             fab.setImageDrawable(createDrawable);
-            currentSearchQuery = "";
+            viewModel.setCurrentSearchQuery("");
             updateView(requireView());
             fab.setOnClickListener(addDataListener);
-        } else if(currentCategory != null && !currentCategory.matches("")){
-            currentCategory = null;
+        } else if(viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")){
+            viewModel.setCurrentCategory(null);
             updateView(requireView());
         }
     }
@@ -299,49 +312,10 @@ public class PasswordFragment extends Fragment {
         fadeOut(searchText);
         fab.setEnabled(false);
         newCategory.setEnabled(false);
-        ArrayList<String> strings3 = new ArrayList<>();
-        ArrayList<Integer> ids = new ArrayList<>();
-        ArrayList<String> logins = new ArrayList<>();
-        categories.clear();
         Thread thread = new Thread(() -> {
             try {
-                byte[] pass = intent2.getByteArrayExtra("pass");
-                String password = Encryptor.rsadecrypt(pass);
-                SQLiteDatabase database = Encryptor.initDataBase(requireContext(), password);
-                HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
-                Set<Integer> integers = listHashMap.keySet();
-                HashMap<Integer, String> names = new HashMap<>();
-                for (Integer i : integers) {
-                    ArrayList<String> strings = listHashMap.get(i);
-                    String s = strings.get(0);
-                    String l = strings.get(1);
-                    String c = strings.get(5);
-                    if(currentSearchQuery != null && !currentSearchQuery.matches("")) {
-                        if(s.contains(currentSearchQuery)){
-                            names.put(i,s);
-                            strings3.add(s);
-                            logins.add(l);
-                            ids.add(i);
-                        }
-                    } else if(currentCategory != null && !currentCategory.matches("")){
-                        if(c != null && c.equals(currentCategory)){
-                            names.put(i,s);
-                            strings3.add(s);
-                            logins.add(l);
-                            ids.add(i);
-                        }
-                    } else {
-                        if(c == null || c.matches("")) {
-                            names.put(i, s);
-                            strings3.add(s);
-                            logins.add(l);
-                            ids.add(i);
-                        }
-                    }
-                }
-                if((currentSearchQuery == null || currentSearchQuery.matches("")) && (currentCategory == null || currentCategory.matches(""))) {
-                    categories.clear();
-                    categories.addAll(Encryptor.getCategories(database));
+                boolean b = viewModel.updateList();
+                if(b){
                     requireActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -349,42 +323,15 @@ public class PasswordFragment extends Fragment {
                         }
                     });
                 }
-                requireActivity().runOnUiThread(() -> onThreadDone(strings3, ids, logins));
-                HashMap<Integer, byte[]> iconsList = Encryptor.readPasswordIcons(database);
-                Set<Integer> integerSet = iconsList.keySet();
-                ArrayList<Bitmap> bitmapArrayList = new ArrayList<>();
-                for(Integer i: integerSet){
-                    if(ids.contains(i)) {
-                        byte[] image = iconsList.get(i);
-                        if(image != null) {
-                            Bitmap.Config config = Bitmap.Config.ARGB_8888;
-                            Bitmap bitmap = Bitmap.createBitmap(256, 256, config);
-                            ByteBuffer byteBuffer = ByteBuffer.wrap(image);
-                            bitmap.copyPixelsFromBuffer(byteBuffer);
-                            bitmapArrayList.add(bitmap);
-                        } else {
-                            bitmapArrayList.add(null);
-                        }
-                    }
-                }
-                while (adapter == null){
-                    try {
-                        Thread.sleep(100);
-                    } catch (Exception e){
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                adapter.setIcons(bitmapArrayList);
-                Encryptor.closeDataBase(database);
             } catch (Exception e){
                 requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
+                e.printStackTrace();
             }
         });
         thread.start();
     }
 
     public String getCurrentCategory(){
-        return currentCategory;
+        return viewModel.getCurrentCategory().getValue();
     }
 }
