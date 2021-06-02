@@ -2,13 +2,11 @@ package com.suslanium.encryptor;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,30 +19,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.shape.CornerFamily;
-import com.google.android.material.shape.MaterialShapeDrawable;
-import com.suslanium.encryptor.ui.gallery.GalleryFragment;
-import com.suslanium.encryptor.ui.home.HomeFragment;
-import com.suslanium.encryptor.ui.slideshow.SlideshowFragment;
+import com.suslanium.encryptor.ui.password.PasswordFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class Explorer extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
-    private HomeFragment fragment = null;
-    private GalleryFragment galleryFragment = null;
+    private ExplorerFragment fragment = null;
+    private PasswordFragment passwordFragment = null;
     private Intent intent = null;
     public int currentOperationNumber = 0;
     public ImageButton searchButton = null;
@@ -156,8 +149,8 @@ public class Explorer extends AppCompatActivity {
     public void onBackPressed() {
         if (fragment != null && fragment.isVisible()) {
             fragment.getUpFolderAction().onClick(navExplorer);
-        } else if(galleryFragment != null && galleryFragment.isVisible()){
-            galleryFragment.backPress();
+        } else if(passwordFragment != null && passwordFragment.isVisible()){
+            passwordFragment.backPress();
         }
     }
 
@@ -186,11 +179,12 @@ public class Explorer extends AppCompatActivity {
         return true;
     }
 
-    public void setExplorerFragment(HomeFragment fragment) {
+    public void setExplorerFragment(ExplorerFragment fragment) {
         this.fragment = fragment;
     }
 
-    public void setGalleryFragment(GalleryFragment fragment){galleryFragment = fragment;}
+    public void setPasswordFragment(PasswordFragment fragment){
+        passwordFragment = fragment;}
 
     @Override
     public boolean onSupportNavigateUp() {

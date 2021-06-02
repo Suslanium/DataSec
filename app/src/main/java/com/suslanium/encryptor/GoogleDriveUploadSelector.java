@@ -1,25 +1,19 @@
 package com.suslanium.encryptor;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -30,7 +24,7 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.ui.home.HomeFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,7 +32,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 
-import static com.suslanium.encryptor.ui.home.HomeFragment.sortFiles;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.sortFiles;
 
 public class GoogleDriveUploadSelector extends AppCompatActivity {
     private ArrayList<String> fileList = new ArrayList<>();
@@ -201,22 +195,22 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 search[0].setText(R.string.searching);
-                HomeFragment.fadeIn(fileView);
+                ExplorerFragment.fadeIn(fileView);
                 search[0] = findViewById(R.id.searchTextUploadProgress);
                 bar[0] = findViewById(R.id.progressBarSearchUpload);
                 search[0].setVisibility(View.VISIBLE);
                 bar[0].setVisibility(View.VISIBLE);
-                HomeFragment.fadeOut(search[0]);
-                HomeFragment.fadeOut(bar[0]);
+                ExplorerFragment.fadeOut(search[0]);
+                ExplorerFragment.fadeOut(bar[0]);
                 String path = adapter.getPath();
                 Thread thread = new Thread(() -> {
                     ArrayList<File> searchResult = searchFiles(path, fileName);
                     if (searchResult.isEmpty()) {
                         runOnUiThread(() -> {
                             try {
-                                HomeFragment.fadeOut(fileView);
-                                HomeFragment.fadeIn(search[0]);
-                                HomeFragment.fadeIn(bar[0]);
+                                ExplorerFragment.fadeOut(fileView);
+                                ExplorerFragment.fadeIn(search[0]);
+                                ExplorerFragment.fadeIn(bar[0]);
                                 Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
                             } catch (Exception e) {
 
@@ -232,9 +226,9 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                         runOnUiThread(() -> {
                             adapter.setNewData(adapter.getPath(), fileList);
                             fileView.scrollToPosition(0);
-                            HomeFragment.fadeOut(fileView);
-                            HomeFragment.fadeIn(search[0]);
-                            HomeFragment.fadeIn(bar[0]);
+                            ExplorerFragment.fadeOut(fileView);
+                            ExplorerFragment.fadeIn(search[0]);
+                            ExplorerFragment.fadeIn(bar[0]);
                         });
                     }
                     runOnUiThread(() -> {

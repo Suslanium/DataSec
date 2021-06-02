@@ -42,8 +42,7 @@
         <activity
             android:name=".GoogleDriveManager"
             android:theme="@style/Theme.MaterialComponents" />
-        <activity android:name=".passwordChange" />
-        <activity android:name=".passwordAdd" />
+        <activity android:name=".PasswordEntry" />
         <activity
             android:name=".Explorer"
             android:configChanges="keyboardHidden|orientation|screenSize"

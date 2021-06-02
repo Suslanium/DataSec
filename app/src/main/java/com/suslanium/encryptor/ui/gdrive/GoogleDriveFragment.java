@@ -1,4 +1,4 @@
-package com.suslanium.encryptor.ui.slideshow;
+package com.suslanium.encryptor.ui.gdrive;
 
 import android.content.Context;
 import android.content.Intent;
@@ -28,14 +28,14 @@ import com.suslanium.encryptor.Explorer;
 import com.suslanium.encryptor.GoogleDriveManager;
 import com.suslanium.encryptor.R;
 
-public class SlideshowFragment extends Fragment {
+public class GoogleDriveFragment extends Fragment {
     private GoogleSignInClient mGoogleSignInClient;
     SignInButton signInButton;
     private static final int SIGNIN = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_slideshow, container, false);
+        return inflater.inflate(R.layout.fragment_gdrive, container, false);
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -23,8 +23,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.io.File;
 import java.util.ArrayList;
 
-import static com.suslanium.encryptor.ui.home.HomeFragment.fadeIn;
-import static com.suslanium.encryptor.ui.home.HomeFragment.fadeOut;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 
 public class Notebook extends Fragment {
 

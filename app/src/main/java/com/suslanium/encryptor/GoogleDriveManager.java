@@ -1,7 +1,6 @@
 package com.suslanium.encryptor;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -10,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,13 +19,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Adapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -47,7 +42,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.File;
-import com.suslanium.encryptor.ui.home.HomeFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,9 +125,9 @@ public class GoogleDriveManager extends AppCompatActivity {
                 bottomNavigationView.getMenu().getItem(i).setChecked(false);
             }
             bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
-            HomeFragment.fadeOut(bottomNavigationView);
-            HomeFragment.fadeIn(newFolder);
-            HomeFragment.fadeIn(upload);
+            ExplorerFragment.fadeOut(bottomNavigationView);
+            ExplorerFragment.fadeIn(newFolder);
+            ExplorerFragment.fadeIn(upload);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -141,9 +136,9 @@ public class GoogleDriveManager extends AppCompatActivity {
             }, 200);
         } else if (bottomNavigationView.getVisibility() == View.VISIBLE && checkedIds.isEmpty()) {
             adapter.setCanSelect(false);
-            HomeFragment.fadeIn(bottomNavigationView);
-            HomeFragment.fadeOut(newFolder);
-            HomeFragment.fadeOut(upload);
+            ExplorerFragment.fadeIn(bottomNavigationView);
+            ExplorerFragment.fadeOut(newFolder);
+            ExplorerFragment.fadeOut(upload);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -504,7 +499,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             path.append(java.io.File.separator).append(folders.get(i));
         }
         String pathStr = new String(path);
-        String toSet = HomeFragment.fitString(pathView, pathStr);
+        String toSet = ExplorerFragment.fitString(pathView, pathStr);
         pathView.setText(toSet);
     }
 }

@@ -1,4 +1,4 @@
-package com.suslanium.encryptor.ui.home;
+package com.suslanium.encryptor.ui.explorer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -6,7 +6,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -15,17 +14,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
-import android.provider.CalendarContract;
 import android.text.InputType;
-import android.util.ArraySet;
-import android.util.Log;
-import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -59,9 +51,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.Explorer;
 import com.suslanium.encryptor.ExplorerAdapter;
-import com.suslanium.encryptor.GoogleDriveUploadSelector;
 import com.suslanium.encryptor.R;
-import com.suslanium.encryptor.passwordAdd;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,10 +61,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-public class HomeFragment extends Fragment {
+public class ExplorerFragment extends Fragment {
     private ArrayList<String> fileList = new ArrayList<>();
     private View.OnClickListener upFolderAction;
     private FloatingActionButton newFolder;
@@ -96,7 +85,7 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.fragment_explorer, container, false);
     }
 
     @Override

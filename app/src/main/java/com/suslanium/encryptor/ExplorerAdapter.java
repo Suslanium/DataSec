@@ -19,7 +19,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,8 +43,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.common.collect.Lists;
-import com.suslanium.encryptor.ui.home.HomeFragment;
+import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -56,15 +54,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-import static android.content.Context.ACTIVITY_SERVICE;
-import static com.suslanium.encryptor.ui.home.HomeFragment.sortFiles;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.sortFiles;
 
 public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;
@@ -81,7 +77,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private BottomNavigationView bottomBar;
     private boolean isDoingFileOperations = false;
     private ArrayList<String> deletedFilePaths = new ArrayList<>();
-    private HomeFragment fragment;
+    private ExplorerFragment fragment;
     private static final String ACTIONTYPE = "actionType";
     private static final String INDEX = "index";
     private boolean searchEnded = false;
@@ -624,7 +620,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar, HomeFragment fragment) {
+    public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar, ExplorerFragment fragment) {
         localDataSet = dataSet;
         this.path = path;
         recyclerView = view;

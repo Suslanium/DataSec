@@ -18,7 +18,6 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.PathEffect;
 import android.graphics.Typeface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -55,10 +54,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
-import static com.suslanium.encryptor.passwordAdd.PICK_IMAGE;
-import static com.suslanium.encryptor.passwordAdd.calculatePasswordStrength;
 
-public class passwordChange extends AppCompatActivity {
+public class PasswordEntry extends AppCompatActivity {
     private String service = "";
     private String loginName = "";
     private String passName = "";
@@ -76,6 +73,7 @@ public class passwordChange extends AppCompatActivity {
     private String weakPassword = "Weak password";
     private String mediumPassword = "Medium password";
     private String strongPassword = "Strong password";
+    public static final int PICK_IMAGE = 1;
 
 
     @Override
@@ -86,12 +84,12 @@ public class passwordChange extends AppCompatActivity {
                 return;
             }
             Thread thread = new Thread(() -> {
-                try (InputStream inputStream = passwordChange.this.getContentResolver().openInputStream(data.getData())){
+                try (InputStream inputStream = PasswordEntry.this.getContentResolver().openInputStream(data.getData())){
                     Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(inputStream), 256,256);
                     ByteBuffer byteBuffer = ByteBuffer.allocate(thumbnail.getByteCount());
                     thumbnail.copyPixelsToBuffer(byteBuffer);
                     image = byteBuffer.array();
-                    passwordChange.this.runOnUiThread(() -> icon.setImageBitmap(thumbnail));
+                    PasswordEntry.this.runOnUiThread(() -> icon.setImageBitmap(thumbnail));
                 } catch (IOException e) {
 
                 }
@@ -113,47 +111,105 @@ public class passwordChange extends AppCompatActivity {
         mediumPassword = getString(R.string.mediumPassword);
         strongPassword = getString(R.string.strongPassword);
         icon = findViewById(R.id.serviceChangeIcon);
-        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_rounded);
-        ProgressBar bar = new ProgressBar(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        bar.setLayoutParams(lp);
-        builder2.setTitle(R.string.wait);
-        builder2.setView(bar);
-        builder2.setCancelable(false);
-        AlertDialog alertDialog = builder2.create();
-        alertDialog.show();
-        Thread thread = new Thread(() -> {
-            try {
-                Intent intent = getIntent();
-                byte[] passEnc = intent.getByteArrayExtra("pass");
-                String password = Encryptor.rsadecrypt(passEnc);
-                SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
-                HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
-                ArrayList<String> strings = listHashMap.get(id);
-                runOnUiThread(() -> onThreadDone(strings));
-                HashMap<Integer, byte[]> iconsHashMap = Encryptor.readPasswordIcons(database);
-                image = iconsHashMap.get(id);
-                if(image != null){
-                    Bitmap.Config config = Bitmap.Config.ARGB_8888;
-                    Bitmap bitmap = Bitmap.createBitmap(256,256, config);
-                    ByteBuffer byteBuffer = ByteBuffer.wrap(image);
-                    bitmap.copyPixelsFromBuffer(byteBuffer);
-                    passwordChange.this.runOnUiThread(() -> icon.setImageBitmap(bitmap));
-                }
-                Encryptor.closeDataBase(database);
-            } catch (Exception e){
+        Intent intent = getIntent();
+        FloatingActionButton delete = findViewById(R.id.delete);
+        cancel = findViewById(R.id.cancel2);
+        if(!intent.getBooleanExtra("newEntry",false)) {
+            MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_rounded);
+            ProgressBar bar = new ProgressBar(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            bar.setLayoutParams(lp);
+            builder2.setTitle(R.string.wait);
+            builder2.setView(bar);
+            builder2.setCancelable(false);
+            AlertDialog alertDialog = builder2.create();
+            alertDialog.show();
+            Thread thread = new Thread(() -> {
+                try {
+                    byte[] passEnc = intent.getByteArrayExtra("pass");
+                    String password = Encryptor.rsadecrypt(passEnc);
+                    SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
+                    HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
+                    ArrayList<String> strings = listHashMap.get(id);
+                    runOnUiThread(() -> onThreadDone(strings));
+                    HashMap<Integer, byte[]> iconsHashMap = Encryptor.readPasswordIcons(database);
+                    image = iconsHashMap.get(id);
+                    if (image != null) {
+                        Bitmap.Config config = Bitmap.Config.ARGB_8888;
+                        Bitmap bitmap = Bitmap.createBitmap(256, 256, config);
+                        ByteBuffer byteBuffer = ByteBuffer.wrap(image);
+                        bitmap.copyPixelsFromBuffer(byteBuffer);
+                        PasswordEntry.this.runOnUiThread(() -> icon.setImageBitmap(bitmap));
+                    }
+                    Encryptor.closeDataBase(database);
+                } catch (Exception e) {
 
-                finish();
-            }
-            passwordChange.this.runOnUiThread(alertDialog::dismiss);
-        });
-        thread.start();
+                    finish();
+                }
+                PasswordEntry.this.runOnUiThread(alertDialog::dismiss);
+            });
+            thread.start();
+            delete.setOnClickListener(v -> {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PasswordEntry.this, R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.areYouSure)
+                        .setMessage(R.string.youAreGoingToDeleteEntry)
+                        .setPositiveButton(R.string.yes, (dialog, which) -> {
+                            Thread thread12 = new Thread(() -> {
+                                try {
+                                    Intent intent2 = getIntent();
+                                    byte[] passEnc = intent2.getByteArrayExtra("pass");
+                                    String password = Encryptor.rsadecrypt(passEnc);
+                                    SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
+                                    Encryptor.deleteDataFromPasswordTable(database, id);
+                                    Encryptor.closeDataBase(database);
+                                    finish();
+                                } catch (Exception e){
+
+                                    runOnUiThread(() -> Snackbar.make(v, R.string.failedToDeleteEntry, Snackbar.LENGTH_LONG).show());
+                                }
+                            });
+                            thread12.start();
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                builder.show();
+            });
+            cancel.setOnClickListener(v -> {
+                if (!name.getText().toString().matches(Pattern.quote(service)) || !login.getText().toString().matches(Pattern.quote(loginName)) || !pass.getText().toString().matches(Pattern.quote(passName)) || !website.getText().toString().matches(Pattern.quote(websiteName)) || !notes.getText().toString().matches(Pattern.quote(notesName))) {
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PasswordEntry.this, R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.discardChanges)
+                            .setMessage(R.string.discardEntryText)
+                            .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                dialog.dismiss();
+                                finish();
+                            })
+                            .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                    builder.show();
+                } else finish();
+            });
+        } else {
+            cancel.setVisibility(View.GONE);
+            delete.setImageResource(android.R.drawable.ic_delete);
+            delete.setOnClickListener(v -> {
+                if (!name.getText().toString().matches(Pattern.quote(service)) || !login.getText().toString().matches(Pattern.quote(loginName)) || !pass.getText().toString().matches(Pattern.quote(passName)) || !website.getText().toString().matches(Pattern.quote(websiteName)) || !notes.getText().toString().matches(Pattern.quote(notesName))) {
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PasswordEntry.this, R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.discardChanges)
+                            .setMessage(R.string.discardEntryText)
+                            .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                dialog.dismiss();
+                                finish();
+                            })
+                            .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                    builder.show();
+                } else finish();
+            });
+        }
         icon.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("image/*");
-            startActivityForResult(Intent.createChooser(intent, getString(R.string.selectIcon)), PICK_IMAGE);
+            Intent intent1 = new Intent(Intent.ACTION_GET_CONTENT);
+            intent1.setType("image/*");
+            startActivityForResult(Intent.createChooser(intent1, getString(R.string.selectIcon)), PICK_IMAGE);
         });
         name = findViewById(R.id.nameInput);
         login = findViewById(R.id.loginInput);
@@ -176,10 +232,10 @@ public class passwordChange extends AppCompatActivity {
                 alertDialog2.show();
                 Thread thread1 = new Thread(() -> {
                     try {
-                        Intent intent = getIntent();
-                        byte[] passEnc = intent.getByteArrayExtra("pass");
+                        Intent intent3 = getIntent();
+                        byte[] passEnc = intent3.getByteArrayExtra("pass");
                         String password = Encryptor.rsadecrypt(passEnc);
-                        SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
+                        SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
                         if(image == null){
                             try {
                                 URL imageURL = new URL("https://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
@@ -196,10 +252,14 @@ public class passwordChange extends AppCompatActivity {
                                 image = null;
                             }
                         }
-                        Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image,website.getText().toString(),notes.getText().toString(),intent.getStringExtra("category"));
+                        if(!intent.getBooleanExtra("newEntry",false)) {
+                            Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent3.getStringExtra("category"));
+                        } else {
+                            Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent3.getStringExtra("category"));
+                        }
                         Encryptor.closeDataBase(database);
                         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
-                            EncryptorAutofillService.pass = intent.getByteArrayExtra("pass");
+                            EncryptorAutofillService.pass = intent3.getByteArrayExtra("pass");
                         }
                         runOnUiThread(alertDialog2::dismiss);
                         finish();
@@ -212,46 +272,6 @@ public class passwordChange extends AppCompatActivity {
             } else {
                 Snackbar.make(v, R.string.fillDataErr, Snackbar.LENGTH_LONG).show();
             }
-        });
-        cancel = findViewById(R.id.cancel2);
-        cancel.setOnClickListener(v -> {
-            if (!name.getText().toString().matches(Pattern.quote(service)) || !login.getText().toString().matches(Pattern.quote(loginName)) || !pass.getText().toString().matches(Pattern.quote(passName)) || !website.getText().toString().matches(Pattern.quote(websiteName)) || !notes.getText().toString().matches(Pattern.quote(notesName))) {
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordChange.this, R.style.MaterialAlertDialog_rounded)
-                        .setTitle(R.string.discardChanges)
-                        .setMessage(R.string.discardEntryText)
-                        .setPositiveButton(R.string.yes, (dialog, which) -> {
-                            dialog.dismiss();
-                            finish();
-                        })
-                        .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-                builder.show();
-            } else finish();
-        });
-        FloatingActionButton delete = findViewById(R.id.delete);
-        delete.setOnClickListener(v -> {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordChange.this, R.style.MaterialAlertDialog_rounded)
-                    .setTitle(R.string.areYouSure)
-                    .setMessage(R.string.youAreGoingToDeleteEntry)
-                    .setPositiveButton(R.string.yes, (dialog, which) -> {
-                        Thread thread12 = new Thread(() -> {
-                            try {
-                                Intent intent = getIntent();
-                                byte[] passEnc = intent.getByteArrayExtra("pass");
-                                String password = Encryptor.rsadecrypt(passEnc);
-                                SQLiteDatabase database = Encryptor.initDataBase(passwordChange.this, password);
-                                Encryptor.deleteDataFromPasswordTable(database, id);
-                                Encryptor.closeDataBase(database);
-                                finish();
-                            } catch (Exception e){
-
-                                runOnUiThread(() -> Snackbar.make(v, R.string.failedToDeleteEntry, Snackbar.LENGTH_LONG).show());
-                            }
-                        });
-                        thread12.start();
-                        dialog.dismiss();
-                    })
-                    .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-            builder.show();
         });
         TextInputLayout nameLayout = findViewById(R.id.name1);
         nameLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
@@ -266,17 +286,6 @@ public class passwordChange extends AppCompatActivity {
             }
         });
         TextInputLayout passLayout = findViewById(R.id.pass1);
-        /*passLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-        passLayout.setEndIconDrawable(R.drawable.copysmall);
-        passLayout.setEndIconOnClickListener(v -> {
-            if(!pass.getText().toString().matches("")) {
-                ClipboardManager clipboard = (ClipboardManager) getBaseContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Encryptor", pass.getText().toString());
-                if (clipboard == null || clip == null) return;
-                clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, "Password copied to clipboard!", Snackbar.LENGTH_LONG).show();
-            }
-        });*/
         TextInputLayout loginLayout = findViewById(R.id.login1);
         loginLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         loginLayout.setEndIconDrawable(R.drawable.copysmall);
@@ -350,15 +359,15 @@ public class passwordChange extends AppCompatActivity {
         });
         Button generatePassword = findViewById(R.id.generatePassword2);
         generatePassword.setOnClickListener(v -> {
-            final EditText input = new EditText(passwordChange.this);
-            Typeface ubuntu = ResourcesCompat.getFont(passwordChange.this, R.font.ubuntu);
+            final EditText input = new EditText(PasswordEntry.this);
+            Typeface ubuntu = ResourcesCompat.getFont(PasswordEntry.this, R.font.ubuntu);
             input.setTypeface(ubuntu);
             input.setInputType(InputType.TYPE_CLASS_NUMBER);
             input.setSingleLine(true);
             input.setHint(R.string.passLength);
             final String[] passwordAlphabetMode = {""};
             CharSequence[] items = new CharSequence[]{getString(R.string.uppercase), getString(R.string.lowercase), getString(R.string.numbers), getString(R.string.specialSymbols)};
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(passwordChange.this, R.style.MaterialAlertDialog_rounded)
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PasswordEntry.this, R.style.MaterialAlertDialog_rounded)
                     .setTitle(R.string.generatePass)
                     .setMultiChoiceItems(items, null, (dialog, which, isChecked) -> {
                         switch (which){
@@ -446,6 +455,42 @@ public class passwordChange extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         cancel.performClick();
+    }
+    public static int calculatePasswordStrength(String password) {
+
+        int passwordScore = 0;
+
+        if (password.length() >= 8 && password.length() <= 10)
+            passwordScore += 1;
+        else if (password.length() >= 10)
+            passwordScore += 2;
+        else if(password.length() == 0)
+            return 0;
+        else
+            return 1;
+
+        if (password.matches("(?=.*[0-9].*[0-9]).*"))
+            passwordScore += 2;
+        else if (password.matches("(?=.*[0-9]).*"))
+            passwordScore += 1;
+
+        if (password.matches("(?=.*[a-z].*[a-z]).*"))
+            passwordScore += 2;
+        else if(password.matches("(?=.*[a-z]).*"))
+            passwordScore += 1;
+
+        if (password.matches("(?=.*[A-Z].*[A-Z]).*"))
+            passwordScore += 2;
+        else if (password.matches("(?=.*[A-Z]).*"))
+            passwordScore += 1;
+
+        if (password.matches("(?=.*[~!@#$%^&*()_-].*[~!@#$%^&*()_-]).*"))
+            passwordScore += 2;
+        else if (password.matches("(?=.*[~!@#$%^&*()_-]).*"))
+            passwordScore += 1;
+
+        return passwordScore;
+
     }
 
     private void setPassBarProgress(int progress, ProgressBar strength) {

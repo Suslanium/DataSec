@@ -1,4 +1,4 @@
-package com.suslanium.encryptor.ui.gallery;
+package com.suslanium.encryptor.ui.password;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -10,7 +10,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,7 +21,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -38,9 +36,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.Encryptor;
 import com.suslanium.encryptor.Explorer;
 import com.suslanium.encryptor.PasswordAdapter;
+import com.suslanium.encryptor.PasswordEntry;
 import com.suslanium.encryptor.R;
-import com.suslanium.encryptor.passwordAdd;
-import com.suslanium.encryptor.ui.home.HomeFragment;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -49,10 +46,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-import static com.suslanium.encryptor.ui.home.HomeFragment.fadeIn;
-import static com.suslanium.encryptor.ui.home.HomeFragment.fadeOut;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 
-public class GalleryFragment extends Fragment {
+public class PasswordFragment extends Fragment {
     private boolean isOnResume = false;
     private Intent intent2 = null;
     private String currentSearchQuery;
@@ -72,7 +69,7 @@ public class GalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_gallery, container, false);
+        return inflater.inflate(R.layout.fragment_password, container, false);
     }
 
     @Override
@@ -89,7 +86,7 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         Explorer parent = (Explorer) context;
-        parent.setGalleryFragment(this);
+        parent.setPasswordFragment(this);
         super.onAttach(context);
     }
 
@@ -177,9 +174,10 @@ public class GalleryFragment extends Fragment {
         });
         intent2 = ((Explorer) requireActivity()).getIntent2();
         addDataListener = v -> {
-            Intent intent = new Intent(requireActivity(), passwordAdd.class);
+            Intent intent = new Intent(requireActivity(), PasswordEntry.class);
             intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
             intent.putExtra("category", currentCategory);
+            intent.putExtra("newEntry", true);
             startActivity(intent);
         };
         fab.setOnClickListener(addDataListener);

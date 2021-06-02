@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    tools:context=".ui.slideshow.SlideshowFragment">
+    tools:context=".ui.gdrive.GoogleDriveFragment">
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"

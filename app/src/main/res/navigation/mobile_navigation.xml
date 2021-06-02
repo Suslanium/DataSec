@@ -7,21 +7,21 @@
 
     <fragment
         android:id="@+id/nav_explorer"
-        android:name="com.suslanium.encryptor.ui.home.HomeFragment"
+        android:name="com.suslanium.encryptor.ui.explorer.ExplorerFragment"
         android:label="@string/menu_explorer"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_explorer" />
 
     <fragment
         android:id="@+id/nav_datavault"
-        android:name="com.suslanium.encryptor.ui.gallery.GalleryFragment"
+        android:name="com.suslanium.encryptor.ui.password.PasswordFragment"
         android:label="@string/menu_datavault"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_password" />
 
     <fragment
         android:id="@+id/nav_keyexchange"
-        android:name="com.suslanium.encryptor.ui.slideshow.SlideshowFragment"
+        android:name="com.suslanium.encryptor.ui.gdrive.GoogleDriveFragment"
         android:label="@string/menu_keyexchange"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_gdrive" />
 
     <fragment
         android:id="@+id/nav_notes"

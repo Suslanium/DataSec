@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -18,8 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.suslanium.encryptor.ui.gallery.GalleryFragment;
-import com.suslanium.encryptor.ui.home.HomeFragment;
+import com.suslanium.encryptor.ui.password.PasswordFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +34,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     private ArrayList<Bitmap> icons = new ArrayList<>();
     private HashMap<Integer, ViewHolder> holders = new HashMap<>();
     private Activity activity;
-    private GalleryFragment fragment;
+    private PasswordFragment fragment;
     private boolean showLogins = true;
     private static ColorStateList defTint;
 
@@ -52,7 +50,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         protected Intent main_intent;
         private final ImageView iconView;
         private final TextView loginView;
-        private GalleryFragment fragment;
+        private PasswordFragment fragment;
 
         public ViewHolder(View view) {
             super(view);
@@ -61,7 +59,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
             loginView = view.findViewById(R.id.loginText);
             view.setOnClickListener(v -> {
                 if (!isCategory) {
-                    Intent intent = new Intent(v.getContext(), passwordChange.class);
+                    Intent intent = new Intent(v.getContext(), PasswordEntry.class);
                     intent.putExtra("id", id);
                     intent.putExtra("category", fragment.getCurrentCategory());
                     intent.putExtra("pass", main_intent.getByteArrayExtra("pass"));
@@ -110,7 +108,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories, Intent intent, Activity activity, GalleryFragment fragment) {
+    public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories, Intent intent, Activity activity, PasswordFragment fragment) {
         localDataSet = dataSet;
         localids = ids;
         localLogins = logins;
