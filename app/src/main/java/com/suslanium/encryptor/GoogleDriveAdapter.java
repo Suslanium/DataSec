@@ -33,6 +33,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
     private ArrayList<String> checkedId = new ArrayList<>();
     private boolean canSelect = true;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
+    private GoogleDriveViewModel viewModel;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -126,45 +127,10 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                 ((GoogleDriveManager) context).checkFileBar();
                                 Thread thread = new Thread(() -> {
                                     try {
-                                        List<File> files = helper.listDriveFiles(id);
-                                        ArrayList<String>[] names = new ArrayList[]{null, null, null};
-                                        names[0] = new ArrayList<>();
-                                        names[1] = new ArrayList<>();
-                                        names[2] = new ArrayList<>();
-                                        if (files != null) {
-                                            for (File file : files) {
-                                                names[0].add(file.getName());
-                                                names[1].add(file.getId());
-                                                names[2].add(file.getMimeType());
-                                            }
-                                        }
-                                        ((GoogleDriveManager) context).lists.put(((GoogleDriveManager) context).lists.size(), new ArrayList[]{localDataSet, ids, mimeTypes});
-                                        int position = getAdapterPosition();
-                                        localDataSet = names[0];
-                                        ids = names[1];
-                                        mimeTypes = names[2];
-                                        while (!fadeIn.hasEnded()) {
-                                            Thread.sleep(10);
-                                        }
-                                        Animation fadeOut = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
-                                        fadeOut.setDuration(200);
+                                        viewModel.listFilesInFolder(id,false,true,name);
                                         ((GoogleDriveManager) context).runOnUiThread(() -> {
-                                            ((GoogleDriveManager) context).folders.add(name);
                                             ((GoogleDriveManager) context).constructAndSetPath();
-                                            notifyDataSetChanged();
-                                            recyclerView.scrollToPosition(0);
-                                            recyclerView.startAnimation(fadeOut);
                                         });
-                                        while (!fadeOut.hasEnded()) {
-                                            try {
-                                                Thread.sleep(10);
-                                            } catch (Exception e) {
-
-                                            }
-                                        }
-                                        ((GoogleDriveManager) context).currentOperationNumber--;
-                                        ((GoogleDriveManager) context).ids.add(((GoogleDriveManager) context).getCurrentFolderID());
-                                        ((GoogleDriveManager) context).setCurrentFolderID(id);
                                     } catch (Exception e) {
 
                                     }
@@ -200,13 +166,14 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
      * @param dataSet String[] containing the data to populate views to be used
      *                by RecyclerView.
      */
-    public GoogleDriveAdapter(ArrayList<String> dataSet, DriveServiceHelper helper, ArrayList<String> ids, Context context, RecyclerView view, ArrayList<String> mimeTypes) {
+    public GoogleDriveAdapter(ArrayList<String> dataSet, DriveServiceHelper helper, ArrayList<String> ids, Context context, RecyclerView view, ArrayList<String> mimeTypes, GoogleDriveViewModel viewModel) {
         localDataSet = dataSet;
         this.ids = ids;
         this.helper = helper;
         this.context = context;
         recyclerView = view;
         this.mimeTypes = mimeTypes;
+        this.viewModel = viewModel;
     }
 
     // Create new views (invoked by the layout manager)

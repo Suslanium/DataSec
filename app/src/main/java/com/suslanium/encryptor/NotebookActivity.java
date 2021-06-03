@@ -4,6 +4,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -36,6 +37,7 @@ public class NotebookActivity extends AppCompatActivity {
     private TextInputEditText txt;
     private TextInputEditText name;
     private File originEncNote;
+    private NotebookViewModel viewModel;
 
     @Override
     protected void onStart() {
@@ -80,6 +82,7 @@ public class NotebookActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(NotebookViewModel.class);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
         if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark_ActionBar);
@@ -109,14 +112,7 @@ public class NotebookActivity extends AppCompatActivity {
                     String fileName = intent.getStringExtra("fileName");
                     byte[] pass = intent.getByteArrayExtra("pass");
                     try {
-                        String password = Encryptor.rsadecrypt(pass);
-                        File encNote = new File(getFilesDir().getPath() + File.separator + "Notes" + File.separator + fileName);
-                        originEncNote = encNote;
-                        File tempNote = new File(getApplicationInfo().dataDir + File.separator + "noteTemp" +File.separator+ encNote.getName());
-                        tempNote.delete();
-                        tempNote.getParentFile().mkdirs();
-                        Encryptor.decryptFileAES256(encNote, password, tempNote);
-                        String text = readFromFile(tempNote.getPath());
+                        String text = viewModel.readText(fileName, pass);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -134,7 +130,7 @@ public class NotebookActivity extends AppCompatActivity {
                                                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        encNote.delete();
+                                                        viewModel.getOriginEncNote().delete();
                                                         finish();
                                                     }
                                                 })
@@ -149,8 +145,6 @@ public class NotebookActivity extends AppCompatActivity {
                                 });
                             }
                         });
-                        Encryptor.wipeFile(tempNote);
-                        tempNote.delete();
                     } catch (Exception e) {
                         e.printStackTrace();
                         alertDialog.dismiss();
@@ -179,14 +173,10 @@ public class NotebookActivity extends AppCompatActivity {
                     alertDialog.show();
                     File tempNote = new File(getApplicationInfo().dataDir + File.separator + "noteTemp" + File.separator + name.getText().toString() + ".txt");
                     try {
-                        tempNote.getParentFile().mkdirs();
-                        tempNote.createNewFile();
-                        tempNote.delete();
+                        viewModel.checkFileValidName(tempNote);
                         Thread thread = new Thread(() -> {
                             try {
-                                //Unfinished
                                 byte[] pass = intent.getByteArrayExtra("pass");
-                                String password = Encryptor.rsadecrypt(pass);
                                 tempNote.getParentFile().mkdirs();
                                 File encNote = new File(getFilesDir().getPath() + File.separator + "Notes" + File.separator + name.getText().toString() + ".txt.enc");
                                 if (encNote.exists() && intent.getBooleanExtra("newNote", false)) {
@@ -201,14 +191,7 @@ public class NotebookActivity extends AppCompatActivity {
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     Thread thread = new Thread(() -> {
                                                         try {
-                                                            tempNote.delete();
-                                                            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(tempNote));
-                                                            outputStreamWriter.write(txt.getText().toString());
-                                                            outputStreamWriter.close();
-                                                            encNote.delete();
-                                                            Encryptor.encryptFileAES256(tempNote, password, encNote);
-                                                            Encryptor.wipeFile(tempNote);
-                                                            tempNote.delete();
+                                                            viewModel.saveNote(tempNote,encNote, pass, txt.getText().toString(), false);
                                                             runOnUiThread(() -> {
                                                                 alertDialog.dismiss();
                                                                 finish();
@@ -237,15 +220,7 @@ public class NotebookActivity extends AppCompatActivity {
                                         }
                                     });
                                 } else {
-                                    tempNote.delete();
-                                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(tempNote));
-                                    outputStreamWriter.write(txt.getText().toString());
-                                    outputStreamWriter.close();
-                                    if (originEncNote != null) originEncNote.delete();
-                                    encNote.delete();
-                                    Encryptor.encryptFileAES256(tempNote, password, encNote);
-                                    Encryptor.wipeFile(tempNote);
-                                    tempNote.delete();
+                                    viewModel.saveNote(tempNote,encNote, pass, txt.getText().toString(), true);
                                     runOnUiThread(() -> {
                                         alertDialog.dismiss();
                                         finish();
@@ -272,28 +247,6 @@ public class NotebookActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private String readFromFile(String path) throws Exception {
-        String ret = "";
-        InputStream inputStream = new FileInputStream(new File(path));
-        if (inputStream != null) {
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String receiveString = "";
-            StringBuilder stringBuilder = new StringBuilder();
-            boolean first = true;
-            while ((receiveString = bufferedReader.readLine()) != null) {
-                if(!first)stringBuilder.append("\n").append(receiveString);
-                else {
-                    stringBuilder.append(receiveString);
-                    first = false;
-                }
-            }
-            inputStream.close();
-            ret = stringBuilder.toString();
-        }
-        return ret;
     }
 
     @Override

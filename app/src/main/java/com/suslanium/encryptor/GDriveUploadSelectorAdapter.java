@@ -133,62 +133,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                         @Override
                                         public void run() {
                                             viewModel.getFileNames(new File(path + File.separator + realPath));
-                                            /*File[] files = new File(path + File.separator + realPath).listFiles();
-                                            //if(files != null){}
-                                            ArrayList<String> paths = new ArrayList<>();
-                                            for (int i = 0; i < files.length; i++) {
-                                                paths.add(files[i].getPath());
-                                            }
-                                            List<String> sorted = sortFiles(paths);
-                                            ArrayList<File> filesSorted = new ArrayList<>();
-                                            for (int i = 0; i < sorted.size(); i++) {
-                                                File toAdd = new File(sorted.get(i));
-                                                if ((((GoogleDriveUploadSelector) activity).showHiddenFiles && toAdd.getName().startsWith(".")) || !toAdd.getName().startsWith(".")) {
-                                                    filesSorted.add(toAdd);
-                                                }
-                                            }
-                                            ArrayList<String> fileNames = new ArrayList<>();
-                                            for (int i = 0; i < filesSorted.size(); i++) {
-                                                fileNames.add(filesSorted.get(i).getName());
-                                            }
-                                            for (int i = 0; i < holders.size(); i++) {
-                                                holders.get(i).fileCheckbox.setChecked(false);
-                                            }
-                                            CheckedId.clear();
-                                            holders.clear();
-                                            int position = getAdapterPosition();
-                                            localDataSet = fileNames;
-                                            path = path + File.separator + realPath;
-                                            //new ExplorerAdapter(fileNames, path + File.separator + textView.getText(), Recview, activity);
-                                            while (!fadeIn.hasEnded()) {
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-
-                                                }
-                                            }
-                                            Animation fadeOut = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_in_left);
-                                            fadeOut.setDuration(200);*/
                                             if (((GoogleDriveUploadSelector) activity).searchEnded) {
                                                 ((GoogleDriveUploadSelector) activity).searchEnded = false;
                                             }
-                                            /*activity.runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    ((GoogleDriveUploadSelector) activity).setStoragePath(path);
-                                                    notifyDataSetChanged();
-                                                    Recview.scrollToPosition(0);
-                                                    Recview.startAnimation(fadeOut);
-                                                }
-                                            });
-                                            while (!fadeOut.hasEnded()) {
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-
-                                                }
-                                            }
-                                            ((GoogleDriveUploadSelector) activity).currentOperationNumber--;*/
                                         }
                                     });
                                     thread.start();
@@ -225,7 +172,6 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                     });
                             builder.show();
                         }
-                        //Move to next folder if clicked element is folder
                     }
                 }
             });
