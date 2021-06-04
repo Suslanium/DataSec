@@ -21,7 +21,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Encryptor.Light">
         <activity android:name=".NotebookActivity"></activity>
-        <activity android:name=".AutofillAuthActivity"></activity>
         <activity
             android:name=".WelcomeActivity"
             android:theme="@style/Theme.Encryptor.Light" />

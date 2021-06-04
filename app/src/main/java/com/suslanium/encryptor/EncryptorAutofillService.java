@@ -205,7 +205,7 @@ public class EncryptorAutofillService extends AutofillService {
                     ids1 = ids.toArray(ids1);
                     RemoteViews authRequest = new RemoteViews(getPackageName(), R.layout.autofilllistitem);
                     authRequest.setTextViewText(R.id.textToSet, getString(R.string.authRequired));
-                    Intent authIntent = new Intent(this, AutofillAuthActivity.class);
+                    Intent authIntent = new Intent(this, PasswordActivity.class);
                     ArrayList<String> txt = new ArrayList<>(texts);
                     authIntent.putExtra("TYPE", type);
                     authIntent.putExtra("IDS", ids);

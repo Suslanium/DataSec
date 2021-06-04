@@ -729,13 +729,17 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     }
                 }
             } else {
+                viewHolder.loadingCount++;
+                final int loadingNum = viewHolder.loadingCount;
                 activity.runOnUiThread(() -> {
                     viewHolder.setTint(defTint);
                     viewHolder.setFile(R.drawable.ic_folder);
                     viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;
-                activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " " + items));
+                if (loadingNum == viewHolder.loadingCount) {
+                    activity.runOnUiThread(() -> viewHolder.getSizeView().setText(itemCount + " " + items));
+                }
             }
         });
     }

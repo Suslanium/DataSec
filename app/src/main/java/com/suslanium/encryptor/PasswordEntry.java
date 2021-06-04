@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
@@ -16,12 +17,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -29,7 +27,6 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
-import android.view.autofill.AutofillManager;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,15 +40,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import net.sqlcipher.database.SQLiteDatabase;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 
@@ -73,6 +62,7 @@ public class PasswordEntry extends AppCompatActivity {
     private String weakPassword = "Weak password";
     private String mediumPassword = "Medium password";
     private String strongPassword = "Strong password";
+    private PasswordEntryViewModel viewModel;
     public static final int PICK_IMAGE = 1;
 
 
@@ -84,14 +74,9 @@ public class PasswordEntry extends AppCompatActivity {
                 return;
             }
             Thread thread = new Thread(() -> {
-                try (InputStream inputStream = PasswordEntry.this.getContentResolver().openInputStream(data.getData())){
-                    Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(inputStream), 256,256);
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(thumbnail.getByteCount());
-                    thumbnail.copyPixelsToBuffer(byteBuffer);
-                    image = byteBuffer.array();
-                    PasswordEntry.this.runOnUiThread(() -> icon.setImageBitmap(thumbnail));
-                } catch (IOException e) {
-
+                Bitmap thumbnail = viewModel.getThumbnail(data);
+                if(thumbnail != null){
+                    runOnUiThread(() -> icon.setImageBitmap(thumbnail));
                 }
             });
             thread.start();
@@ -99,6 +84,7 @@ public class PasswordEntry extends AppCompatActivity {
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(PasswordEntryViewModel.class);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
         if(dark_theme) setTheme(R.style.Theme_Encryptor_Dark_Pass);
@@ -129,23 +115,13 @@ public class PasswordEntry extends AppCompatActivity {
             Thread thread = new Thread(() -> {
                 try {
                     byte[] passEnc = intent.getByteArrayExtra("pass");
-                    String password = Encryptor.rsadecrypt(passEnc);
-                    SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
-                    HashMap<Integer, ArrayList<String>> listHashMap = Encryptor.readPasswordData(database);
-                    ArrayList<String> strings = listHashMap.get(id);
+                    ArrayList<String> strings = new ArrayList<>(viewModel.readEntryData(passEnc, id));
                     runOnUiThread(() -> onThreadDone(strings));
-                    HashMap<Integer, byte[]> iconsHashMap = Encryptor.readPasswordIcons(database);
-                    image = iconsHashMap.get(id);
-                    if (image != null) {
-                        Bitmap.Config config = Bitmap.Config.ARGB_8888;
-                        Bitmap bitmap = Bitmap.createBitmap(256, 256, config);
-                        ByteBuffer byteBuffer = ByteBuffer.wrap(image);
-                        bitmap.copyPixelsFromBuffer(byteBuffer);
-                        PasswordEntry.this.runOnUiThread(() -> icon.setImageBitmap(bitmap));
+                    Bitmap image = viewModel.getImage();
+                    if(image != null){
+                        runOnUiThread(() -> icon.setImageBitmap(image));
                     }
-                    Encryptor.closeDataBase(database);
                 } catch (Exception e) {
-
                     finish();
                 }
                 PasswordEntry.this.runOnUiThread(alertDialog::dismiss);
@@ -160,13 +136,9 @@ public class PasswordEntry extends AppCompatActivity {
                                 try {
                                     Intent intent2 = getIntent();
                                     byte[] passEnc = intent2.getByteArrayExtra("pass");
-                                    String password = Encryptor.rsadecrypt(passEnc);
-                                    SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
-                                    Encryptor.deleteDataFromPasswordTable(database, id);
-                                    Encryptor.closeDataBase(database);
+                                    viewModel.deleteEntry(passEnc, id);
                                     finish();
                                 } catch (Exception e){
-
                                     runOnUiThread(() -> Snackbar.make(v, R.string.failedToDeleteEntry, Snackbar.LENGTH_LONG).show());
                                 }
                             });
@@ -234,38 +206,12 @@ public class PasswordEntry extends AppCompatActivity {
                     try {
                         Intent intent3 = getIntent();
                         byte[] passEnc = intent3.getByteArrayExtra("pass");
-                        String password = Encryptor.rsadecrypt(passEnc);
-                        SQLiteDatabase database = Encryptor.initDataBase(PasswordEntry.this, password);
-                        if(image == null){
-                            try {
-                                URL imageURL = new URL("https://logo.clearbit.com/" + URLUtil.guessUrl(website.getText().toString()));
-                                HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
-                                connection.setDoInput(true);
-                                connection.connect();
-                                Bitmap imageBitmap = BitmapFactory.decodeStream(connection.getInputStream());
-                                Bitmap thumbnail = Bitmap.createScaledBitmap(imageBitmap, 256,256, false);
-                                ByteBuffer byteBuffer = ByteBuffer.allocate(thumbnail.getByteCount());
-                                thumbnail.copyPixelsToBuffer(byteBuffer);
-                                image = byteBuffer.array();
-                            } catch (Exception e){
-
-                                image = null;
-                            }
-                        }
-                        if(!intent.getBooleanExtra("newEntry",false)) {
-                            Encryptor.updateDataIntoPasswordTable(database, id, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent3.getStringExtra("category"));
-                        } else {
-                            Encryptor.insertDataIntoPasswordTable(database, name.getText().toString(), login.getText().toString(), pass.getText().toString(), image, website.getText().toString(), notes.getText().toString(), intent3.getStringExtra("category"));
-                        }
-                        Encryptor.closeDataBase(database);
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
-                            EncryptorAutofillService.pass = intent3.getByteArrayExtra("pass");
-                        }
+                        viewModel.saveEntry(passEnc, id, intent.getBooleanExtra("newEntry",false), name.getText().toString(), login.getText().toString(), pass.getText().toString(), website.getText().toString(), notes.getText().toString(),intent3.getStringExtra("category"));
                         runOnUiThread(alertDialog2::dismiss);
                         finish();
                     } catch (Exception e){
                         e.printStackTrace();
-                        runOnUiThread(() -> Snackbar.make(v, R.string.failedToUpdateEntry, Snackbar.LENGTH_LONG).show());
+                        runOnUiThread(() -> Snackbar.make(v, R.string.failedToAddEntry, Snackbar.LENGTH_LONG).show());
                     }
                 });
                 thread1.start();
@@ -277,26 +223,14 @@ public class PasswordEntry extends AppCompatActivity {
         nameLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         nameLayout.setEndIconDrawable(R.drawable.copysmall);
         nameLayout.setEndIconOnClickListener(v -> {
-            if(!name.getText().toString().matches("")) {
-                ClipboardManager clipboard = (ClipboardManager) getBaseContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Encryptor", name.getText().toString());
-                if (clipboard == null || clip == null) return;
-                clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
-            }
+            copyToClipboard(name, v);
         });
         TextInputLayout passLayout = findViewById(R.id.pass1);
         TextInputLayout loginLayout = findViewById(R.id.login1);
         loginLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         loginLayout.setEndIconDrawable(R.drawable.copysmall);
         loginLayout.setEndIconOnClickListener(v -> {
-            if(!login.getText().toString().matches("")) {
-                ClipboardManager clipboard = (ClipboardManager) getBaseContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Encryptor", login.getText().toString());
-                if (clipboard == null || clip == null) return;
-                clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
-            }
+            copyToClipboard(login, v);
         });
         TextInputLayout websiteLayout = findViewById(R.id.website1);
         websiteLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
@@ -316,13 +250,7 @@ public class PasswordEntry extends AppCompatActivity {
         noteLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         noteLayout.setEndIconDrawable(R.drawable.copysmall);
         noteLayout.setEndIconOnClickListener(v -> {
-            if(!notes.getText().toString().matches("")) {
-                ClipboardManager clipboard = (ClipboardManager) getBaseContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Encryptor", notes.getText().toString());
-                if (clipboard == null || clip == null) return;
-                clipboard.setPrimaryClip(clip);
-                Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
-            }
+            copyToClipboard(notes, v);
         });
         ProgressBar strength = findViewById(R.id.passwordStrengthBar2);
         strength.setMax(1000);
@@ -340,7 +268,7 @@ public class PasswordEntry extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                int passStrength = calculatePasswordStrength(s.toString());
+                int passStrength = viewModel.calculatePasswordStrength(s.toString());
                 setPassBarProgress(passStrength * 100, strength);
                 if (passStrength >= 8) {
                     passLayout.setHelperTextEnabled(true);
@@ -456,42 +384,6 @@ public class PasswordEntry extends AppCompatActivity {
     public void onBackPressed() {
         cancel.performClick();
     }
-    public static int calculatePasswordStrength(String password) {
-
-        int passwordScore = 0;
-
-        if (password.length() >= 8 && password.length() <= 10)
-            passwordScore += 1;
-        else if (password.length() >= 10)
-            passwordScore += 2;
-        else if(password.length() == 0)
-            return 0;
-        else
-            return 1;
-
-        if (password.matches("(?=.*[0-9].*[0-9]).*"))
-            passwordScore += 2;
-        else if (password.matches("(?=.*[0-9]).*"))
-            passwordScore += 1;
-
-        if (password.matches("(?=.*[a-z].*[a-z]).*"))
-            passwordScore += 2;
-        else if(password.matches("(?=.*[a-z]).*"))
-            passwordScore += 1;
-
-        if (password.matches("(?=.*[A-Z].*[A-Z]).*"))
-            passwordScore += 2;
-        else if (password.matches("(?=.*[A-Z]).*"))
-            passwordScore += 1;
-
-        if (password.matches("(?=.*[~!@#$%^&*()_-].*[~!@#$%^&*()_-]).*"))
-            passwordScore += 2;
-        else if (password.matches("(?=.*[~!@#$%^&*()_-]).*"))
-            passwordScore += 1;
-
-        return passwordScore;
-
-    }
 
     private void setPassBarProgress(int progress, ProgressBar strength) {
         ObjectAnimator animation = ObjectAnimator.ofInt(strength, "progress", strength.getProgress(), progress);
@@ -508,5 +400,15 @@ public class PasswordEntry extends AppCompatActivity {
         colorAnimation.addUpdateListener(animator -> strength.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue())));
         colorAnimation.start();
         colorFrom = color;
+    }
+
+    private void copyToClipboard(TextInputEditText textField, View v){
+        if(!textField.getText().toString().matches("")) {
+            ClipboardManager clipboard = (ClipboardManager) getBaseContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("Encryptor", textField.getText().toString());
+            if (clipboard == null || clip == null) return;
+            clipboard.setPrimaryClip(clip);
+            Snackbar.make(v, R.string.copied, Snackbar.LENGTH_LONG).show();
+        }
     }
 }

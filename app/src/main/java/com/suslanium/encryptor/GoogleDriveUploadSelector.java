@@ -233,56 +233,60 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             }
         });
         View.OnClickListener searchListener = v -> {
-            String fileName = layout.getText().toString();
-            if (!fileName.matches("")) {
-                adapter.isSearching = true;
-                b1.setEnabled(false);
-                layout.setVisibility(View.GONE);
-                title.setVisibility(View.VISIBLE);
-                final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                search[0].setText(R.string.searching);
-                Animation fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
-                fadeIn.setFillAfter(true);
-                Animation fadeOut = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
-                fadeOut.setDuration(200);
-                fadeIn.setDuration(200);
-                fileView.startAnimation(fadeIn);
-                search[0] = findViewById(R.id.searchTextUploadProgress);
-                bar[0] = findViewById(R.id.progressBarSearchUpload);
-                search[0].setVisibility(View.VISIBLE);
-                bar[0].setVisibility(View.VISIBLE);
-                ExplorerFragment.fadeOut(search[0]);
-                ExplorerFragment.fadeOut(bar[0]);
-                String path = viewModel.getPath().getValue();
-                Thread thread = new Thread(() -> {
-                    boolean hasResults = viewModel.searchFile(path, fileName);
-                    if (!hasResults) {
-                        runOnUiThread(() -> {
-                            try {
-                                fileView.startAnimation(fadeOut);
+            if(currentOperationNumber == 0) {
+                String fileName = layout.getText().toString();
+                if (!fileName.matches("")) {
+                    currentOperationNumber++;
+                    adapter.isSearching = true;
+                    b1.setEnabled(false);
+                    layout.setVisibility(View.GONE);
+                    title.setVisibility(View.VISIBLE);
+                    final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    search[0].setText(R.string.searching);
+                    Animation fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
+                    fadeIn.setFillAfter(true);
+                    Animation fadeOut = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+                    fadeOut.setDuration(200);
+                    fadeIn.setDuration(200);
+                    fileView.startAnimation(fadeIn);
+                    search[0] = findViewById(R.id.searchTextUploadProgress);
+                    bar[0] = findViewById(R.id.progressBarSearchUpload);
+                    search[0].setVisibility(View.VISIBLE);
+                    bar[0].setVisibility(View.VISIBLE);
+                    ExplorerFragment.fadeOut(search[0]);
+                    ExplorerFragment.fadeOut(bar[0]);
+                    String path = viewModel.getPath().getValue();
+                    Thread thread = new Thread(() -> {
+                        boolean hasResults = viewModel.searchFile(path, fileName);
+                        if (!hasResults) {
+                            runOnUiThread(() -> {
+                                try {
+                                    fileView.startAnimation(fadeOut);
+                                    ExplorerFragment.fadeIn(search[0]);
+                                    ExplorerFragment.fadeIn(bar[0]);
+                                    Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
+                                } catch (Exception e) {
+
+                                }
+                            });
+                        } else {
+                            runOnUiThread(() -> {
                                 ExplorerFragment.fadeIn(search[0]);
                                 ExplorerFragment.fadeIn(bar[0]);
-                                Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
-                            } catch (Exception e) {
-
-                            }
-                        });
-                    } else {
+                            });
+                        }
+                        currentOperationNumber--;
                         runOnUiThread(() -> {
-                            ExplorerFragment.fadeIn(search[0]);
-                            ExplorerFragment.fadeIn(bar[0]);
+                            b1.setEnabled(true);
+                            adapter.isSearching = false;
+                            searchEnded = true;
                         });
-                    }
-                    runOnUiThread(() -> {
-                        b1.setEnabled(true);
-                        adapter.isSearching = false;
-                        searchEnded = true;
                     });
-                });
-                thread.start();
-            } else {
-                Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
+                    thread.start();
+                } else {
+                    Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
+                }
             }
         };
         b1.setOnClickListener(v -> {

@@ -153,7 +153,7 @@
     <string name="selectIcon">Select icon</string>
     <string name="discardEntry">Discard entry?</string>
     <string name="discardEntryText">You have some unsaved changes. Do you want to discard them?</string>
-    <string name="failedToAddEntry">Failed to add entry.</string>
+    <string name="failedToAddEntry">Failed to save entry.</string>
     <string name="fillDataErr">Please fill data</string>
     <string name="invalidURLErr">Enter a valid URL, please.</string>
     <string name="strongPassword">Strong password</string>

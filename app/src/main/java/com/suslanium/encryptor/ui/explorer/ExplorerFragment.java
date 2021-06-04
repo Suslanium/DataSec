@@ -593,90 +593,94 @@ public class ExplorerFragment extends Fragment {
         Drawable finalCancelDrawable = cancelDrawable;
         Drawable finalCreateDrawable = createDrawable;
         View.OnClickListener searchListener = v -> {
-            String fileName = ((Explorer) requireActivity()).searchBar.getText().toString();
-            if (!fileName.matches("")) {
-                b1.setEnabled(false);
-                newFolder.setEnabled(false);
-                changeStorage.setEnabled(false);
-                adapter.isSearching = true;
-                if (((Explorer) requireActivity()).searchBar != null) {
-                    t.removeView(((Explorer) requireActivity()).searchBar);
-                    ((Explorer) requireActivity()).searchBar = null;
-                    final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                }
-                Animation fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_out);
-                Animation fadeOut = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in);
-                fadeOut.setDuration(200);
-                fadeIn.setDuration(200);
-                fadeIn.setFillAfter(true);
-                search[0].setText(R.string.searching);
-                fileView.startAnimation(fadeIn);
-                fileView.setEnabled(false);
-                search[0] = requireActivity().findViewById(R.id.searchText);
-                bar[0] = requireActivity().findViewById(R.id.progressBarSearch);
-                search[0].setVisibility(View.VISIBLE);
-                bar[0].setVisibility(View.VISIBLE);
-                search[0].startAnimation(fadeOut);
-                bar[0].startAnimation(fadeOut);
-                String path = viewModel.getPath().getValue();
-                Thread thread = new Thread(() -> {
-                    boolean hasResults = viewModel.searchFile(path, fileName);
-                    while (!fadeOut.hasEnded()) {
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-
-                            Thread.currentThread().interrupt();
-                        }
+            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+                String fileName = ((Explorer) requireActivity()).searchBar.getText().toString();
+                if (!fileName.matches("")) {
+                    ((Explorer) requireActivity()).currentOperationNumber++;
+                    b1.setEnabled(false);
+                    newFolder.setEnabled(false);
+                    changeStorage.setEnabled(false);
+                    adapter.isSearching = true;
+                    if (((Explorer) requireActivity()).searchBar != null) {
+                        t.removeView(((Explorer) requireActivity()).searchBar);
+                        ((Explorer) requireActivity()).searchBar = null;
+                        final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
-                    if (!hasResults) {
-                        requireActivity().runOnUiThread(() -> {
+                    Animation fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_out);
+                    Animation fadeOut = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in);
+                    fadeOut.setDuration(200);
+                    fadeIn.setDuration(200);
+                    fadeIn.setFillAfter(true);
+                    search[0].setText(R.string.searching);
+                    fileView.startAnimation(fadeIn);
+                    fileView.setEnabled(false);
+                    search[0] = requireActivity().findViewById(R.id.searchText);
+                    bar[0] = requireActivity().findViewById(R.id.progressBarSearch);
+                    search[0].setVisibility(View.VISIBLE);
+                    bar[0].setVisibility(View.VISIBLE);
+                    search[0].startAnimation(fadeOut);
+                    bar[0].startAnimation(fadeOut);
+                    String path = viewModel.getPath().getValue();
+                    Thread thread = new Thread(() -> {
+                        boolean hasResults = viewModel.searchFile(path, fileName);
+                        while (!fadeOut.hasEnded()) {
                             try {
-                                fileView.startAnimation(fadeOut);
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        if (!hasResults) {
+                            requireActivity().runOnUiThread(() -> {
+                                try {
+                                    fileView.startAnimation(fadeOut);
+                                    search[0].startAnimation(fadeIn);
+                                    bar[0].startAnimation(fadeIn);
+                                    Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
+                                } catch (Exception e) {
+
+                                }
+                            });
+                        } else {
+                            requireActivity().runOnUiThread(() -> {
                                 search[0].startAnimation(fadeIn);
                                 bar[0].startAnimation(fadeIn);
-                                Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
-                            } catch (Exception e) {
-
-                            }
-                        });
-                    } else {
-                        requireActivity().runOnUiThread(() -> {
-                            search[0].startAnimation(fadeIn);
-                            bar[0].startAnimation(fadeIn);
-                        });
-                    }
-                    while (!fadeIn.hasEnded()) {
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    requireActivity().runOnUiThread(() -> {
-                        search[0].setVisibility(View.INVISIBLE);
-                        bar[0].setVisibility(View.INVISIBLE);
-                        adapter.isSearching = false;
-                        adapter.setSearchEnded();
-                        b1.setEnabled(true);
-                        newFolder.setEnabled(true);
-                        changeStorage.setEnabled(true);
-                        if (hasResults) {
-                            newFolder.setImageDrawable(finalCancelDrawable);
-                            newFolder.setOnClickListener(v13 -> {
-                                File parent = new File(viewModel.getPath().getValue());
-                                updateUI(adapter, fileView, parent);
-                                newFolder.setImageDrawable(finalCreateDrawable);
-                                newFolder.setOnClickListener(newFolderListener);
                             });
                         }
+                        while (!fadeIn.hasEnded()) {
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        ((Explorer) requireActivity()).currentOperationNumber--;
+                        requireActivity().runOnUiThread(() -> {
+                            search[0].setVisibility(View.INVISIBLE);
+                            bar[0].setVisibility(View.INVISIBLE);
+                            adapter.isSearching = false;
+                            adapter.setSearchEnded();
+                            b1.setEnabled(true);
+                            newFolder.setEnabled(true);
+                            changeStorage.setEnabled(true);
+                            if (hasResults) {
+                                newFolder.setImageDrawable(finalCancelDrawable);
+                                newFolder.setOnClickListener(v13 -> {
+                                    File parent = new File(viewModel.getPath().getValue());
+                                    updateUI(adapter, fileView, parent);
+                                    newFolder.setImageDrawable(finalCreateDrawable);
+                                    newFolder.setOnClickListener(newFolderListener);
+                                });
+                            }
+                        });
                     });
-                });
-                thread.start();
-            } else {
-                Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
+                    thread.start();
+                } else {
+                    Snackbar.make(v, R.string.enterFileNameErr, Snackbar.LENGTH_LONG).show();
+                }
             }
         };
         b1.setOnClickListener(v -> {
