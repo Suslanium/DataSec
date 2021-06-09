@@ -19,9 +19,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.biometric.BiometricManager;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -49,6 +52,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 
 public class SettingsFragment extends Fragment {
 
@@ -102,6 +107,15 @@ public class SettingsFragment extends Fragment {
         boolean showLogin = preferences.getBoolean("showLogins", true);
         boolean showPreview = preferences.getBoolean("showPreviews", true);
         boolean showHide = preferences.getBoolean("showHidden", false);
+        boolean canUseBioAuth = false;
+        BiometricManager biometricManager = BiometricManager.from(requireContext());
+        switch (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+            case BiometricManager.BIOMETRIC_SUCCESS:
+                canUseBioAuth = true;
+                break;
+            default:
+                break;
+        }
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch darkTheme = requireActivity().findViewById(R.id.darkTheme);
         Button changePass = requireActivity().findViewById(R.id.changePassword);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch enableAutofill = requireActivity().findViewById(R.id.autofillSwitch);
@@ -110,6 +124,7 @@ public class SettingsFragment extends Fragment {
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showPreviews = requireActivity().findViewById(R.id.previewSwitch);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showLogins = requireActivity().findViewById(R.id.showLoginsSwitch);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch showHidden = requireActivity().findViewById(R.id.hiddenFilesSwitch);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch bioSwitch = requireActivity().findViewById(R.id.biometricSwitch);
         Button backUpDataBase = requireActivity().findViewById(R.id.backUpDatabase);
         Button signOut = requireActivity().findViewById(R.id.signOut);
         Button changeIc = requireActivity().findViewById(R.id.changeIc);
@@ -178,6 +193,79 @@ public class SettingsFragment extends Fragment {
         } else {
             enableAutofill.setText(getString(R.string.enableAutofill) + "(Android 8+)");
             enableAutofill.setEnabled(false);
+        }
+        if(!canUseBioAuth){
+            bioSwitch.setEnabled(false);
+        } else {
+            boolean usesBioAuth = preferences.getBoolean("usesBioAuth", false);
+            if(usesBioAuth){
+                bioSwitch.setChecked(true);
+            }
+            bioSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                                .setTitle(R.string.warning)
+                                .setCancelable(false)
+                                .setMessage(R.string.bioWarning)
+                                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                    SharedPreferences.Editor prefEdit = preferences.edit();
+                                    prefEdit.putBoolean("usesBioAuth", isChecked);
+                                    prefEdit.apply();
+                                    Thread thread = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                String pass = Encryptor.rsadecrypt(((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                                                MasterKey mainKey = new MasterKey.Builder(requireContext())
+                                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                                        .build();
+                                                SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                                SharedPreferences.Editor edit = editor.edit();
+                                                edit.putString("pass", pass);
+                                                edit.apply();
+                                            } catch (Exception e) {
+                                                requireActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        try {
+                                                            Snackbar.make(requireView(), R.string.authEnableFail, Snackbar.LENGTH_LONG).show();
+                                                            bioSwitch.setChecked(false);
+                                                        } catch (Exception e){}
+                                                        prefEdit.putBoolean("usesBioAuth", false);
+                                                        prefEdit.apply();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                    thread.start();
+                                })
+                                .setNegativeButton(R.string.no, (dialog, which) -> {bioSwitch.setChecked(false);dialog.dismiss();});
+                        builder.show();
+                    } else {
+                        SharedPreferences.Editor prefEdit = preferences.edit();
+                        prefEdit.putBoolean("usesBioAuth", isChecked);
+                        prefEdit.apply();
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    MasterKey mainKey = new MasterKey.Builder(requireContext())
+                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                            .build();
+                                    SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                    SharedPreferences.Editor edit = editor.edit();
+                                    edit.remove("pass");
+                                    edit.apply();
+                                } catch (Exception ignored) {}
+                            }
+                        });
+                        thread.start();
+                    }
+                }
+            });
         }
         enableAutofill.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

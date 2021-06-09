@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    tools:context=".GoogleDriveUploadSelector">
+    tools:context=".ui.gdrive.GoogleDriveUploadSelector">
 
     <ImageView
         android:id="@+id/actionBar"

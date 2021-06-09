@@ -50,7 +50,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.Explorer;
-import com.suslanium.encryptor.ExplorerAdapter;
 import com.suslanium.encryptor.R;
 
 import java.io.File;

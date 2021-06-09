@@ -25,12 +25,12 @@
 
     <fragment
         android:id="@+id/nav_notes"
-        android:name="com.suslanium.encryptor.Notebook"
+        android:name="com.suslanium.encryptor.ui.notebook.Notebook"
         android:label="@string/notesMenu"
         tools:layout="@layout/fragment_notebook" />
     <fragment
         android:id="@+id/nav_messagecrypt"
-        android:name="com.suslanium.encryptor.MessageFragment"
+        android:name="com.suslanium.encryptor.ui.messagecrypt.MessageFragment"
         android:label="Messagecrypt"
         tools:layout="@layout/fragment_message" />
     <fragment

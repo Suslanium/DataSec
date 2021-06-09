@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.notebook;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.suslanium.encryptor.R;
 
 import java.util.ArrayList;
 

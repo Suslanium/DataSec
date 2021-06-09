@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.messagecrypt;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -15,19 +15,17 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.R;
 
 public class MessageFragment extends Fragment {
-    //#00B3A4
-    //00FFFFFF
     MessageCryptCollectionAdapter messageCryptCollectionAdapter;
     ViewPager2 viewPager;
     public MessageFragment() {
         // Required empty public constructor
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_message, container, false);
     }
 

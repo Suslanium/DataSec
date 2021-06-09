@@ -1,9 +1,8 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.gdrive;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +17,11 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.api.services.drive.model.File;
+import com.suslanium.encryptor.DriveServiceHelper;
+import com.suslanium.encryptor.EncryptorService;
+import com.suslanium.encryptor.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;

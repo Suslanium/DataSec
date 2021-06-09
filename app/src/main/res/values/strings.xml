@@ -260,4 +260,9 @@
     <string name="enterNote">Please enter note name and text</string>
     <string name="notesMenu">Notes</string>
     <string name="noteInvalidName">Invalid note name</string>
+    <string name="bioAuth">Biometric authentication</string>
+    <string name="authEnableFail">Failed to enable biometric authentication</string>
+    <string name="loginBio">Login using biometric credential</string>
+    <string name="usePass">Use password</string>
+    <string name="bioWarning">In some cases, this function may be insecure. It is recommended to manually enter password. Are you sure you want to enable this feature?</string>
 </resources>

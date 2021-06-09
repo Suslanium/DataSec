@@ -1,8 +1,11 @@
 package com.suslanium.encryptor;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.security.crypto.EncryptedSharedPreferences;
@@ -13,7 +16,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import android.provider.Settings;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
@@ -34,19 +35,23 @@ import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.suslanium.encryptor.ui.welcomescreen.WelcomeActivity;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.Executor;
 
 import static android.view.autofill.AutofillManager.EXTRA_AUTHENTICATION_RESULT;
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 import static com.suslanium.encryptor.EncryptorAutofillService.checkForAppName;
 import static com.suslanium.encryptor.EncryptorAutofillService.generateMaskedPass;
 
 public class PasswordActivity extends AppCompatActivity {
 
     private boolean isAuthActivity = false;
+    private boolean usesBioAuth = false;
 
     @Override
     public void onBackPressed() {}
@@ -62,6 +67,15 @@ public class PasswordActivity extends AppCompatActivity {
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
+        usesBioAuth = preferences.getBoolean("usesBioAuth", false);
+        BiometricManager biometricManager = BiometricManager.from(this);
+        switch (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+            case BiometricManager.BIOMETRIC_SUCCESS:
+                break;
+            default:
+                usesBioAuth = false;
+                break;
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password);
     }
@@ -72,6 +86,48 @@ public class PasswordActivity extends AppCompatActivity {
         TextView bottom = findViewById(R.id.welcomeBottomText);
         Button loginButton = findViewById(R.id.loginButton);
         if(isAuthActivity){ bottom.setText(R.string.enterPassAuth); loginButton.setText(R.string.cont);}
+        if(usesBioAuth){
+            BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(getString(R.string.bioAuth))
+                    .setSubtitle(getString(R.string.loginBio))
+                    .setNegativeButtonText(getString(R.string.usePass))
+                    .build();
+            Executor executor = ContextCompat.getMainExecutor(this);
+            BiometricPrompt biometricPrompt = new BiometricPrompt(PasswordActivity.this,
+                    executor, new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                    super.onAuthenticationError(errorCode, errString);
+                }
+
+                @Override
+                public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                    super.onAuthenticationSucceeded(result);
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    try {
+                        MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                .build();
+                        SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                        String pass = editor.getString("pass", null);
+                        if(pass != null){
+                            login(pass);
+                        } else {
+                            Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e){
+                        Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onAuthenticationFailed() {
+                    super.onAuthenticationFailed();
+                }
+            });
+            biometricPrompt.authenticate(promptInfo);
+        }
     }
 
     public void checkForPermissionsPassword(View v) {
@@ -119,6 +175,8 @@ public class PasswordActivity extends AppCompatActivity {
     }
 
     private void startLogin(){
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         TextInputLayout text = findViewById(R.id.textInputLayout);
         String password = text.getEditText().getText().toString();
         Thread thread = new Thread(() -> {
@@ -138,11 +196,11 @@ public class PasswordActivity extends AppCompatActivity {
                     if (passwordHash.equals(passHash)) {
                         login(password);
                     } else {
-                        runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show());
+                        runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);});
                     }
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show());
+                runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);});
             }
         });
         thread.start();
@@ -150,6 +208,8 @@ public class PasswordActivity extends AppCompatActivity {
 
     private void login(String password) {
         byte[] pass;
+        runOnUiThread(() -> getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE));
         if(!isAuthActivity) {
             try {
                 pass = Encryptor.rsaencrypt(password);

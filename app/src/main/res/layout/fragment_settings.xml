@@ -94,6 +94,16 @@
                 android:textColor="?android:attr/textColor"
                 android:textSize="18sp" />
 
+            <Switch
+                android:id="@+id/biometricSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:fontFamily="@font/ubuntu"
+                android:paddingStart="15dp"
+                android:text="@string/bioAuth"
+                android:textColor="?android:attr/textColor"
+                android:textSize="18sp" />
+
             <Button
                 android:id="@+id/changePassword"
                 android:layout_width="match_parent"

@@ -11,10 +11,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.autofill.AutofillManager;
 
 import androidx.annotation.Nullable;
+import androidx.biometric.BiometricManager;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
@@ -46,10 +46,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 
 public class EncryptorService extends Service {
     private static final String CHANNEL_ID = "Encryptor";
@@ -656,7 +657,18 @@ public class EncryptorService extends Service {
                 break;
             }
             case "changePass": {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                boolean usesBioAuth = preferences.getBoolean("usesBioAuth", false);
+                BiometricManager biometricManager = BiometricManager.from(getBaseContext());
+                switch (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+                    case BiometricManager.BIOMETRIC_SUCCESS:
+                        break;
+                    default:
+                        usesBioAuth = false;
+                        break;
+                }
                 byte[] newPassEnc = intent.getByteArrayExtra("newPass");
+                boolean finalUsesBioAuth = usesBioAuth;
                 Thread thread = new Thread(() -> {
                     File toDownload = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "EncryptorDownloads" + File.separator + "database.db");
                     toDownload.mkdirs();
@@ -730,6 +742,7 @@ public class EncryptorService extends Service {
                                 SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
                                 SharedPreferences.Editor edit = editor.edit();
                                 edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
+                                if(finalUsesBioAuth) edit.putString("pass", newPass);
                                 edit.apply();
                                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
                                     EncryptorAutofillService.pass = newPassEnc;
@@ -769,6 +782,7 @@ public class EncryptorService extends Service {
                             SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
                             SharedPreferences.Editor edit = editor.edit();
                             edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
+                            if(finalUsesBioAuth) edit.putString("pass", newPass);
                             edit.apply();
                         } catch (Exception e){
 

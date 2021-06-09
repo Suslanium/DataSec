@@ -1,10 +1,11 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.welcomescreen;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
+
+import com.suslanium.encryptor.R;
 
 import java.io.BufferedReader;
 import java.io.File;

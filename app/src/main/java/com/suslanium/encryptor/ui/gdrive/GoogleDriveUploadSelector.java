@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.gdrive;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -27,16 +27,15 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.suslanium.encryptor.EncryptorService;
+import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
-
-import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.sortFiles;
 
 public class GoogleDriveUploadSelector extends AppCompatActivity {
     private ArrayList<String> fileList = new ArrayList<>();

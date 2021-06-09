@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.welcomescreen;
 
 import android.os.Bundle;
 
@@ -14,10 +14,8 @@ public class WelcomeActivityAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        // Return a NEW fragment instance in createFragment(int)
         Fragment fragment = new WelcomeActivityFragment();
         Bundle args = new Bundle();
-        // Our object is just an integer :-P
         args.putInt(WelcomeActivityFragment.ARG_OBJECT, position + 1);
         fragment.setArguments(args);
         return fragment;

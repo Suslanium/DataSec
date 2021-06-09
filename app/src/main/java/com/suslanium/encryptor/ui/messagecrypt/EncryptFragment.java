@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.messagecrypt;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
@@ -22,6 +22,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.R;
 
 import java.util.Objects;
 

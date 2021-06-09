@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.explorer;
 
 
 import android.animation.Animator;
@@ -43,8 +43,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
-import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
+import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.EncryptorService;
+import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.R;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -53,15 +55,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
-
-import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.sortFiles;
 
 public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;

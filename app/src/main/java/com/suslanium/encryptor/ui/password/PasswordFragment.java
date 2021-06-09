@@ -36,18 +36,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.Encryptor;
 import com.suslanium.encryptor.Explorer;
-import com.suslanium.encryptor.PasswordAdapter;
 import com.suslanium.encryptor.PasswordEntry;
 import com.suslanium.encryptor.R;
 
-import net.sqlcipher.database.SQLiteDatabase;
-
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;

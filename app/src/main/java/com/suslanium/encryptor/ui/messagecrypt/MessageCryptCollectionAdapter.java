@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui.messagecrypt;
 
 import android.os.Bundle;
 

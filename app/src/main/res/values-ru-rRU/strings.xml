@@ -255,4 +255,9 @@
     <string name="enterNote">Введите название и текст заметки</string>
     <string name="notesMenu">Заметки</string>
     <string name="noteInvalidName">Недопустимое имя заметки</string>
+    <string name="bioAuth">Биометрическая аутентификация</string>
+    <string name="authEnableFail">Не удалось включить биометрическую аутентификацию</string>
+    <string name="loginBio">Войдите, используя биометрические данные</string>
+    <string name="usePass">Использовать пароль</string>
+    <string name="bioWarning">В некоторых случаях эта функция может быть небезопасной. Рекомендуется вводить пароль вручную. Вы уверены, что хотите включить данную функцию?</string>
 </resources>
