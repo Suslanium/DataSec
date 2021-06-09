@@ -130,7 +130,7 @@
     <string name="gb">ГБ</string>
     <string name="tb">ТБ</string>
     <string name="calculating">Вычисление...</string>
-    <string name="items">элементов</string>
+    <string name="items">эл-ов</string>
     <string name="confirmAction">Подтвердите действие</string>
     <string name="uploadSelectorConfirmText">Вы хотите зашифровать и загрузить этот файл?</string>
     <string name="downloadAndDecryptQ">Вы действительно хотите скачать и дешифровать</string>

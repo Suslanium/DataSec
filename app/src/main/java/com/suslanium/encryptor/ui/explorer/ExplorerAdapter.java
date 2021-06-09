@@ -19,6 +19,7 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +35,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
@@ -94,25 +98,35 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private String password = null;
     private Set<String> favorites = new HashSet<>();
     private ExplorerViewModel viewModel;
+    private AsyncLayoutInflater.OnInflateFinishedListener listener;
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
-        private final ImageView fileImage;
-        private final CheckBox fileCheckbox;
-        private final TextView dateView;
-        private final TextView sizeView;
-        private final ImageView isEncrypted;
+        private TextView textView;
+        private ImageView fileImage;
+        private CheckBox fileCheckbox;
+        private TextView dateView;
+        private TextView sizeView;
+        private ImageView isEncrypted;
+        private View parentView;
         public boolean encrypted = false;
         public String realPath;
         public int loadingCount = 0;
 
         public ViewHolder(View view) {
             super(view);
+            parentView = view;
             // Define click listener for the ViewHolder's View
+        }
+
+        public TextView getTextView() {
+            return textView;
+        }
+
+        public void setupHolder(View view) {
             fileImage = view.findViewById(R.id.fileImage);
             Button fileButton = view.findViewById(R.id.fileButton);
             fileCheckbox = view.findViewById(R.id.fileCheckbox);
@@ -251,13 +265,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             if (!isDoingFileOperations) {
                                 CharSequence[] items = null;
                                 if (encrypted) {
-                                    if(!favorites.contains(filePath)) {
+                                    if (!favorites.contains(filePath)) {
                                         items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile), activity.getString(R.string.addToFav)};
                                     } else {
                                         items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile), activity.getString(R.string.rmFromFav)};
                                     }
                                 } else {
-                                    if(!favorites.contains(filePath)) {
+                                    if (!favorites.contains(filePath)) {
                                         items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile), activity.getString(R.string.addToFav)};
                                     } else {
                                         items = new CharSequence[]{activity.getString(R.string.encryptFile), activity.getString(R.string.openFile), activity.getString(R.string.rmFromFav)};
@@ -342,7 +356,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                 }
                                                 break;
                                             case 1:
-                                                if(!encrypted) {
+                                                if (!encrypted) {
                                                     try {
                                                         File file = new File(filePath);
                                                         Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
@@ -357,7 +371,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                     }
                                                 } else {
                                                     File encrypted = new File(filePath);
-                                                    if(encrypted.length() <= 50 * 1024 * 1024) {
+                                                    if (encrypted.length() <= 50 * 1024 * 1024) {
                                                         MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(fragment.requireContext(), R.style.MaterialAlertDialog_rounded);
                                                         ProgressBar bar = new ProgressBar(fragment.requireContext());
                                                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -376,8 +390,8 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                             try {
                                                                 cached.getParentFile().mkdirs();
                                                                 cached.delete();
-                                                                viewModel.decryptTemp(encrypted,cached,activity,alertDialog);
-                                                            } catch (Exception e){
+                                                                viewModel.decryptTemp(encrypted, cached, activity, alertDialog);
+                                                            } catch (Exception e) {
                                                                 e.printStackTrace();
                                                                 cached.delete();
                                                                 activity.runOnUiThread(new Runnable() {
@@ -391,13 +405,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                         });
                                                         thread.start();
                                                     } else {
-                                                        Snackbar.make(v, R.string.fileTooBig,Snackbar.LENGTH_LONG).show();
+                                                        Snackbar.make(v, R.string.fileTooBig, Snackbar.LENGTH_LONG).show();
                                                     }
                                                 }
                                                 break;
                                             case 2:
                                                 SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext()).edit();
-                                                if(favorites.contains(filePath)){
+                                                if (favorites.contains(filePath)) {
                                                     favorites.remove(filePath);
                                                 } else {
                                                     favorites.add(filePath);
@@ -420,10 +434,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 }
             });
             textView = (TextView) view.findViewById(R.id.fileName);
-        }
-
-        public TextView getTextView() {
-            return textView;
         }
 
         public TextView getDateView() {
@@ -454,7 +464,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             fileImage.setAlpha(alpha);
         }
 
-        public void setTint(ColorStateList list){
+        public void setTint(ColorStateList list) {
             fileImage.setImageTintList(list);
         }
     }
@@ -500,7 +510,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         isDoingFileOperations = doingFileOperations;
     }
 
-    public boolean getDoingFileOperations(){
+    public boolean getDoingFileOperations() {
         return isDoingFileOperations;
     }
 
@@ -528,7 +538,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         }
     }
 
-    public boolean getSearchEnded(){
+    public boolean getSearchEnded() {
         return searchEnded;
     }
 
@@ -581,6 +591,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         });
         favorites.addAll(preferences.getStringSet("fav", new HashSet<>()));
         viewModel = model;
+        listener = (view1, resid, parent) -> parent.addView(view1);
     }
 
     // Create new views (invoked by the layout manager)
@@ -588,38 +599,54 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
+        //Log.d("ExplorerAdapter", "onCreateViewHolder();");
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.viewholder_folder, viewGroup, false);
-
+                .inflate(R.layout.viewholder_dummy, viewGroup, false);
+        AsyncLayoutInflater asyncLayoutInflater = new AsyncLayoutInflater(viewGroup.getContext());
+        asyncLayoutInflater.inflate(R.layout.viewholder_explorer, (ViewGroup) view, listener);
         return new ViewHolder(view);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NotNull ViewHolder viewHolder, final int position) {
-        holders.add(viewHolder);
-        viewHolder.setFile(android.R.drawable.list_selector_background);
-        if (!CheckedId.contains(localDataSet.get(position))) {
-            viewHolder.fileCheckbox.setChecked(false);
-        } else {
-            viewHolder.fileCheckbox.setChecked(true);
-        }
-        String name;
-        if (localDataSet.get(position).contains(File.separator)) {
-            name = localDataSet.get(position).substring(localDataSet.get(position).lastIndexOf(File.separator) + 1);
-            viewHolder.getTextView().setText(name);
-            viewHolder.realPath = localDataSet.get(position);
-        } else {
-            name = localDataSet.get(position);
-            viewHolder.getTextView().setText(name);
-            viewHolder.realPath = name;
-        }
-        if (name.startsWith(".")) {
-            viewHolder.setFileImageAlpha(0.5f);
-        } else {
-            viewHolder.setFileImageAlpha(1f);
-        }
         service.submit(() -> {
+            while (viewHolder.parentView.findViewById(R.id.fileName) == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            if (viewHolder.getTextView() == null)
+                activity.runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
+            while (viewHolder.getTextView() == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            holders.add(viewHolder);
+            activity.runOnUiThread(() -> viewHolder.setFile(android.R.drawable.list_selector_background));
+            if (!CheckedId.contains(localDataSet.get(position))) {
+                activity.runOnUiThread(() -> viewHolder.fileCheckbox.setChecked(false));
+            } else {
+                activity.runOnUiThread(() -> viewHolder.fileCheckbox.setChecked(true));
+            }
+            String name;
+            if (localDataSet.get(position).contains(File.separator)) {
+                name = localDataSet.get(position).substring(localDataSet.get(position).lastIndexOf(File.separator) + 1);
+                activity.runOnUiThread(() -> viewHolder.getTextView().setText(name));
+                viewHolder.realPath = localDataSet.get(position);
+            } else {
+                name = localDataSet.get(position);
+                activity.runOnUiThread(() -> viewHolder.getTextView().setText(name));
+                viewHolder.realPath = name;
+            }
+            if (name.startsWith(".")) {
+                activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(0.5f));
+            } else {
+                activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(1f));
+            }
             // Get element from your dataset at this position and replace the
             // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
@@ -717,9 +744,12 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                         thumbnailLoadingCount++;
                         try {
                             Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getPath()), 128, 128);
-                            if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
-                                activity.runOnUiThread(() -> { viewHolder.setTint(null);viewHolder.setBitMap(thumbnail);});
-                            }
+                            activity.runOnUiThread(() -> {
+                                if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
+                                    viewHolder.setTint(null);
+                                    viewHolder.setBitMap(thumbnail);
+                                }
+                            });
                             thumbnailLoadingCount--;
                         } catch (Exception e) {
 
@@ -743,7 +773,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         });
     }
 
-    public void selectAll(){
+    public void selectAll() {
         if (!isDoingFileOperations) {
             if (canSelect) {
                 if (!localDataSet.equals(CheckedId)) {

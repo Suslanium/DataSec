@@ -26,7 +26,7 @@
         <item name="dialogTitleColor">@color/dialogTitleLight</item>
         <item name="bottomBarColor">@color/bottomBarLight</item>
         <item name="titleColor">@color/titleColorLight</item>
-        <item name="colorControlNormal">#FFFFFF</item>
+        <item name="colorControlNormal">#455A64</item>
         <item name="inputColor">@color/navTextDark</item>
         <item name="explorerIconColor">@color/explorerIconsLight</item>
         <item name="android:switchTextAppearance">@style/SwitchTextAppearanceDark</item>
@@ -64,7 +64,7 @@
         <item name="bottomBarColor">@color/bottomBarLight</item>
         <item name="titleColor">@color/titleColorLight</item>
         <item name="colorControlActivated">#607D8B</item>
-        <item name="colorControlNormal">#FFFFFF</item>
+        <item name="colorControlNormal">#455A64</item>
         <item name="inputColor">@color/navTextDark</item>
         <item name="explorerIconColor">@color/explorerIconsLight</item>
         <!-- Secondary brand color. -->

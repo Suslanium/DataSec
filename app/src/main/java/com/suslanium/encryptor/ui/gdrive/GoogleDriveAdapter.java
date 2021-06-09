@@ -3,6 +3,9 @@ package com.suslanium.encryptor.ui.gdrive;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,8 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +27,8 @@ import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.R;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;
@@ -34,24 +41,31 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
     private boolean canSelect = true;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
     private GoogleDriveViewModel viewModel;
+    private AsyncLayoutInflater.OnInflateFinishedListener listener;
+    private ExecutorService service;
+    private ColorStateList defTint;
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
-        private final ImageView fileType;
-        private final CheckBox fileCheckBox;
-        private final TextView fileModDate;
-        private final TextView fileSize;
+        private TextView textView;
+        private ImageView fileType;
+        private CheckBox fileCheckBox;
+        private TextView fileModDate;
+        private TextView fileSize;
         private boolean isFolder = false;
+        private View parentView;
 
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
+            parentView = view;
+        }
+
+        public void setupHolder(View view){
             fileType = (ImageView) view.findViewById(R.id.fileImage);
-            textView = (TextView) view.findViewById(R.id.fileName);
             Button fileButton = (Button) view.findViewById(R.id.fileButton);
             Button checkBoxButton = (Button) view.findViewById(R.id.checkBoxButton);
             fileCheckBox = (CheckBox) view.findViewById(R.id.fileCheckbox);
@@ -141,6 +155,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                     }
                 }
             });
+            textView = (TextView) view.findViewById(R.id.fileName);
         }
 
         public ImageView getFileType() {
@@ -174,6 +189,13 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         recyclerView = view;
         this.mimeTypes = mimeTypes;
         this.viewModel = viewModel;
+        listener = (view1, resid, parent) -> parent.addView(view1);
+        service = Executors.newCachedThreadPool();
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
+        @ColorInt int color = typedValue.data;
+        defTint = ColorStateList.valueOf(color);
     }
 
     // Create new views (invoked by the layout manager)
@@ -181,32 +203,50 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.viewholder_folder, viewGroup, false);
-
+                .inflate(R.layout.viewholder_dummy, viewGroup, false);
+        AsyncLayoutInflater asyncLayoutInflater = new AsyncLayoutInflater(viewGroup.getContext());
+        asyncLayoutInflater.inflate(R.layout.viewholder_explorer, (ViewGroup) view, listener);
         return new ViewHolder(view);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        if (!checkedId.contains(localDataSet.get(position))) {
-            viewHolder.fileCheckBox.setChecked(false);
-        } else {
-            viewHolder.fileCheckBox.setChecked(true);
-        }
-        viewHolder.getFileType().setImageResource(R.drawable.ic_folder);
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        viewHolder.getTextView().setText(localDataSet.get(position));
-        if (!mimeTypes.get(position).equals("application/vnd.google-apps.folder")) {
-            viewHolder.getFileType().setImageResource(R.drawable.ic_file);
-            viewHolder.isFolder = false;
-        } else {
-            viewHolder.isFolder = true;
-        }
-        viewHolder.getFileSize().setVisibility(View.INVISIBLE);
-        viewHolder.getFileModDate().setVisibility(View.INVISIBLE);
-        holders.add(viewHolder);
+        service.submit(() -> {
+            while (viewHolder.parentView.findViewById(R.id.fileName) == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            if (viewHolder.getTextView() == null)  ((GoogleDriveManager) context).runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
+            while (viewHolder.getTextView() == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {}
+            }
+            ((GoogleDriveManager) context).runOnUiThread(() -> {
+                if (!checkedId.contains(localDataSet.get(position))) {
+                    viewHolder.fileCheckBox.setChecked(false);
+                } else {
+                    viewHolder.fileCheckBox.setChecked(true);
+                }
+                viewHolder.getFileType().setImageResource(R.drawable.ic_folder);
+                viewHolder.getFileType().setImageTintList(defTint);
+                // Get element from your dataset at this position and replace the
+                // contents of the view with that element
+                viewHolder.getTextView().setText(localDataSet.get(position));
+                if (!mimeTypes.get(position).equals("application/vnd.google-apps.folder")) {
+                    viewHolder.getFileType().setImageResource(R.drawable.ic_file);
+                    viewHolder.isFolder = false;
+                } else {
+                    viewHolder.isFolder = true;
+                }
+                viewHolder.getFileSize().setVisibility(View.INVISIBLE);
+                viewHolder.getFileModDate().setVisibility(View.INVISIBLE);
+                holders.add(viewHolder);
+            });
+        });
     }
 
     public void setCanSelect(boolean canSelect) {

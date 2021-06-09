@@ -222,7 +222,7 @@ public class PasswordActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
             } catch (Exception ignored) {
-
+                ignored.printStackTrace();
             }
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

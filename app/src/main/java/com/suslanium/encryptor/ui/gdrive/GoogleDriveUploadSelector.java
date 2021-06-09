@@ -78,9 +78,9 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         storagePaths = viewModel.getStoragePaths();
         ListIterator<String> pathIterator = storagePaths.listIterator();
         pathIterator.next();
-        GDriveUploadSelectorAdapter adapter = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, this, viewModel);
-        fileView.setLayoutManager(new LinearLayoutManager(this));
-        fileView.setAdapter(adapter);
+        final GDriveUploadSelectorAdapter[] adapter = {null};
+        //fileView.setLayoutManager(new LinearLayoutManager(this));
+        //fileView.setAdapter(adapter);
         LiveData<double[]> freeSpaces = viewModel.getFreeSpace();
         final Observer<double[]> spaceObserver = new Observer<double[]>() {
             @Override
@@ -116,39 +116,47 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             public void onChanged(ArrayList<String> strings) {
                 fileList.clear();
                 fileList.addAll(strings);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
-                        fadeOut1.setAnimationListener(new Animation.AnimationListener() {
-                            @Override
-                            public void onAnimationStart(Animation animation) {
-                            }
+                if(adapter[0] != null) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
+                            fadeOut1.setAnimationListener(new Animation.AnimationListener() {
+                                @Override
+                                public void onAnimationStart(Animation animation) {
+                                }
 
-                            @Override
-                            public void onAnimationEnd(Animation animation) {
-                                currentOperationNumber = 0;
-                            }
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    currentOperationNumber = 0;
+                                }
 
-                            @Override
-                            public void onAnimationRepeat(Animation animation) {
-                            }
-                        });
-                        fadeOut1.setDuration(200);
-                        adapter.setNewData(viewModel.getPath().getValue(), fileList);
-                        fileView.scrollToPosition(0);
-                        setStoragePath(viewModel.getPath().getValue());
-                        fileView.startAnimation(fadeOut1);
-                    }
-                }, 200);
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+                                }
+                            });
+                            fadeOut1.setDuration(200);
+                            adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
+                            fileView.scrollToPosition(0);
+                            setStoragePath(viewModel.getPath().getValue());
+                            fileView.startAnimation(fadeOut1);
+                        }
+                    }, 200);
+                } else {
+                    adapter[0] = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, GoogleDriveUploadSelector.this, viewModel);
+                    fileView.setLayoutManager(new LinearLayoutManager(GoogleDriveUploadSelector.this));
+                    fileView.setAdapter(adapter[0]);
+                }
             }
         };
         currentNames.observe(this, pathsObserver);
         if(currentNames.getValue() != null && !currentNames.getValue().isEmpty()){
-            fileList.addAll(currentNames.getValue());
-            adapter.setNewData(viewModel.getPath().getValue(), fileList);
-            fileView.scrollToPosition(0);
-            setStoragePath(viewModel.getPath().getValue());
+            if(adapter[0] != null) {
+                fileList.addAll(currentNames.getValue());
+                adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
+                fileView.scrollToPosition(0);
+                setStoragePath(viewModel.getPath().getValue());
+            }
         } else {
             viewModel.getFileNames(new File(viewModel.getPath().getValue()));
         }
@@ -215,7 +223,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         });
         FloatingActionButton upload = findViewById(R.id.gDriveSubmit);
         upload.setOnClickListener(v -> {
-            ArrayList<String> paths13 = adapter.getCheckedFiles();
+            ArrayList<String> paths13 = adapter[0].getCheckedFiles();
             if (!paths13.isEmpty()) {
                 Intent intent = new Intent(GoogleDriveUploadSelector.this, EncryptorService.class);
                 intent.putExtra("actionType", "gDriveE");
@@ -236,7 +244,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 String fileName = layout.getText().toString();
                 if (!fileName.matches("")) {
                     currentOperationNumber++;
-                    adapter.isSearching = true;
+                    adapter[0].isSearching = true;
                     b1.setEnabled(false);
                     layout.setVisibility(View.GONE);
                     title.setVisibility(View.VISIBLE);
@@ -278,7 +286,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                         currentOperationNumber--;
                         runOnUiThread(() -> {
                             b1.setEnabled(true);
-                            adapter.isSearching = false;
+                            adapter[0].isSearching = false;
                             searchEnded = true;
                         });
                     });

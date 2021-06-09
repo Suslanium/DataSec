@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +35,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.explorer.ExplorerAdapter;
 import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
 import java.io.File;
@@ -67,26 +69,33 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private String items = "items";
     private ColorStateList defTint;
     private ExplorerViewModel viewModel;
+    private AsyncLayoutInflater.OnInflateFinishedListener listener;
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
-        private final Button fileButton;
-        private final ImageView fileImage;
-        private final CheckBox fileCheckbox;
-        private final Button checkBoxButton;
-        private final TextView dateView;
-        private final TextView sizeView;
-        private final ImageView isEncrypted;
+        private TextView textView;
+        private Button fileButton;
+        private ImageView fileImage;
+        private CheckBox fileCheckbox;
+        private Button checkBoxButton;
+        private TextView dateView;
+        private TextView sizeView;
+        private ImageView isEncrypted;
         public String realPath;
         public boolean encrypted;
         public int loadingCount = 0;
+        private View parentView;
+
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
+            parentView = view;
+        }
+
+        public void setupHolder(View view) {
             fileImage = (ImageView) view.findViewById(R.id.fileImage);
             fileButton = (Button) view.findViewById(R.id.fileButton);
             fileCheckbox = (CheckBox) view.findViewById(R.id.fileCheckbox);
@@ -240,6 +249,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         @ColorInt int color = typedValue.data;
         defTint = ColorStateList.valueOf(color);
         this.viewModel = viewModel;
+        listener = (view1, resid, parent) -> parent.addView(view1);
     }
 
     // Create new views (invoked by the layout manager)
@@ -247,8 +257,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.viewholder_folder, viewGroup, false);
-
+                .inflate(R.layout.viewholder_dummy, viewGroup, false);
+        AsyncLayoutInflater asyncLayoutInflater = new AsyncLayoutInflater(viewGroup.getContext());
+        asyncLayoutInflater.inflate(R.layout.viewholder_explorer, (ViewGroup) view, listener);
         return new ViewHolder(view);
     }
 
@@ -278,29 +289,43 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        holders.add(viewHolder);
-        viewHolder.setFile(android.R.drawable.list_selector_background);
-        if (!CheckedId.contains(localDataSet.get(position))) {
-            viewHolder.fileCheckbox.setChecked(false);
-        } else {
-            viewHolder.fileCheckbox.setChecked(true);
-        }
-        String name;
-        if (localDataSet.get(position).contains(File.separator)) {
-            name = localDataSet.get(position).substring(localDataSet.get(position).lastIndexOf(File.separator) + 1);
-            viewHolder.getTextView().setText(name);
-            viewHolder.realPath = localDataSet.get(position);
-        } else {
-            name = localDataSet.get(position);
-            viewHolder.getTextView().setText(name);
-            viewHolder.realPath = name;
-        }
-        if (name.startsWith(".")) {
-            viewHolder.setFileImageAlpha(0.5f);
-        } else {
-            viewHolder.setFileImageAlpha(1f);
-        }
         service.submit(() -> {
+            while (viewHolder.parentView.findViewById(R.id.fileName) == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            if (viewHolder.getTextView() == null)
+                activity.runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
+            while (viewHolder.getTextView() == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            holders.add(viewHolder);
+            activity.runOnUiThread(() -> viewHolder.setFile(android.R.drawable.list_selector_background));
+            if (!CheckedId.contains(localDataSet.get(position))) {
+                activity.runOnUiThread(() -> viewHolder.fileCheckbox.setChecked(false));
+            } else {
+                activity.runOnUiThread(() -> viewHolder.fileCheckbox.setChecked(true));
+            }
+            String name;
+            if (localDataSet.get(position).contains(File.separator)) {
+                name = localDataSet.get(position).substring(localDataSet.get(position).lastIndexOf(File.separator) + 1);
+                activity.runOnUiThread(() -> viewHolder.getTextView().setText(name));
+                viewHolder.realPath = localDataSet.get(position);
+            } else {
+                name = localDataSet.get(position);
+                activity.runOnUiThread(() -> viewHolder.getTextView().setText(name));
+                viewHolder.realPath = name;
+            }
+            if (name.startsWith(".")) {
+                activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(0.5f));
+            } else {
+                activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(1f));
+            }
             // Get element from your dataset at this position and replace the
             // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
@@ -398,12 +423,12 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                         thumbnailLoadingCount++;
                         try {
                             Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getPath()), 128, 128);
-                            if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
-                                activity.runOnUiThread(() -> {
+                            activity.runOnUiThread(() -> {
+                                if (viewHolder.getTextView().getText().toString().equals(file.getName())) {
                                     viewHolder.setTint(null);
                                     viewHolder.setBitMap(thumbnail);
-                                });
-                            }
+                                }
+                            });
                             thumbnailLoadingCount--;
                         } catch (Exception e) {
 

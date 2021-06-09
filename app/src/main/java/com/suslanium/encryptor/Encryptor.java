@@ -510,13 +510,13 @@ public final class Encryptor {
             publicKey = kp.getPublic();
             privateKey = kp.getPrivate();
         }
-        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding", "AndroidOpenSSL");
+        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(plain.getBytes());
     }
 
     public static String rsadecrypt(final byte[] encryptedBytes) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding", "AndroidOpenSSL");
+        Cipher cipher = Cipher.getInstance("RSA/None/OAEPWithSHA-1AndMGF1Padding");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
         return new String(decryptedBytes);
