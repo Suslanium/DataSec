@@ -135,11 +135,12 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                                 public void onAnimationRepeat(Animation animation) {
                                 }
                             });
+                            fileView.suppressLayout(false);
                             fadeOut1.setDuration(200);
+                            fileView.startAnimation(fadeOut1);
                             adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
                             fileView.scrollToPosition(0);
                             setStoragePath(viewModel.getPath().getValue());
-                            fileView.startAnimation(fadeOut1);
                         }
                     }, 200);
                 } else {
@@ -264,11 +265,13 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                     ExplorerFragment.fadeOut(search[0]);
                     ExplorerFragment.fadeOut(bar[0]);
                     String path = viewModel.getPath().getValue();
+                    fileView.suppressLayout(true);
                     Thread thread = new Thread(() -> {
                         boolean hasResults = viewModel.searchFile(path, fileName);
                         if (!hasResults) {
                             runOnUiThread(() -> {
                                 try {
+                                    fileView.suppressLayout(false);
                                     fileView.startAnimation(fadeOut);
                                     ExplorerFragment.fadeIn(search[0]);
                                     ExplorerFragment.fadeIn(bar[0]);
@@ -330,6 +333,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             fadeIn1.setDuration(200);
             fadeIn1.setFillAfter(true);
             fileView.startAnimation(fadeIn1);
+            fileView.suppressLayout(true);
             Thread thread1 = new Thread(() -> viewModel.getFileNames(parent));
             thread1.start();
         }

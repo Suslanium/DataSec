@@ -38,14 +38,15 @@ public class ExplorerViewModel extends AndroidViewModel {
     public ExplorerViewModel(@NonNull Application application) {
         super(application);
         paths = new MutableLiveData<>();
+        currentPath = new MutableLiveData<>();
+        freeSpace = new MutableLiveData<>();
+        currentStoragePath = new MutableLiveData<>();
+        currentStorageName = new MutableLiveData<>();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(application.getBaseContext());
         showHiddenFiles = preferences.getBoolean("showHidden", false);
     }
 
     public LiveData<ArrayList<String>> getFileNames(File parent){
-        if(paths == null){
-            paths = new MutableLiveData<>();
-        }
         File[] files2 = parent.listFiles();
         ArrayList<String> paths14 = new ArrayList<>();
         for (int i = 0; i < files2.length; i++) {
@@ -69,22 +70,15 @@ public class ExplorerViewModel extends AndroidViewModel {
     }
 
     public LiveData<ArrayList<String>> getCurrentNames(){
-        if(paths == null){
-            paths = new MutableLiveData<>();
-        }
         return paths;
     }
 
     public void setPath(File parent){
-        if(currentPath == null){
-            currentPath = new MutableLiveData<>();
-        }
         currentPath.postValue(parent.getPath());
     }
 
     public LiveData<String> getPath(){
-        if(currentPath == null){
-            currentPath = new MutableLiveData<>();
+        if(currentPath.getValue() == null){
             File internalStorageDir = Environment.getExternalStorageDirectory();
             try {
                 currentPath.setValue(internalStorageDir.getPath());
@@ -117,15 +111,13 @@ public class ExplorerViewModel extends AndroidViewModel {
     }
 
     public LiveData<String> getCurrentStorageName(){
-        if(currentStorageName == null){
-            currentStorageName = new MutableLiveData<>();
+        if(currentStorageName.getValue() == null){
             currentStorageName.setValue(getApplication().getBaseContext().getString(R.string.intStorage));
         }
         return currentStorageName;
     }
     public LiveData<String> getCurrentStoragePath(){
-        if(currentStoragePath == null){
-            currentStoragePath = new MutableLiveData<>();
+        if(currentStoragePath.getValue() == null){
             currentStoragePath.setValue(Environment.getExternalStorageDirectory().getPath());
         }
         return currentStoragePath;
@@ -184,7 +176,6 @@ public class ExplorerViewModel extends AndroidViewModel {
     }
 
     public LiveData<double[]> calculateFreeSpace(String path){
-        if(freeSpace == null)freeSpace = new MutableLiveData<>();
         StatFs fs = new StatFs(path);
         double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
         int spaceDivisonCount = 0;
@@ -197,7 +188,6 @@ public class ExplorerViewModel extends AndroidViewModel {
         return this.freeSpace;
     }
     public LiveData<double[]> getFreeSpace(){
-        if(freeSpace == null)freeSpace = new MutableLiveData<>();
         return freeSpace;
     }
     public ArrayList<String> constructFilePaths(ArrayList<String> paths) {

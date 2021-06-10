@@ -110,7 +110,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         private CheckBox fileCheckbox;
         private TextView dateView;
         private TextView sizeView;
-        private ImageView isEncrypted;
         private View parentView;
         public boolean encrypted = false;
         public String realPath;
@@ -133,7 +132,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             Button checkBoxButton = view.findViewById(R.id.checkBoxButton);
             dateView = view.findViewById(R.id.modDate);
             sizeView = view.findViewById(R.id.fileSize);
-            isEncrypted = view.findViewById(R.id.isEncrypted);
             checkBoxButton.setOnClickListener(v -> {
                 String filePath = path + File.separator + realPath;
                 if (!deletedFilePaths.contains(filePath)) {
@@ -243,12 +241,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                     fadeIn.setDuration(200);
                                     fadeIn.setFillAfter(true);
                                     recyclerView.startAnimation(fadeIn);
+                                    recyclerView.suppressLayout(true);
                                     Thread thread = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
                                             viewModel.getFileNames(new File(filePath));
                                             if (searchEnded) {
-                                                fragment.cancelSearch();
+                                                activity.runOnUiThread(()->fragment.cancelSearch());
                                                 searchEnded = false;
                                             }
                                             if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
@@ -442,10 +441,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
 
         public TextView getSizeView() {
             return sizeView;
-        }
-
-        public ImageView getIsEncrypted() {
-            return isEncrypted;
         }
 
         public void setFile(int id) {
@@ -653,17 +648,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             long lastModified = file.lastModified();
             date.setTime(lastModified);
             String formattedDate = format.format(date);
-            activity.runOnUiThread(() -> viewHolder.getDateView().setText(formattedDate));
+            activity.runOnUiThread(() -> {if (viewHolder.getTextView().getText().toString().equals(file.getName()))viewHolder.getDateView().setText(formattedDate);});
             if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
-                activity.runOnUiThread(() -> {
-                    viewHolder.getIsEncrypted().setVisibility(View.VISIBLE);
-                    viewHolder.encrypted = true;
-                });
+                viewHolder.encrypted = true;
             } else {
-                activity.runOnUiThread(() -> {
-                    viewHolder.getIsEncrypted().setVisibility(View.INVISIBLE);
-                    viewHolder.encrypted = false;
-                });
+                viewHolder.encrypted = false;
             }
             if (file.isFile()) {
                 Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
@@ -691,7 +680,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     } else if (type.contains("rar") || type.contains("zip") || type.contains("7z")) {
                         viewHolder.setFile(R.drawable.zipfile);
                     } else {
-                        viewHolder.setFile(R.drawable.ic_file);
+                        if (viewHolder.encrypted) {
+                            viewHolder.setFile(R.drawable.encfile);
+                        } else {
+                            viewHolder.setFile(R.drawable.ic_file);
+                        }
                     }
                 });
                 double length = file.length();
@@ -762,7 +755,11 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                 final int loadingNum = viewHolder.loadingCount;
                 activity.runOnUiThread(() -> {
                     viewHolder.setTint(defTint);
-                    viewHolder.setFile(R.drawable.ic_folder);
+                    if(viewHolder.encrypted){
+                        viewHolder.setFile(R.drawable.encfolder);
+                    } else {
+                        viewHolder.setFile(R.drawable.ic_folder);
+                    }
                     viewHolder.getSizeView().setText(Calc);
                 });
                 int itemCount = file.list() != null ? file.list().length : 0;

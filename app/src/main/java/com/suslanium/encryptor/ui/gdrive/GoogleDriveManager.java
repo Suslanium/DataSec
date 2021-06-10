@@ -168,6 +168,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                 fadeIn.setDuration(200);
                 fadeIn.setFillAfter(true);
                 recyclerView.startAnimation(fadeIn);
+                recyclerView.suppressLayout(true);
                 try {
                     viewModel.listFilesInFolder(null, true, false, null);
                 } catch (Exception e) {
@@ -205,8 +206,8 @@ public class GoogleDriveManager extends AppCompatActivity {
                                 recyclerView.setAdapter(adapter);
                                 currentOperationNumber = 0;
                             } else {
+                                recyclerView.suppressLayout(false);
                                 recyclerView.stopScroll();
-                                adapter.setNewData(arrayLists[0], arrayLists[1], arrayLists[2]);
                                 Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_in_left);
                                 fadeOut.setDuration(200);
                                 fadeOut.setAnimationListener(new Animation.AnimationListener() {
@@ -224,6 +225,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                                     }
                                 });
                                 recyclerView.startAnimation(fadeOut);
+                                adapter.setNewData(arrayLists[0], arrayLists[1], arrayLists[2]);
                             }
                             checkFileBar();
                             recyclerView.scrollToPosition(0);
@@ -253,6 +255,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                             fadeIn.setDuration(200);
                             fadeIn.setFillAfter(true);
                             recyclerView.startAnimation(fadeIn);
+                            recyclerView.suppressLayout(true);
                         });
                         updateUI(true);
                     } else {
@@ -342,52 +345,55 @@ public class GoogleDriveManager extends AppCompatActivity {
         });
         newFolder = findViewById(R.id.gDriveNewFolder);
         newFolder.setOnClickListener(v -> {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(GoogleDriveManager.this, R.style.MaterialAlertDialog_rounded)
-                    .setTitle(R.string.createFolder)
-                    .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
-            final EditText input = new EditText(GoogleDriveManager.this);
-            Typeface ubuntu = ResourcesCompat.getFont(GoogleDriveManager.this, R.font.ubuntu);
-            input.setTypeface(ubuntu);
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-            builder.setPositiveButton(R.string.create, (dialog, which) -> {
-                String name = input.getText().toString();
-                if (!name.equals("") && !name.contains(".")) {
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            switch (viewModel.createFolder(name)) {
-                                case 0:
-                                    if (recyclerView != null && adapter != null) {
-                                        if (currentOperationNumber == 0) {
-                                            runOnUiThread(() -> {
-                                                recyclerView.stopScroll();
-                                                Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
-                                                fadeIn.setDuration(200);
-                                                fadeIn.setFillAfter(true);
-                                                recyclerView.startAnimation(fadeIn);
-                                            });
-                                            updateUI(false);
+            if (currentOperationNumber == 0) {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(GoogleDriveManager.this, R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.createFolder)
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
+                final EditText input = new EditText(GoogleDriveManager.this);
+                Typeface ubuntu = ResourcesCompat.getFont(GoogleDriveManager.this, R.font.ubuntu);
+                input.setTypeface(ubuntu);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+                builder.setPositiveButton(R.string.create, (dialog, which) -> {
+                    String name = input.getText().toString();
+                    if (!name.equals("") && !name.contains(".")) {
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (viewModel.createFolder(name)) {
+                                    case 0:
+                                        if (recyclerView != null && adapter != null) {
+                                            if (currentOperationNumber == 0) {
+                                                runOnUiThread(() -> {
+                                                    recyclerView.stopScroll();
+                                                    Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
+                                                    fadeIn.setDuration(200);
+                                                    fadeIn.setFillAfter(true);
+                                                    recyclerView.startAnimation(fadeIn);
+                                                    recyclerView.suppressLayout(true);
+                                                });
+                                                updateUI(false);
+                                            }
                                         }
-                                    }
-                                    break;
-                                case 1:
-                                    runOnUiThread(() -> Snackbar.make(v, R.string.failedToCreateG, Snackbar.LENGTH_LONG).show());
-                                    break;
-                                case 2:
-                                    runOnUiThread(() -> Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
-                                    break;
-                                default:
-                                    break;
+                                        break;
+                                    case 1:
+                                        runOnUiThread(() -> Snackbar.make(v, R.string.failedToCreateG, Snackbar.LENGTH_LONG).show());
+                                        break;
+                                    case 2:
+                                        runOnUiThread(() -> Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
-                        }
-                    });
-                    thread.start();
-                } else {
-                    Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
-                }
-            });
-            builder.show();
+                        });
+                        thread.start();
+                    } else {
+                        Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
+                    }
+                });
+                builder.show();
+            }
         });
         upload = findViewById(R.id.gDriveUpload);
         upload.setOnClickListener(v -> {
@@ -445,8 +451,7 @@ public class GoogleDriveManager extends AppCompatActivity {
                 runOnUiThread(() -> {
                     constructAndSetPath();
                 });
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         });
         thread.start();
     }

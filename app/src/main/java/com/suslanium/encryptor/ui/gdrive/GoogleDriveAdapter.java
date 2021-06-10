@@ -139,6 +139,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                 holders.clear();
                                 checkedId.clear();
                                 ((GoogleDriveManager) context).checkFileBar();
+                                recyclerView.suppressLayout(true);
                                 Thread thread = new Thread(() -> {
                                     try {
                                         viewModel.listFilesInFolder(id,false,true,name);

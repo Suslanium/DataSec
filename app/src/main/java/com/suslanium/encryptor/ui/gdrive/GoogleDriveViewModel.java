@@ -42,6 +42,8 @@ public class GoogleDriveViewModel extends AndroidViewModel {
     int RCAUTHORIZEDRIVE = 1;
     public GoogleDriveViewModel(@NonNull Application application) {
         super(application);
+        names = new MutableLiveData<>();
+        currentFolderID = new MutableLiveData<>();
     }
 
     public boolean setDrive(){
@@ -114,8 +116,6 @@ public class GoogleDriveViewModel extends AndroidViewModel {
                 folders.add(folderName);
                 prevLists.put(prevLists.size(), names);
             }
-            if (this.names == null) this.names = new MutableLiveData<>();
-            if (this.currentFolderID == null) this.currentFolderID = new MutableLiveData<>();
             this.currentFolderID.postValue(currentFolderID);
             this.names.postValue(names);
             return this.names;
@@ -135,12 +135,10 @@ public class GoogleDriveViewModel extends AndroidViewModel {
     }
 
     protected LiveData<ArrayList<String>[]> getFileList(){
-        if(names == null)names = new MutableLiveData<>();
         return names;
     }
 
     protected LiveData<String> getCurrentFolderID(){
-        if(currentFolderID == null)currentFolderID = new MutableLiveData<>();
         return currentFolderID;
     }
 

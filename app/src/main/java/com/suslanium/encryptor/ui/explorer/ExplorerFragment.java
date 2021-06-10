@@ -222,11 +222,12 @@ public class ExplorerFragment extends Fragment {
                                 public void onAnimationRepeat(Animation animation) {
                                 }
                             });
+                            fileView.suppressLayout(false);
                             fadeOut1.setDuration(200);
+                            fileView.startAnimation(fadeOut1);
                             adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
                             fileView.scrollToPosition(0);
                             setStoragePath(viewModel.getPath().getValue());
-                            fileView.startAnimation(fadeOut1);
                         }
                     }, 200);
                 } else {
@@ -637,6 +638,7 @@ public class ExplorerFragment extends Fragment {
                     search[0].startAnimation(fadeOut);
                     bar[0].startAnimation(fadeOut);
                     String path = viewModel.getPath().getValue();
+                    fileView.suppressLayout(true);
                     Thread thread = new Thread(() -> {
                         boolean hasResults = viewModel.searchFile(path, fileName);
                         while (!fadeOut.hasEnded()) {
@@ -650,6 +652,7 @@ public class ExplorerFragment extends Fragment {
                         if (!hasResults) {
                             requireActivity().runOnUiThread(() -> {
                                 try {
+                                    fileView.suppressLayout(false);
                                     fileView.startAnimation(fadeOut);
                                     search[0].startAnimation(fadeIn);
                                     bar[0].startAnimation(fadeIn);
@@ -743,6 +746,7 @@ public class ExplorerFragment extends Fragment {
             fadeIn1.setDuration(200);
             fadeIn1.setFillAfter(true);
             fileView.startAnimation(fadeIn1);
+            fileView.suppressLayout(true);
             Thread thread1 = new Thread(() -> {
                 viewModel.getFileNames(parent);
             });

@@ -70,19 +70,9 @@
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
-            app:srcCompat="@android:drawable/list_selector_background"
+            app:srcCompat="@drawable/transp"
             app:tint="?attr/explorerIconColor" />
     </androidx.cardview.widget.CardView>
-
-    <ImageView
-        android:id="@+id/isEncrypted"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/ic_baseline_lock_24"
-        app:tint="?attr/colorSurface"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="35dp"/>
 
     <TextView
         android:id="@+id/fileSize"
