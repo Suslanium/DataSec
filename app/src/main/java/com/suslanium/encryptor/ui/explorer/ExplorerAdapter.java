@@ -73,8 +73,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private Activity activity;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
     private ArrayList<String> CheckedId = new ArrayList<>();
-    private SimpleDateFormat format;
-    private Date date;
     public boolean isSearching = false;
     private int thumbnailLoadingCount = 0;
     private ExecutorService service;
@@ -557,9 +555,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         this.path = path;
         recyclerView = view;
         this.activity = activity;
-        format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        format.setTimeZone(TimeZone.getDefault());
-        date = new Date();
         service = Executors.newCachedThreadPool();
         this.bottomBar = bottomBar;
         this.fragment = fragment;
@@ -646,8 +641,9 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
             long lastModified = file.lastModified();
-            date.setTime(lastModified);
-            String formattedDate = format.format(date);
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            format.setTimeZone(TimeZone.getDefault());
+            String formattedDate = format.format(new Date(lastModified));
             activity.runOnUiThread(() -> {if (viewHolder.getTextView().getText().toString().equals(file.getName()))viewHolder.getDateView().setText(formattedDate);});
             if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
                 viewHolder.encrypted = true;

@@ -46,7 +46,6 @@ import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 
 public class PasswordFragment extends Fragment {
-    private boolean isOnResume = false;
     private Intent intent2 = null;
     private ProgressBar searchProgress;
     private TextView searchText;
@@ -79,7 +78,7 @@ public class PasswordFragment extends Fragment {
         super.onDestroyView();
     }
 
-    public void setCategory(String category){
+    public void setCategory(String category) {
         viewModel.setCurrentCategory(category);
         updateView(requireView());
     }
@@ -97,8 +96,9 @@ public class PasswordFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ((Explorer) requireActivity()).passwordVaultVisible = true;
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if(((Explorer) requireActivity()).searchButton != null)t.removeView(((Explorer) requireActivity()).searchButton);
-        if(((Explorer) requireActivity()).searchBar != null) {
+        if (((Explorer) requireActivity()).searchButton != null)
+            t.removeView(((Explorer) requireActivity()).searchButton);
+        if (((Explorer) requireActivity()).searchBar != null) {
             t.removeView(((Explorer) requireActivity()).searchBar);
             ((Explorer) requireActivity()).searchBar = null;
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -113,8 +113,8 @@ public class PasswordFragment extends Fragment {
         }
         b1.setImageDrawable(drawable);
         b1.setBackgroundColor(Color.parseColor("#00000000"));
-        Toolbar.LayoutParams l3=new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
-        l3.gravity= Gravity.END;
+        Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
+        l3.gravity = Gravity.END;
         b1.setLayoutParams(l3);
         ((Explorer) requireActivity()).searchButton = b1;
         t.addView(b1);
@@ -130,7 +130,7 @@ public class PasswordFragment extends Fragment {
         }
         View.OnClickListener searchListener = v -> {
             String searchQuery = ((Explorer) requireActivity()).searchBar.getText().toString();
-            if(!searchQuery.matches("")){
+            if (!searchQuery.matches("")) {
                 b1.setEnabled(false);
                 viewModel.setCurrentSearchQuery(searchQuery);
                 updateView(v);
@@ -146,7 +146,7 @@ public class PasswordFragment extends Fragment {
         };
         fab = requireView().findViewById(R.id.addData);
         b1.setOnClickListener(v -> {
-            if(((Explorer) requireActivity()).searchBar == null) {
+            if (((Explorer) requireActivity()).searchBar == null) {
                 EditText layout = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
                 layout.setTypeface(ubuntu);
@@ -160,7 +160,7 @@ public class PasswordFragment extends Fragment {
                 layout.setFocusableInTouchMode(true);
                 layout.requestFocus();
                 layout.setOnKeyListener((v1, keyCode, event) -> {
-                    if(event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                         searchListener.onClick(v);
                         return true;
                     }
@@ -196,11 +196,10 @@ public class PasswordFragment extends Fragment {
         final Observer<ArrayList<Integer>> idObserver = new Observer<ArrayList<Integer>>() {
             @Override
             public void onChanged(ArrayList<Integer> integers) {
-                onThreadDone(viewModel.getNames().getValue(),integers, viewModel.getLogins().getValue(), viewModel.getIcons().getValue());
+                onThreadDone(viewModel.getNames().getValue(), integers, viewModel.getLogins().getValue(), viewModel.getIcons().getValue());
             }
         };
-        ids.observe(getViewLifecycleOwner(),idObserver);
-        updateView(view);
+        ids.observe(getViewLifecycleOwner(), idObserver);
         newCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -216,13 +215,13 @@ public class PasswordFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String name = input.getText().toString();
-                                if(!name.matches("")){
+                                if (!name.matches("")) {
                                     Thread thread = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
                                             try {
                                                 boolean created = viewModel.createCategory(name);
-                                                if(created){
+                                                if (created) {
                                                     requireActivity().runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
@@ -233,7 +232,7 @@ public class PasswordFragment extends Fragment {
                                                     requireActivity().runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
-                                                            Snackbar.make(v,R.string.catExists, Snackbar.LENGTH_LONG);
+                                                            Snackbar.make(v, R.string.catExists, Snackbar.LENGTH_LONG);
                                                         }
                                                     });
                                                 }
@@ -244,22 +243,23 @@ public class PasswordFragment extends Fragment {
                                     });
                                     thread.start();
                                 } else {
-                                    Snackbar.make(v,R.string.enterCatName, Snackbar.LENGTH_LONG);
+                                    Snackbar.make(v, R.string.enterCatName, Snackbar.LENGTH_LONG);
                                 }
                             }
                         })
-                        .setNegativeButton(R.string.cancel, (dialog, which) -> { });
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                        });
                 builder.show();
             }
         });
     }
 
-    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins, ArrayList<Bitmap> icons){
+    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins, ArrayList<Bitmap> icons) {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        if(adapter == null) {
-            adapter = new PasswordAdapter(strings2, id,logins,viewModel.getCategories().getValue(), intent2, requireActivity(), this);
+        if (adapter == null) {
+            adapter = new PasswordAdapter(strings2, id, logins, viewModel.getCategories().getValue(), intent2, requireActivity(), this);
         } else {
-            adapter.setNewData(strings2, id,logins,viewModel.getCategories().getValue());
+            adapter.setNewData(strings2, id, logins, viewModel.getCategories().getValue());
         }
         adapter.setIcons(icons);
         recyclerView.setAdapter(adapter);
@@ -267,7 +267,7 @@ public class PasswordFragment extends Fragment {
             fadeIn(searchProgress);
             fadeIn(searchText);
             fadeOut(recyclerView);
-            if(viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
+            if (viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
                 b1.setEnabled(true);
                 fab.setOnClickListener(cancelSearchListener);
                 fab.setImageDrawable(cancelDrawable);
@@ -276,13 +276,13 @@ public class PasswordFragment extends Fragment {
         });
     }
 
-    public void backPress(){
-        if(viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")){
+    public void backPress() {
+        if (viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
             fab.setImageDrawable(createDrawable);
             viewModel.setCurrentSearchQuery("");
             updateView(requireView());
             fab.setOnClickListener(addDataListener);
-        } else if(viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")){
+        } else if (viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")) {
             viewModel.setCurrentCategory(null);
             updateView(requireView());
         }
@@ -291,15 +291,10 @@ public class PasswordFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(isOnResume) {
-            updateView(requireView());
-        }
-        else {
-            isOnResume = true;
-        }
+        updateView(requireView());
     }
 
-    private void updateView(View view){
+    private void updateView(View view) {
         fadeIn(recyclerView);
         fadeOut(searchProgress);
         fadeOut(searchText);
@@ -308,7 +303,7 @@ public class PasswordFragment extends Fragment {
         Thread thread = new Thread(() -> {
             try {
                 boolean b = viewModel.updateList();
-                if(b){
+                if (b) {
                     requireActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -316,7 +311,7 @@ public class PasswordFragment extends Fragment {
                         }
                     });
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
                 e.printStackTrace();
             }
@@ -324,7 +319,7 @@ public class PasswordFragment extends Fragment {
         thread.start();
     }
 
-    public String getCurrentCategory(){
+    public String getCurrentCategory() {
         return viewModel.getCurrentCategory().getValue();
     }
 }

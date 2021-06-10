@@ -54,8 +54,6 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private Activity activity;
     private ArrayList<ViewHolder> holders = new ArrayList<>();
     private ArrayList<String> CheckedId = new ArrayList<>();
-    private SimpleDateFormat format;
-    private Date date;
     private int thumbnailLoadingCount = 0;
     private ExecutorService service;
     public boolean isSearching = false;
@@ -226,9 +224,6 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         Recview = view;
         this.activity = activity;
         service = Executors.newCachedThreadPool();
-        format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        format.setTimeZone(TimeZone.getDefault());
-        date = new Date();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
         showPreviews = preferences.getBoolean("showPreviews", true);
         B = activity.getString(R.string.b);
@@ -325,8 +320,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
             // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
             long lastModified = file.lastModified();
-            date.setTime(lastModified);
-            String formattedDate = format.format(date);
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            format.setTimeZone(TimeZone.getDefault());
+            String formattedDate = format.format(new Date(lastModified));
             activity.runOnUiThread(() -> {if (viewHolder.getTextView().getText().toString().equals(file.getName()))viewHolder.getDateView().setText(formattedDate);});
             if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
                 viewHolder.encrypted = true;
