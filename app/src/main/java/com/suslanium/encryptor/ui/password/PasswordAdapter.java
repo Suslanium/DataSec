@@ -1,17 +1,21 @@
 package com.suslanium.encryptor.ui.password;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,8 +23,10 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.suslanium.encryptor.PasswordEntry;
 import com.suslanium.encryptor.R;
 
@@ -30,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 
 public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHolder> {
 
@@ -49,7 +58,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;
         private boolean isCategory = false;
         protected int id = 0;
@@ -78,6 +87,56 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                 } else {
                     fragment.setCategory(textView.getText().toString());
                 }
+            });
+            view.setOnLongClickListener(v -> {
+                if(isCategory){
+                    final EditText input = new EditText(fragment.requireContext());
+                    Typeface ubuntu = ResourcesCompat.getFont(fragment.requireContext(), R.font.ubuntu);
+                    input.setTypeface(ubuntu);
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    input.setSingleLine(true);
+                    input.setText(textView.getText().toString());
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fragment.requireContext(),R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.renameCategory)
+                            .setView(input)
+                            .setPositiveButton(R.string.rename, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if(fragment.currentOperationNumber == 0) {
+                                        fragment.currentOperationNumber++;
+                                        fadeIn(fragment.recyclerView);
+                                        fadeOut(fragment.searchProgress);
+                                        fadeOut(fragment.searchText);
+                                        fragment.fab.setEnabled(false);
+                                        fragment.newCategory.setEnabled(false);
+                                        fragment.viewModel.renameCategory(textView.getText().toString(), input.getText().toString());
+                                    }
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if(fragment.currentOperationNumber == 0) {
+                                        fragment.currentOperationNumber++;
+                                        fadeIn(fragment.recyclerView);
+                                        fadeOut(fragment.searchProgress);
+                                        fadeOut(fragment.searchText);
+                                        fragment.fab.setEnabled(false);
+                                        fragment.newCategory.setEnabled(false);
+                                        fragment.viewModel.deleteCategory(textView.getText().toString());
+                                    }
+                                }
+                            });
+                    builder.show();
+                    return true;
+                }
+                return false;
             });
             textView = view.findViewById(R.id.serviceName);
         }

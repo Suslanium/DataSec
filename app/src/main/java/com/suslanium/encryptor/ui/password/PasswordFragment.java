@@ -48,19 +48,19 @@ import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
 
 public class PasswordFragment extends Fragment {
     private Intent intent2 = null;
-    private ProgressBar searchProgress;
-    private TextView searchText;
-    private RecyclerView recyclerView;
+    protected ProgressBar searchProgress;
+    protected TextView searchText;
+    protected RecyclerView recyclerView;
     private View.OnClickListener addDataListener;
     private View.OnClickListener cancelSearchListener;
     private Drawable createDrawable;
     private Drawable cancelDrawable;
     private ImageButton b1;
-    private FloatingActionButton fab;
+    protected FloatingActionButton fab;
     private PasswordAdapter adapter = null;
-    private FloatingActionButton newCategory;
-    private PasswordViewModel viewModel;
-    private int currentOperationNumber = 0;
+    protected FloatingActionButton newCategory;
+    protected PasswordViewModel viewModel;
+    protected int currentOperationNumber = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

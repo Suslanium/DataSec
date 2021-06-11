@@ -77,7 +77,6 @@ public final class Encryptor {
             byteBuffer.put(encrypted);
             return byteBuffer.array();
         } catch (Exception e) {
-
             throw new RuntimeException(e);
         }
     }
@@ -215,10 +214,16 @@ public final class Encryptor {
                 for (int i = 0; i < filesInFolder.length; i++) {
                     if (filesInFolder[i].isFile()) {
                         encryptFileAES256(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + ".enc"));
-                        if (autoDelete){ wipeFile(filesInFolder[i]);filesInFolder[i].delete();}
+                        if (autoDelete) {
+                            wipeFile(filesInFolder[i]);
+                            filesInFolder[i].delete();
+                        }
                     } else if (filesInFolder[i].isDirectory()) {
                         encryptFolderAESGCM(filesInFolder[i], password, new File(folderToSave.getPath() + File.separator + filesInFolder[i].getName() + "Enc"), context);
-                        if (autoDelete) { wipeFile(filesInFolder[i]);filesInFolder[i].delete();}
+                        if (autoDelete) {
+                            wipeFile(filesInFolder[i]);
+                            filesInFolder[i].delete();
+                        }
                     }
                 }
             }
@@ -441,6 +446,34 @@ public final class Encryptor {
         return result;
     }
 
+    public static void deleteCategory(SQLiteDatabase database, String name) {
+        Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
+        if (cursor.moveToFirst()) {
+            do {
+                if (cursor.getInt(8) == 1) {
+                    if (cursor.getString(7).equals(name)) {
+                        deleteDataFromPasswordTable(database, cursor.getInt(0));
+                    }
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
+    public static void renameCategory(SQLiteDatabase database, String oldName, String newName) {
+        Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
+        if (cursor.moveToFirst()) {
+            do {
+                if (cursor.getString(7) != null && cursor.getString(7).equals(oldName)) {
+                    if (cursor.getInt(8) == 0) {
+                        updateDataIntoPasswordTable(database, cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4), cursor.getString(5), cursor.getString(6), newName);
+                    }
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
     public static HashMap<Integer, byte[]> readPasswordIcons(SQLiteDatabase database) {
         HashMap<Integer, byte[]> table = new HashMap<>();
         Cursor cursor = database.rawQuery("SELECT * FROM passwordTable", null);
@@ -525,13 +558,13 @@ public final class Encryptor {
     public static void wipeFile(File file) {
         if (file.exists() && file.isFile()) {
             long length = file.length();
-            if(length >= 4096){
+            if (length >= 4096) {
                 length = 4096;
             }
-            try (FileOutputStream stream = new FileOutputStream(file,false)){
-                byte[] emptyData = new byte[(int)length];
+            try (FileOutputStream stream = new FileOutputStream(file, false)) {
+                byte[] emptyData = new byte[(int) length];
                 stream.write(emptyData);
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

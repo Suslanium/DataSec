@@ -260,4 +260,5 @@
     <string name="loginBio">Войдите, используя биометрические данные</string>
     <string name="usePass">Использовать пароль</string>
     <string name="bioWarning">В некоторых случаях эта функция может быть небезопасной. Рекомендуется вводить пароль вручную. Вы уверены, что хотите включить данную функцию?</string>
+    <string name="renameCategory">Переименовать категорию</string>
 </resources>

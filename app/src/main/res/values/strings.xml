@@ -265,4 +265,5 @@
     <string name="loginBio">Login using biometric credential</string>
     <string name="usePass">Use password</string>
     <string name="bioWarning">In some cases, this function may be insecure. It is recommended to manually enter password. Are you sure you want to enable this feature?</string>
+    <string name="renameCategory">Rename category</string>
 </resources>

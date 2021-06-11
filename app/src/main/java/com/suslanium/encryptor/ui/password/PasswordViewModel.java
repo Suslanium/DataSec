@@ -14,6 +14,7 @@ import com.suslanium.encryptor.Encryptor;
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.nio.ByteBuffer;
+import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -159,9 +160,59 @@ public class PasswordViewModel extends AndroidViewModel {
         ArrayList<String> categories = Encryptor.getCategories(database);
         if (!categories.contains(name)) {
             Encryptor.createCategoryStub(database, name);
+            Encryptor.closeDataBase(database);
             return true;
         } else {
+            Encryptor.closeDataBase(database);
             return false;
         }
+    }
+
+    protected void renameCategory(String oldName,String newName){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(!oldName.equals(newName)) {
+                        byte[] pass = intent.getByteArrayExtra("pass");
+                        String password = Encryptor.rsadecrypt(pass);
+                        SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
+                        Encryptor.deleteCategory(database, oldName);
+                        if(!Encryptor.getCategories(database).contains(newName)) Encryptor.createCategoryStub(database, newName);
+                        Encryptor.renameCategory(database, oldName, newName);
+                        Encryptor.closeDataBase(database);
+                    }
+                } catch (Exception ignored){
+                } finally {
+                    try {
+                        updateList();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        });
+        thread.start();
+    }
+
+    protected void deleteCategory(String name){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    byte[] pass = intent.getByteArrayExtra("pass");
+                    String password = Encryptor.rsadecrypt(pass);
+                    SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
+                    Encryptor.deleteCategory(database, name);
+                    Encryptor.closeDataBase(database);
+                } catch (Exception ignored){
+                } finally {
+                    try {
+                        updateList();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        });
+        thread.start();
     }
 }
