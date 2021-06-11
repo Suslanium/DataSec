@@ -108,7 +108,6 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                                         fadeOut(fragment.searchProgress);
                                         fadeOut(fragment.searchText);
                                         fragment.fab.setEnabled(false);
-                                        fragment.newCategory.setEnabled(false);
                                         fragment.viewModel.renameCategory(textView.getText().toString(), input.getText().toString());
                                     }
                                 }
@@ -128,7 +127,6 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                                         fadeOut(fragment.searchProgress);
                                         fadeOut(fragment.searchText);
                                         fragment.fab.setEnabled(false);
-                                        fragment.newCategory.setEnabled(false);
                                         fragment.viewModel.deleteCategory(textView.getText().toString());
                                     }
                                 }
