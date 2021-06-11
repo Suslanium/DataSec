@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -59,6 +60,7 @@ public class PasswordFragment extends Fragment {
     private PasswordAdapter adapter = null;
     private FloatingActionButton newCategory;
     private PasswordViewModel viewModel;
+    private int currentOperationNumber = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,8 +81,10 @@ public class PasswordFragment extends Fragment {
     }
 
     public void setCategory(String category) {
-        viewModel.setCurrentCategory(category);
-        updateView(requireView());
+        if(currentOperationNumber == 0) {
+            viewModel.setCurrentCategory(category);
+            updateView(requireView());
+        }
     }
 
     @Override
@@ -129,19 +133,21 @@ public class PasswordFragment extends Fragment {
             cancelDrawable = getResources().getDrawable(android.R.drawable.ic_delete);
         }
         View.OnClickListener searchListener = v -> {
-            String searchQuery = ((Explorer) requireActivity()).searchBar.getText().toString();
-            if (!searchQuery.matches("")) {
-                b1.setEnabled(false);
-                viewModel.setCurrentSearchQuery(searchQuery);
-                updateView(v);
-                if (((Explorer) requireActivity()).searchBar != null) {
-                    t.removeView(((Explorer) requireActivity()).searchBar);
-                    ((Explorer) requireActivity()).searchBar = null;
-                    final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            if(currentOperationNumber == 0) {
+                String searchQuery = ((Explorer) requireActivity()).searchBar.getText().toString();
+                if (!searchQuery.matches("")) {
+                    b1.setEnabled(false);
+                    viewModel.setCurrentSearchQuery(searchQuery);
+                    updateView(v);
+                    if (((Explorer) requireActivity()).searchBar != null) {
+                        t.removeView(((Explorer) requireActivity()).searchBar);
+                        ((Explorer) requireActivity()).searchBar = null;
+                        final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                } else {
+                    Snackbar.make(v, R.string.searchServiceErr, Snackbar.LENGTH_LONG).show();
                 }
-            } else {
-                Snackbar.make(v, R.string.searchServiceErr, Snackbar.LENGTH_LONG).show();
             }
         };
         fab = requireView().findViewById(R.id.addData);
@@ -175,18 +181,22 @@ public class PasswordFragment extends Fragment {
         });
         intent2 = ((Explorer) requireActivity()).getIntent2();
         addDataListener = v -> {
-            Intent intent = new Intent(requireActivity(), PasswordEntry.class);
-            intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
-            intent.putExtra("category", viewModel.getCurrentCategory().getValue());
-            intent.putExtra("newEntry", true);
-            startActivity(intent);
+            if(currentOperationNumber == 0) {
+                Intent intent = new Intent(requireActivity(), PasswordEntry.class);
+                intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
+                intent.putExtra("category", viewModel.getCurrentCategory().getValue());
+                intent.putExtra("newEntry", true);
+                startActivity(intent);
+            }
         };
         fab.setOnClickListener(addDataListener);
         cancelSearchListener = v -> {
-            fab.setImageDrawable(createDrawable);
-            viewModel.setCurrentSearchQuery("");
-            updateView(v);
-            fab.setOnClickListener(addDataListener);
+            if(currentOperationNumber == 0) {
+                fab.setImageDrawable(createDrawable);
+                viewModel.setCurrentSearchQuery("");
+                updateView(v);
+                fab.setOnClickListener(addDataListener);
+            }
         };
         recyclerView = requireView().findViewById(R.id.passwords);
         searchProgress = requireView().findViewById(R.id.passwordSearchProgress);
@@ -203,53 +213,60 @@ public class PasswordFragment extends Fragment {
         newCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText input = new EditText(requireContext());
-                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
-                input.setTypeface(ubuntu);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                input.setSingleLine(true);
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                        .setTitle(R.string.categoryName)
-                        .setView(input)
-                        .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String name = input.getText().toString();
-                                if (!name.matches("")) {
-                                    Thread thread = new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                boolean created = viewModel.createCategory(name);
-                                                if (created) {
-                                                    requireActivity().runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            updateView(requireView());
-                                                        }
-                                                    });
-                                                } else {
-                                                    requireActivity().runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            Snackbar.make(v, R.string.catExists, Snackbar.LENGTH_LONG);
-                                                        }
-                                                    });
-                                                }
-                                            } catch (Exception e) {
-
+                if (currentOperationNumber == 0) {
+                    final EditText input = new EditText(requireContext());
+                    Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                    input.setTypeface(ubuntu);
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    input.setSingleLine(true);
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
+                    builder.setTitle(R.string.categoryName);
+                    builder.setView(input);
+                    builder.setCancelable(false);
+                    builder.setPositiveButton(R.string.create, (dialog, which) -> {
+                    });
+                    builder.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    });
+                    AlertDialog dialog2 = builder.create();
+                    dialog2.show();
+                    dialog2.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String name = input.getText().toString();
+                            if (!name.matches("")) {
+                                Thread thread = new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            boolean created = viewModel.createCategory(name);
+                                            if (created) {
+                                                requireActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        dialog2.dismiss();
+                                                        updateView(requireView());
+                                                    }
+                                                });
+                                            } else {
+                                                requireActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        Snackbar.make(v, R.string.catExists, Snackbar.LENGTH_LONG);
+                                                    }
+                                                });
                                             }
+                                        } catch (Exception e) {
+
                                         }
-                                    });
-                                    thread.start();
-                                } else {
-                                    Snackbar.make(v, R.string.enterCatName, Snackbar.LENGTH_LONG);
-                                }
+                                    }
+                                });
+                                thread.start();
+                            } else {
+                                Snackbar.make(v, R.string.enterCatName, Snackbar.LENGTH_LONG);
                             }
-                        })
-                        .setNegativeButton(R.string.cancel, (dialog, which) -> {
-                        });
-                builder.show();
+                        }
+                    });
+                }
             }
         });
     }
@@ -273,18 +290,21 @@ public class PasswordFragment extends Fragment {
                 fab.setImageDrawable(cancelDrawable);
             }
             fab.setEnabled(true);
+            currentOperationNumber = 0;
         });
     }
 
     public void backPress() {
-        if (viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
-            fab.setImageDrawable(createDrawable);
-            viewModel.setCurrentSearchQuery("");
-            updateView(requireView());
-            fab.setOnClickListener(addDataListener);
-        } else if (viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")) {
-            viewModel.setCurrentCategory(null);
-            updateView(requireView());
+        if(currentOperationNumber == 0) {
+            if (viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
+                fab.setImageDrawable(createDrawable);
+                viewModel.setCurrentSearchQuery("");
+                updateView(requireView());
+                fab.setOnClickListener(addDataListener);
+            } else if (viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")) {
+                viewModel.setCurrentCategory(null);
+                updateView(requireView());
+            }
         }
     }
 
@@ -295,28 +315,31 @@ public class PasswordFragment extends Fragment {
     }
 
     private void updateView(View view) {
-        fadeIn(recyclerView);
-        fadeOut(searchProgress);
-        fadeOut(searchText);
-        fab.setEnabled(false);
-        newCategory.setEnabled(false);
-        Thread thread = new Thread(() -> {
-            try {
-                boolean b = viewModel.updateList();
-                if (b) {
-                    requireActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            newCategory.setEnabled(true);
-                        }
-                    });
+        if(currentOperationNumber == 0) {
+            currentOperationNumber++;
+            fadeIn(recyclerView);
+            fadeOut(searchProgress);
+            fadeOut(searchText);
+            fab.setEnabled(false);
+            newCategory.setEnabled(false);
+            Thread thread = new Thread(() -> {
+                try {
+                    boolean b = viewModel.updateList();
+                    if (b) {
+                        requireActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                newCategory.setEnabled(true);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
-                e.printStackTrace();
-            }
-        });
-        thread.start();
+            });
+            thread.start();
+        }
     }
 
     public String getCurrentCategory() {

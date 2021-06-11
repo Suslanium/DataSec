@@ -16,6 +16,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.suslanium.encryptor.PasswordEntry;
@@ -25,6 +28,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHolder> {
 
@@ -34,29 +39,33 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     private ArrayList<String> localCategories;
     private Intent intent;
     private ArrayList<Bitmap> icons = new ArrayList<>();
-    private HashMap<Integer, ViewHolder> holders = new HashMap<>();
     private Activity activity;
     private PasswordFragment fragment;
     private boolean showLogins = true;
     private static ColorStateList defTint;
-
+    private ExecutorService service;
+    private AsyncLayoutInflater.OnInflateFinishedListener onInflateFinishedListener;
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
+        private TextView textView;
         private boolean isCategory = false;
         protected int id = 0;
         protected int position = 0;
         protected Intent main_intent;
-        private final ImageView iconView;
-        private final TextView loginView;
+        private ImageView iconView;
+        private TextView loginView;
         private PasswordFragment fragment;
+        private View parentView;
 
         public ViewHolder(View view) {
             super(view);
-            textView = view.findViewById(R.id.serviceName);
+            parentView = view;
+        }
+
+        private void setupHolder(View view){
             iconView = view.findViewById(R.id.serviceIcon);
             loginView = view.findViewById(R.id.loginText);
             view.setOnClickListener(v -> {
@@ -70,6 +79,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                     fragment.setCategory(textView.getText().toString());
                 }
             });
+            textView = view.findViewById(R.id.serviceName);
         }
 
         public TextView getTextView() {
@@ -114,6 +124,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         localDataSet = dataSet;
         localids = ids;
         localLogins = logins;
+        service = Executors.newCachedThreadPool();
         localCategories = categories;
         this.intent = intent;
         this.activity = activity;
@@ -125,6 +136,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
         @ColorInt int color = typedValue.data;
         defTint = ColorStateList.valueOf(color);
+        onInflateFinishedListener = (view, resid, parent) -> parent.addView(view);
     }
 
     // Create new views (invoked by the layout manager)
@@ -133,7 +145,9 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.viewholder_manager, viewGroup, false);
+                .inflate(R.layout.viewholder_dummy, viewGroup, false);
+        AsyncLayoutInflater inflater = new AsyncLayoutInflater(viewGroup.getContext());
+        inflater.inflate(R.layout.viewholder_manager, (ViewGroup) view, onInflateFinishedListener);
         return new ViewHolder(view);
     }
 
@@ -142,33 +156,56 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        if (position < localCategories.size()) {
-            viewHolder.getTextView().setText(localCategories.get(position));
-            viewHolder.setCategory();
-            viewHolder.getLoginView().setText("");
-        } else {
-            viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
-            viewHolder.getLoginView().setText("");
-            viewHolder.setNonCategory();
-            if (localLogins.get(position - localCategories.size()) != null && showLogins) {
-                viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
-            }
-            viewHolder.id = localids.get(position - localCategories.size());
-            viewHolder.main_intent = intent;
-            viewHolder.position = position - localCategories.size();
-            try {
-                if (icons.get(position - localCategories.size()) != null) {
-                    viewHolder.removeTint();
-                    viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
-                } else {
-                    viewHolder.setDefaultIcon();
+        service.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (viewHolder.parentView.findViewById(R.id.serviceName) == null) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
-            } catch (Exception e) {
-                viewHolder.setDefaultIcon();
+                if (viewHolder.getTextView() == null)
+                    activity.runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
+                while (viewHolder.getTextView() == null) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (position < localCategories.size()) {
+                            viewHolder.getTextView().setText(localCategories.get(position));
+                            viewHolder.setCategory();
+                            viewHolder.getLoginView().setText("");
+                        } else {
+                            viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
+                            viewHolder.getLoginView().setText("");
+                            viewHolder.setNonCategory();
+                            if (localLogins.get(position - localCategories.size()) != null && showLogins) {
+                                viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
+                            }
+                            viewHolder.id = localids.get(position - localCategories.size());
+                            viewHolder.main_intent = intent;
+                            viewHolder.position = position - localCategories.size();
+                            try {
+                                if (icons.get(position - localCategories.size()) != null) {
+                                    viewHolder.removeTint();
+                                    viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
+                                } else {
+                                    viewHolder.setDefaultIcon();
+                                }
+                            } catch (Exception e) {
+                                viewHolder.setDefaultIcon();
+                            }
+                        }
+                        viewHolder.fragment = fragment;
+                    }
+                });
             }
-        }
-        viewHolder.fragment = fragment;
-        holders.put(position, viewHolder);
+        });
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -190,7 +227,6 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         localids = ids;
         localLogins = logins;
         localCategories = categories;
-        holders.clear();
         notifyDataSetChanged();
     }
 
@@ -199,7 +235,4 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         activity.runOnUiThread(() -> setNewData(localDataSet, localids, localLogins, localCategories));
     }
 
-    public HashMap<Integer, ViewHolder> getHolders() {
-        return holders;
-    }
 }
