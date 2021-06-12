@@ -32,8 +32,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.suslanium.encryptor.Encryptor;
-import com.suslanium.encryptor.PasswordActivity;
+import com.suslanium.encryptor.util.Encryptor;
+import com.suslanium.encryptor.ui.PasswordActivity;
 import com.suslanium.encryptor.R;
 
 import static android.content.Context.POWER_SERVICE;

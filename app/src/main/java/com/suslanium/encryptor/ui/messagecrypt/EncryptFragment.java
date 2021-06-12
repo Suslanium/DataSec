@@ -22,10 +22,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.util.Encryptor;
 import com.suslanium.encryptor.R;
-
-import java.util.Objects;
 
 public class EncryptFragment extends Fragment {
     public static final String ARG_OBJECT = "intType";

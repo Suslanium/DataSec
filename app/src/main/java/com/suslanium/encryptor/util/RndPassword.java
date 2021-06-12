@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.util;
 
 import java.security.SecureRandom;
 import java.util.Random;

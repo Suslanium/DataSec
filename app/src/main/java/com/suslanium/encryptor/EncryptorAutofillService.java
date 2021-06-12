@@ -8,7 +8,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.CancellationSignal;
-import android.provider.ContactsContract;
 import android.service.autofill.AutofillService;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillCallback;
@@ -19,15 +18,14 @@ import android.service.autofill.SaveCallback;
 import android.service.autofill.SaveRequest;
 import android.view.View;
 import android.view.autofill.AutofillId;
-import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.google.android.material.snackbar.Snackbar;
+import com.suslanium.encryptor.ui.PasswordActivity;
+import com.suslanium.encryptor.util.Encryptor;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -323,5 +321,9 @@ public class EncryptorAutofillService extends AutofillService {
             pass.append("●");
         }
         return pass.toString();
+    }
+
+    public static void setPass(byte[] passEnc){
+        pass = passEnc;
     }
 }

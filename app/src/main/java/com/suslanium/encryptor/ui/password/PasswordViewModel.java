@@ -9,12 +9,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.util.Encryptor;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.nio.ByteBuffer;
-import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,7 +35,11 @@ import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.suslanium.encryptor.EncryptorAutofillService;
+import com.suslanium.encryptor.EncryptorService;
+import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.ui.welcomescreen.WelcomeActivity;
+import com.suslanium.encryptor.util.Encryptor;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -215,7 +219,7 @@ public class PasswordActivity extends AppCompatActivity {
                 pass = Encryptor.rsaencrypt(password);
                 runOnUiThread(() -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()) {
-                        EncryptorAutofillService.pass = pass;
+                        EncryptorAutofillService.setPass(pass);
                     }
                     Intent intent = new Intent(PasswordActivity.this, Explorer.class);
                     intent.putExtra("pass", pass);
@@ -349,7 +353,7 @@ public class PasswordActivity extends AppCompatActivity {
                     FillResponse finalResponse = response;
                     runOnUiThread(() -> {
                         Intent replyIntent = new Intent();
-                        EncryptorAutofillService.pass = pass;
+                        EncryptorAutofillService.setPass(pass);
                         replyIntent.putExtra(EXTRA_AUTHENTICATION_RESULT, finalResponse);
                         setResult(RESULT_OK, replyIntent);
                         finish();

@@ -16,8 +16,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.suslanium.encryptor.Encryptor;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.util.Encryptor;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 import java.io.File;

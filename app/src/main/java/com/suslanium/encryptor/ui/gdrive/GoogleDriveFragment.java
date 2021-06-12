@@ -24,7 +24,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 public class GoogleDriveFragment extends Fragment {

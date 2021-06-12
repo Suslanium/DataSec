@@ -10,7 +10,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.InputType;
 import android.view.Gravity;
@@ -49,7 +48,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 import java.io.File;

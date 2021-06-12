@@ -37,9 +37,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.api.services.drive.Drive;
-import com.suslanium.encryptor.DriveServiceHelper;
+import com.suslanium.encryptor.util.DriveServiceHelper;
 import com.suslanium.encryptor.EncryptorService;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 

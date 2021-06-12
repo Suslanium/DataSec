@@ -35,7 +35,7 @@
         tools:layout="@layout/fragment_message" />
     <fragment
         android:id="@+id/nav_settings"
-        android:name="com.suslanium.encryptor.SettingsFragment"
+        android:name="com.suslanium.encryptor.ui.SettingsFragment"
         android:label="@string/settings"
         tools:layout="@layout/fragment_settings" />
 </navigation>

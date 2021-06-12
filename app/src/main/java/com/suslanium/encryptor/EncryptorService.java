@@ -30,6 +30,9 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
+import com.suslanium.encryptor.util.DriveServiceHelper;
+import com.suslanium.encryptor.util.Encryptor;
+import com.suslanium.encryptor.util.GoogleDriveFileHolder;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -745,7 +748,7 @@ public class EncryptorService extends Service {
                                 if(finalUsesBioAuth) edit.putString("pass", newPass);
                                 edit.apply();
                                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getSystemService(AutofillManager.class).isAutofillSupported() && getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
-                                    EncryptorAutofillService.pass = newPassEnc;
+                                    EncryptorAutofillService.setPass(newPassEnc);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

@@ -19,7 +19,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,8 +34,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater;
 import androidx.core.content.ContextCompat;
@@ -47,9 +44,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.util.Encryptor;
 import com.suslanium.encryptor.EncryptorService;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 import org.jetbrains.annotations.NotNull;

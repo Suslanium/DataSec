@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui;
 
 import android.app.Application;
 
@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.suslanium.encryptor.util.Encryptor;
 
 import java.io.File;
 import java.util.ArrayList;

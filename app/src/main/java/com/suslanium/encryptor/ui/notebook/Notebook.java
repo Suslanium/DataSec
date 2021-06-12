@@ -19,7 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.suslanium.encryptor.Explorer;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 import java.io.File;

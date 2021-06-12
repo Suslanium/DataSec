@@ -39,7 +39,6 @@ public class NotebookAdapter extends RecyclerView.Adapter<NotebookAdapter.ViewHo
             // Define click listener for the ViewHolder's View
             imageView = (ImageView) view.findViewById(R.id.serviceIcon);
             textView = (TextView) view.findViewById(R.id.serviceName);
-            view.findViewById(R.id.loginText).setVisibility(View.GONE);
             view.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), NotebookActivity.class);
                 intent.putExtra("fileName",fileName);
@@ -50,12 +49,6 @@ public class NotebookAdapter extends RecyclerView.Adapter<NotebookAdapter.ViewHo
 
         public TextView getTextView() {
             return textView;
-        }
-        public void setText(){
-            imageView.setImageResource(R.drawable.ic_text);
-        }
-        public void setTint(ColorStateList list){
-            imageView.setImageTintList(list);
         }
     }
 
@@ -80,7 +73,7 @@ public class NotebookAdapter extends RecyclerView.Adapter<NotebookAdapter.ViewHo
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.viewholder_manager, viewGroup, false);
+                .inflate(R.layout.viewholder_note, viewGroup, false);
         return new ViewHolder(view);
     }
 
@@ -92,8 +85,6 @@ public class NotebookAdapter extends RecyclerView.Adapter<NotebookAdapter.ViewHo
         viewHolder.getTextView().setText(localDataSet.get(position).substring(0, localDataSet.get(position).indexOf(".")));
         viewHolder.fileName = localDataSet.get(position);
         viewHolder.main_intent = intent;
-        viewHolder.setTint(defTint);
-        viewHolder.setText();
     }
 
     // Return the size of your dataset (invoked by the layout manager)

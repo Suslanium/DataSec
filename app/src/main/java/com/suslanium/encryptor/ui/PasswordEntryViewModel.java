@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui;
 
 import android.app.Application;
 import android.content.Intent;
@@ -11,6 +11,9 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+
+import com.suslanium.encryptor.EncryptorAutofillService;
+import com.suslanium.encryptor.util.Encryptor;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -82,7 +85,7 @@ public class PasswordEntryViewModel extends AndroidViewModel {
         }
         Encryptor.closeDataBase(database);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && getApplication().getBaseContext().getSystemService(AutofillManager.class).isAutofillSupported() && getApplication().getBaseContext().getSystemService(AutofillManager.class).hasEnabledAutofillServices()){
-            EncryptorAutofillService.pass = passEnc;
+            EncryptorAutofillService.setPass(passEnc);
         }
     }
 

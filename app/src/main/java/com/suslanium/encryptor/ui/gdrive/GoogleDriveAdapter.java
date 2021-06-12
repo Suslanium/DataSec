@@ -22,7 +22,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.suslanium.encryptor.DriveServiceHelper;
+import com.suslanium.encryptor.util.DriveServiceHelper;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.R;
 

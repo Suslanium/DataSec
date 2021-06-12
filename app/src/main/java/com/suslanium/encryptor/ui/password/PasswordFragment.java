@@ -2,7 +2,6 @@ package com.suslanium.encryptor.ui.password;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -37,8 +36,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.suslanium.encryptor.Explorer;
-import com.suslanium.encryptor.PasswordEntry;
+import com.suslanium.encryptor.ui.Explorer;
+import com.suslanium.encryptor.ui.PasswordEntry;
 import com.suslanium.encryptor.R;
 
 import java.util.ArrayList;

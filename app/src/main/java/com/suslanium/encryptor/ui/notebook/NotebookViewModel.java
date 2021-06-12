@@ -5,7 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
-import com.suslanium.encryptor.Encryptor;
+import com.suslanium.encryptor.util.Encryptor;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView
+        android:id="@+id/serviceName"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:fontFamily="@font/ubuntu"
+        android:gravity="center|left"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="18dp"
+        android:singleLine="true"
+        android:textSize="30sp"
+        tools:text="Name" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#00FFFFFF"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:cardMaxElevation="0dp"
+        android:layout_gravity="center|start">
+
+        <ImageView
+            android:id="@+id/serviceIcon"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_text"
+            app:tint="?attr/explorerIconColor" />
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

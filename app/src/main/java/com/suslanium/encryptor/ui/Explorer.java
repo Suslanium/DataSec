@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -28,11 +28,11 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
+import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.ui.password.PasswordFragment;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

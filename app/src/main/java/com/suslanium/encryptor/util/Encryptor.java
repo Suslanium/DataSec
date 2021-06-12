@@ -1,4 +1,4 @@
-package com.suslanium.encryptor;
+package com.suslanium.encryptor.util;
 
 import android.content.ContentValues;
 import android.content.Context;
