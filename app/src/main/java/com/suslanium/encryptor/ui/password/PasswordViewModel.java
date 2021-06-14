@@ -58,7 +58,6 @@ public class PasswordViewModel extends AndroidViewModel {
     }
 
     public boolean updateList() throws Exception {
-        categories.getValue().clear();
         ArrayList<String> strings3 = new ArrayList<>();
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<String> logins = new ArrayList<>();
@@ -113,19 +112,22 @@ public class PasswordViewModel extends AndroidViewModel {
                 }
             }
         }
-        this.names.postValue(strings3);
-        this.logins.postValue(logins);
-        this.bitmaps.postValue(bitmapArrayList);
-        this.ids.postValue(ids);
+        boolean b;
+        categories.getValue().clear();
         if ((currentSearchQuery.getValue() == null || currentSearchQuery.getValue().matches("")) && (currentCategory.getValue() == null || currentCategory.getValue().matches(""))) {
             categories.getValue().clear();
             categories.getValue().addAll(Encryptor.getCategories(database));
             Encryptor.closeDataBase(database);
-            return true;
+            b=true;
         } else {
             Encryptor.closeDataBase(database);
-            return false;
+            b=false;
         }
+        this.names.postValue(strings3);
+        this.logins.postValue(logins);
+        this.bitmaps.postValue(bitmapArrayList);
+        this.ids.postValue(ids);
+        return b;
     }
 
     protected LiveData<ArrayList<String>> getNames() {

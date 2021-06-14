@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +42,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     private ArrayList<String> localDataSet;
     private ArrayList<Integer> localids;
     private ArrayList<String> localLogins;
-    private ArrayList<String> localCategories;
+    private ArrayList<String> localCategories = new ArrayList<>();
     private Intent intent;
     private ArrayList<Bitmap> icons = new ArrayList<>();
     private Activity activity;
@@ -174,11 +175,11 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
      *                by RecyclerView.
      */
     public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories, Intent intent, Activity activity, PasswordFragment fragment) {
+        localCategories = categories;
         localDataSet = dataSet;
         localids = ids;
         localLogins = logins;
         service = Executors.newCachedThreadPool();
-        localCategories = categories;
         this.intent = intent;
         this.activity = activity;
         this.fragment = fragment;
@@ -234,24 +235,26 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                             viewHolder.setCategory();
                             viewHolder.getLoginView().setText("");
                         } else {
-                            viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
-                            viewHolder.getLoginView().setText("");
-                            viewHolder.setNonCategory();
-                            if (localLogins.get(position - localCategories.size()) != null && showLogins) {
-                                viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
-                            }
-                            viewHolder.id = localids.get(position - localCategories.size());
-                            viewHolder.main_intent = intent;
-                            viewHolder.position = position - localCategories.size();
-                            try {
-                                if (icons.get(position - localCategories.size()) != null) {
-                                    viewHolder.removeTint();
-                                    viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
-                                } else {
+                            if(position - localCategories.size() >= 0) {
+                                viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
+                                viewHolder.getLoginView().setText("");
+                                viewHolder.setNonCategory();
+                                if (localLogins.get(position - localCategories.size()) != null && showLogins) {
+                                    viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
+                                }
+                                viewHolder.id = localids.get(position - localCategories.size());
+                                viewHolder.main_intent = intent;
+                                viewHolder.position = position - localCategories.size();
+                                try {
+                                    if (icons.get(position - localCategories.size()) != null) {
+                                        viewHolder.removeTint();
+                                        viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
+                                    } else {
+                                        viewHolder.setDefaultIcon();
+                                    }
+                                } catch (Exception e) {
                                     viewHolder.setDefaultIcon();
                                 }
-                            } catch (Exception e) {
-                                viewHolder.setDefaultIcon();
                             }
                         }
                         viewHolder.fragment = fragment;
@@ -277,9 +280,9 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         if (dataSet.isEmpty()) {
             dataSet.addAll(localCategories);
         }
+        localCategories = categories;
         localids = ids;
         localLogins = logins;
-        localCategories = categories;
         notifyDataSetChanged();
     }
 
