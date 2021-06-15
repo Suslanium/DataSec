@@ -28,6 +28,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.common.Scopes;
@@ -63,6 +65,7 @@ public class GoogleDriveManager extends AppCompatActivity {
     private TextView sizeView;
     private SwipeRefreshLayout layout;
     private GoogleDriveViewModel viewModel;
+    private boolean tutorialComplete = false;
 
     @Override
     protected void onStart() {
@@ -84,6 +87,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(GoogleDriveViewModel.class);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
+        tutorialComplete = preferences.getBoolean("gDriveTutorialComplete",false);
         if (dark_theme) setTheme(R.style.Theme_Encryptor_Dark_ActionBar);
         else setTheme(R.style.Theme_Encryptor_Light_ActionBar);
         super.onCreate(savedInstanceState);
@@ -402,6 +406,7 @@ public class GoogleDriveManager extends AppCompatActivity {
             intent.putExtra("gDriveFolder", viewModel.getCurrentFolderID().getValue());
             startActivity(intent);
         });
+        if(!tutorialComplete)showHints();
         showRootFilesInDrive();
     }
 
@@ -464,5 +469,30 @@ public class GoogleDriveManager extends AppCompatActivity {
         String pathStr = new String(path);
         String toSet = ExplorerFragment.fitString(pathView, pathStr);
         pathView.setText(toSet);
+    }
+
+    private void showHints(){
+        Typeface ubuntu = ResourcesCompat.getFont(this, R.font.ubuntu);
+        new TapTargetSequence(this).targets(
+                ExplorerFragment.getTapTarget(upload, getString(R.string.gDriveHintTitle1), getString(R.string.gDriveHintMessage1),ubuntu),
+                ExplorerFragment.getTapTarget(newFolder, getString(R.string.gDriveHintTitle2), getString(R.string.gDriveHintMessage2),ubuntu)
+        ).listener(new TapTargetSequence.Listener() {
+            @Override
+            public void onSequenceFinish() {
+                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(GoogleDriveManager.this).edit();
+                preferences.putBoolean("gDriveTutorialComplete", true);
+                preferences.apply();
+            }
+
+            @Override
+            public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+            }
+
+            @Override
+            public void onSequenceCanceled(TapTarget lastTarget) {
+
+            }
+        }).start();
     }
 }

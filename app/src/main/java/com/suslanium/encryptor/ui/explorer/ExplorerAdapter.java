@@ -102,13 +102,14 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;
         private ImageView fileImage;
-        private CheckBox fileCheckbox;
+        protected CheckBox fileCheckbox;
         private TextView dateView;
         private TextView sizeView;
         private View parentView;
         public boolean encrypted = false;
         public String realPath;
         public int loadingCount = 0;
+        protected Button checkBoxButton;
 
         public ViewHolder(View view) {
             super(view);
@@ -124,7 +125,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             fileImage = view.findViewById(R.id.fileImage);
             Button fileButton = view.findViewById(R.id.fileButton);
             fileCheckbox = view.findViewById(R.id.fileCheckbox);
-            Button checkBoxButton = view.findViewById(R.id.checkBoxButton);
+            checkBoxButton = view.findViewById(R.id.checkBoxButton);
             dateView = view.findViewById(R.id.modDate);
             sizeView = view.findViewById(R.id.fileSize);
             checkBoxButton.setOnClickListener(v -> {
@@ -840,4 +841,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    protected ArrayList<ViewHolder> getHolders(){
+        return holders;
+    }
 }

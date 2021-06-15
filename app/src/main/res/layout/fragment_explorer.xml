@@ -7,6 +7,20 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.explorer.ExplorerFragment">
 
+    <ImageView
+        android:id="@+id/hintDummy1"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/transp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/freeSpace"
+        app:layout_constraintVertical_bias="0.0" />
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeExplorer"
         android:layout_width="match_parent"
@@ -20,6 +34,7 @@
             android:id="@+id/fileView"
             android:layout_width="match_parent"
             android:layout_height="0dp" />
+
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <TextView

@@ -4,7 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +19,10 @@ import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -25,9 +30,12 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.suslanium.encryptor.util.Encryptor;
 import com.suslanium.encryptor.R;
 
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.getTapTarget;
+
 public class EncryptFragment extends Fragment {
     public static final String ARG_OBJECT = "intType";
     private boolean isLoading = false;
+    private boolean tutorialComplete = false;
 
     @Nullable
     @Override
@@ -41,6 +49,8 @@ public class EncryptFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
         int position = args.getInt(ARG_OBJECT);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        tutorialComplete = preferences.getBoolean("messageCryptTutorialComplete",false);
         TextInputEditText plain = view.findViewById(R.id.plainEditText);
         plain.setSingleLine(true);
         TextInputEditText key = view.findViewById(R.id.keyEditText);
@@ -72,6 +82,7 @@ public class EncryptFragment extends Fragment {
         });
         switch (position){
             case 1:
+                if(!tutorialComplete)showHints(encryptButton);
                 encryptButton.setOnClickListener(v -> {
                     String plainText = plain.getText().toString();
                     if(!plainText.matches("")){
@@ -187,5 +198,18 @@ public class EncryptFragment extends Fragment {
             default:
                 break;
         }
+    }
+
+    private void showHints(Button toShow){
+        Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+        TapTargetView.showFor(requireActivity(), getTapTarget(toShow, "Messagecrypt", getString(R.string.messageCryptHintMessage), ubuntu), new TapTargetView.Listener(){
+            @Override
+            public void onTargetClick(TapTargetView view) {
+                super.onTargetClick(view);
+                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                preferences.putBoolean("messageCryptTutorialComplete", true);
+                preferences.apply();
+            }
+        });
     }
 }

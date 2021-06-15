@@ -5,12 +5,14 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -43,6 +45,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -54,7 +58,6 @@ import com.suslanium.encryptor.R;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -76,6 +79,8 @@ public class ExplorerFragment extends Fragment {
     private TextView freeSpace;
     private ArrayList<String> storagePaths;
     private ExplorerViewModel viewModel;
+    private ImageButton b1;
+    private boolean tutorialComplete = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -94,6 +99,8 @@ public class ExplorerFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.requireActivity().getApplication())).get(ExplorerViewModel.class);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        tutorialComplete = preferences.getBoolean("explorerTutorialComplete", false);
     }
 
     public View.OnClickListener getUpFolderAction() {
@@ -143,7 +150,7 @@ public class ExplorerFragment extends Fragment {
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-        ImageButton b1 = new ImageButton(requireContext());
+        b1 = new ImageButton(requireContext());
         Drawable drawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
@@ -202,7 +209,7 @@ public class ExplorerFragment extends Fragment {
             public void onChanged(ArrayList<String> strings) {
                 fileList.clear();
                 fileList.addAll(strings);
-                if(adapter[0] != null) {
+                if (adapter[0] != null) {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -235,11 +242,12 @@ public class ExplorerFragment extends Fragment {
                     manager.setSmoothScrollbarEnabled(true);
                     fileView.setLayoutManager(manager);
                     fileView.setAdapter(adapter[0]);
+                    if(!tutorialComplete)showHints(fileView,t);
                 }
             }
         };
-        if(currentNames.getValue() != null && !currentNames.getValue().isEmpty()){
-            if(adapter[0] != null) {
+        if (currentNames.getValue() != null && !currentNames.getValue().isEmpty()) {
+            if (adapter[0] != null) {
                 fileList.addAll(currentNames.getValue());
                 adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
                 fileView.scrollToPosition(0);
@@ -248,7 +256,7 @@ public class ExplorerFragment extends Fragment {
         } else {
             viewModel.getFileNames(new File(viewModel.getPath().getValue()));
         }
-        currentNames.observe(getViewLifecycleOwner(),pathsObserver);
+        currentNames.observe(getViewLifecycleOwner(), pathsObserver);
         Intent intent2 = ((Explorer) requireActivity()).getIntent2();
         FloatingActionButton confirm = requireActivity().findViewById(R.id.confirmButton);
         FloatingActionButton cancel = requireActivity().findViewById(R.id.cancelButton);
@@ -731,12 +739,12 @@ public class ExplorerFragment extends Fragment {
         });
     }
 
-    public void cancelSearch() {
+    protected void cancelSearch() {
         newFolder.setOnClickListener(newFolderListener);
         newFolder.setImageDrawable(createDrawable);
     }
 
-    public void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
+    protected void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
         if (((Explorer) requireActivity()).currentOperationNumber == 0) {
             if (adapter.getSearchEnded()) cancelSearch();
             fileView.stopScroll();
@@ -753,7 +761,7 @@ public class ExplorerFragment extends Fragment {
         }
     }
 
-    public void showAddButton(boolean show) {
+    protected void showAddButton(boolean show) {
         if (show) {
             fadeOut(newFolder);
             fadeOut(changeStorage);
@@ -763,7 +771,7 @@ public class ExplorerFragment extends Fragment {
         }
     }
 
-    public int getAddButtonState() {
+    protected int getAddButtonState() {
         return newFolder.getVisibility();
     }
 
@@ -1031,7 +1039,6 @@ public class ExplorerFragment extends Fragment {
     }
 
 
-
     private ArrayList<String> checkReplacements(String toCopyPath, String path, final Integer[] sk, ViewGroup.LayoutParams lp) {
         File parent = new File(toCopyPath);
         String[] filesInParent = parent.list();
@@ -1154,27 +1161,6 @@ public class ExplorerFragment extends Fragment {
     }
 
 
-
-    public static List<String> sortFiles(List<String> filePaths) {
-        ArrayList<String> sortedFiles = new ArrayList<>();
-        ArrayList<String> originDirs = new ArrayList<>();
-        ArrayList<String> originFiles = new ArrayList<>();
-        if (filePaths != null && !filePaths.isEmpty()) {
-            for (int i = 0; i < filePaths.size(); i++) {
-                if (new File(filePaths.get(i)).isFile()) {
-                    originFiles.add(filePaths.get(i));
-                } else {
-                    originDirs.add(filePaths.get(i));
-                }
-            }
-            Collections.sort(originDirs, String.CASE_INSENSITIVE_ORDER);
-            Collections.sort(originFiles, String.CASE_INSENSITIVE_ORDER);
-            sortedFiles.addAll(originDirs);
-            sortedFiles.addAll(originFiles);
-        }
-        return sortedFiles;
-    }
-
     public static String fitString(TextView text, String newText) {
         try {
             float textWidth = text.getPaint().measureText(newText);
@@ -1184,13 +1170,13 @@ public class ExplorerFragment extends Fragment {
                 textWidth = text.getPaint().measureText(newText);
                 startIndex++;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
         return newText;
     }
 
-    public void setStoragePath(String path) {
+    private void setStoragePath(String path) {
         String pathToShow = path.replace(viewModel.getCurrentStoragePath().getValue(), viewModel.getCurrentStorageName().getValue());
         pathToShow = fitString(storagePath, pathToShow);
         storagePath.setText(pathToShow);
@@ -1200,5 +1186,65 @@ public class ExplorerFragment extends Fragment {
     public void onDestroyView() {
         ((Explorer) requireActivity()).explorerVisible = false;
         super.onDestroyView();
+    }
+
+    private void showHints(RecyclerView fileView, Toolbar t) {
+        final int[] targetNum = {0};
+        Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+        new TapTargetSequence(requireActivity()).targets(
+                getTapTarget(newFolder, getString(R.string.explorerHintTitle1), getString(R.string.explorerHintMessage1), ubuntu),
+                getTapTarget(changeStorage, getString(R.string.explorerHintTitle2), getString(R.string.explorerHintMessage2), ubuntu),
+                getTapTarget(b1, getString(R.string.explorerHintTitle3), getString(R.string.explorerHintMessage3), ubuntu),
+                getTapTarget(requireActivity().findViewById(R.id.hintDummy1), getString(R.string.explorerHintTitle4), getString(R.string.explorerHintMessage4), ubuntu),
+                getTapTarget(requireActivity().findViewById(R.id.action_encryptFiles), getString(R.string.explorerHintTitle5), getString(R.string.explorerHintMessage5), ubuntu),
+                getTapTarget(changeStorage, getString(R.string.explorerHintTitle7), getString(R.string.explorerHintMessage7), ubuntu),
+                TapTarget.forToolbarNavigationIcon(t,getString(R.string.explorerHintTitle6), getString(R.string.explorerHintMessage6)).id(1)
+                        .cancelable(false)
+                        .outerCircleColor(R.color.navTextLight)
+                        .outerCircleAlpha(0.9f)
+                        .targetCircleColor(R.color.dialogTitleDark)
+                        .titleTextSize(20)
+                        .descriptionTextSize(15)
+                        .textColor(R.color.navLight)
+                        .textTypeface(ubuntu)
+                        .transparentTarget(true)
+                        .dimColor(R.color.navDark)
+        ).listener(new TapTargetSequence.Listener() {
+            @Override
+            public void onSequenceFinish() {
+                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                preferences.putBoolean("explorerTutorialComplete", true);
+                preferences.apply();
+            }
+
+            @Override
+            public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+                targetNum[0]++;
+                if(targetNum[0] == 4) {
+                    ((ExplorerAdapter.ViewHolder)fileView.findViewHolderForAdapterPosition(0)).checkBoxButton.performClick();
+                } else if(targetNum[0] == 5){
+                    ((ExplorerAdapter.ViewHolder)fileView.findViewHolderForAdapterPosition(0)).checkBoxButton.performClick();
+                }
+            }
+
+            @Override
+            public void onSequenceCanceled(TapTarget lastTarget) {
+
+            }
+        }).start();
+    }
+
+    public static TapTarget getTapTarget(View view, String title, String message, Typeface ubuntu) {
+        return TapTarget.forView(view, title, message)
+                .cancelable(false)
+                .outerCircleColor(R.color.navTextLight)
+                .outerCircleAlpha(0.9f)
+                .targetCircleColor(R.color.dialogTitleDark)
+                .titleTextSize(20)
+                .descriptionTextSize(15)
+                .textColor(R.color.navLight)
+                .textTypeface(ubuntu)
+                .transparentTarget(true)
+                .dimColor(R.color.navDark);
     }
 }

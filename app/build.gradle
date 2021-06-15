@@ -43,6 +43,10 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
@@ -71,7 +75,9 @@ dependencies {
                 exclude group: 'org.apache.httpcomponents'
             }
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.2'
 }
+
 configurations {
     all {
         exclude module: 'httpclient'

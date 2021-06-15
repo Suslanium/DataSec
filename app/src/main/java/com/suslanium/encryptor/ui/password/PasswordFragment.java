@@ -3,11 +3,13 @@ package com.suslanium.encryptor.ui.password;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -33,6 +35,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -44,6 +48,7 @@ import java.util.ArrayList;
 
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.getTapTarget;
 
 public class PasswordFragment extends Fragment {
     private Intent intent2 = null;
@@ -60,12 +65,15 @@ public class PasswordFragment extends Fragment {
     protected FloatingActionButton newCategory;
     protected PasswordViewModel viewModel;
     protected int currentOperationNumber = 0;
+    private boolean tutorialComplete = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication())).get(PasswordViewModel.class);
         viewModel.setIntent(((Explorer) requireActivity()).getIntent2());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        tutorialComplete = preferences.getBoolean("passwordTutorialComplete",false);
     }
 
     @Override
@@ -274,6 +282,7 @@ public class PasswordFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         if (adapter == null) {
             adapter = new PasswordAdapter(strings2, id, logins, viewModel.getCategories().getValue(), intent2, requireActivity(), this);
+            if(!tutorialComplete)showHints();
         } else {
             adapter.setNewData(strings2, id, logins, viewModel.getCategories().getValue());
         }
@@ -343,5 +352,31 @@ public class PasswordFragment extends Fragment {
 
     public String getCurrentCategory() {
         return viewModel.getCurrentCategory().getValue();
+    }
+
+    private void showHints(){
+        Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+        new TapTargetSequence(requireActivity()).targets(
+                getTapTarget(fab,getString(R.string.passwordHintTitle1),getString(R.string.passwordHintMessage1),ubuntu),
+                getTapTarget(newCategory, getString(R.string.passwordHintTitle2),getString(R.string.passwordHintMessage2),ubuntu),
+                getTapTarget(b1, getString(R.string.explorerHintTitle3), getString(R.string.passwordHintMessage3),ubuntu)
+        ).listener(new TapTargetSequence.Listener() {
+            @Override
+            public void onSequenceFinish() {
+                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                preferences.putBoolean("passwordTutorialComplete", true);
+                preferences.apply();
+            }
+
+            @Override
+            public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+            }
+
+            @Override
+            public void onSequenceCanceled(TapTarget lastTarget) {
+
+            }
+        }).start();
     }
 }

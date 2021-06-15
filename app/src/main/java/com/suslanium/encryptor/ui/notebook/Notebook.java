@@ -2,15 +2,19 @@ package com.suslanium.encryptor.ui.notebook;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +22,18 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.gdrive.GoogleDriveManager;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeIn;
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.fadeOut;
+import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.getTapTarget;
 
 public class Notebook extends Fragment {
 
@@ -34,6 +41,7 @@ public class Notebook extends Fragment {
     private RecyclerView recview;
     private TextView searchText;
     private ProgressBar searchProgress;
+    private boolean tutorialComplete = false;
 
     public Notebook() {
         // Required empty public constructor
@@ -42,6 +50,8 @@ public class Notebook extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        tutorialComplete = preferences.getBoolean("notebookTutorialComplete",false);
     }
 
     @Override
@@ -95,6 +105,7 @@ public class Notebook extends Fragment {
         });
         recview.setLayoutManager(new LinearLayoutManager(requireContext()));
         recview.setAdapter(adapter);
+        if(!tutorialComplete)showHints(addButton);
     }
 
     @Override
@@ -134,5 +145,18 @@ public class Notebook extends Fragment {
             });
             thread.start();
         }
+    }
+
+    private void showHints(FloatingActionButton addButton){
+        Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+        TapTargetView.showFor(requireActivity(), getTapTarget(addButton, getString(R.string.notebookHintTitle), getString(R.string.notebookHintMessage), ubuntu), new TapTargetView.Listener(){
+            @Override
+            public void onTargetClick(TapTargetView view) {
+                super.onTargetClick(view);
+                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                preferences.putBoolean("notebookTutorialComplete", true);
+                preferences.apply();
+            }
+        });
     }
 }

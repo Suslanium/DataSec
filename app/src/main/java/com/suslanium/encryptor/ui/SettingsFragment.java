@@ -128,6 +128,20 @@ public class SettingsFragment extends Fragment {
         Button backUpDataBase = requireActivity().findViewById(R.id.backUpDatabase);
         Button signOut = requireActivity().findViewById(R.id.signOut);
         Button changeIc = requireActivity().findViewById(R.id.changeIc);
+        Button showTutorial = requireActivity().findViewById(R.id.showTutorialAgain);
+        showTutorial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("explorerTutorialComplete", false);
+                editor.putBoolean("gDriveTutorialComplete", false);
+                editor.putBoolean("messageCryptTutorialComplete", false);
+                editor.putBoolean("notebookTutorialComplete", false);
+                editor.putBoolean("passwordTutorialComplete", false);
+                editor.apply();
+                Snackbar.make(v,getString(R.string.applied),Snackbar.LENGTH_LONG).show();
+            }
+        });
         changeIc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
