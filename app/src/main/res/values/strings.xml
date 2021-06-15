@@ -294,4 +294,7 @@
     <string name="messageCryptHintMessage">Here you can encrypt and decrypt the text using the key, as well as get the hash of the string using the selected algorithm.</string>
     <string name="showTutorAgain">Show tutorial again</string>
     <string name="applied">Applied!</string>
+    <string name="aboutApp">DataCrypt is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager. This application is a project of a student of the Samsung IT School.</string>
+    <string name="version">Version:</string>
+    <string name="sendFeedback">Send feedback</string>
 </resources>

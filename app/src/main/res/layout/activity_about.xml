@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    tools:context=".ui.AboutActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <ImageView
+                    android:id="@+id/imageView4"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_weight="1"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@mipmap/icon_round" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginStart="100dp"
+                    android:fontFamily="@font/ubuntu_medium"
+                    android:gravity="center|start"
+                    android:text="@string/app_name"
+                    android:textSize="30sp" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/aboutApp"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/versionText"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                android:alpha="0.8"
+                android:gravity="center|start"
+                android:text="@string/version"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/sendFeedBackText"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                android:alpha="0.8"
+                android:gravity="center|start"
+                android:text="@string/sendFeedback"
+                android:textSize="14sp" />
+
+            <FrameLayout
+                android:id="@+id/githubFrame"
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <ImageView
+                    android:id="@+id/githubImage"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_weight="1"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/github"
+                    app:tint="?android:attr/textColor" />
+
+                <TextView
+                    android:id="@+id/githubText"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginStart="100dp"
+                    android:fontFamily="@font/ubuntu_medium"
+                    android:gravity="center|start"
+                    android:text="GitHub"
+                    android:textSize="30sp" />
+            </FrameLayout>
+
+            <ImageView
+                android:id="@+id/ITSchoolImage"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginStart="19dp"
+                android:scaleType="fitStart"
+                app:srcCompat="@drawable/itschoolsamsung"
+                app:tint="?android:attr/textColor" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
