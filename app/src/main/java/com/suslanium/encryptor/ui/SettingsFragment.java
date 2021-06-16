@@ -105,7 +105,7 @@ public class SettingsFragment extends Fragment {
         boolean autoDelete = preferences.getBoolean("auto_Delete", true);
         boolean autoDelete2 = preferences.getBoolean("auto_Delete2", true);
         boolean showLogin = preferences.getBoolean("showLogins", true);
-        boolean showPreview = preferences.getBoolean("showPreviews", true);
+        boolean showPreview = preferences.getBoolean("showPreviews", false);
         boolean showHide = preferences.getBoolean("showHidden", false);
         boolean canUseBioAuth = false;
         BiometricManager biometricManager = BiometricManager.from(requireContext());

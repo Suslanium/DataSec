@@ -54,6 +54,31 @@
             android:text="@string/welcomeToEncryptorText"
             android:textSize="18sp" />
 
+        <FrameLayout
+            android:id="@+id/whyPermissionsFrame"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="11dp"
+            android:alpha="0.8">
+
+            <ImageView
+                android:id="@+id/imageView7"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/question"
+                app:tint="?android:attr/textColor" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center|start"
+                android:text="@string/whyPermissions"
+                android:textSize="14sp" />
+        </FrameLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -66,7 +91,9 @@
                 android:elevation="100dp"
                 android:text="@string/grantStorage"
                 android:textColor="?attr/colorSurface"
-                app:cornerRadius="50dp"
+                app:cornerRadius="15dp"
+                android:drawableLeft="@drawable/ic_folder"
+                android:drawableTint="?attr/colorSurface"
                 app:iconTint="?attr/colorSurface"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -125,8 +152,10 @@
                 android:elevation="100dp"
                 android:text="@string/grantBattery"
                 android:textColor="?attr/colorSurface"
-                app:cornerRadius="50dp"
+                app:cornerRadius="15dp"
                 app:iconTint="?attr/colorSurface"
+                android:drawableLeft="@drawable/ic_baseline_battery_full_24"
+                android:drawableTint="?attr/colorSurface"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -145,7 +174,7 @@
                 android:elevation="100dp"
                 android:text="@string/next"
                 android:textColor="?attr/colorSurface"
-                app:cornerRadius="50dp"
+                app:cornerRadius="15dp"
                 app:iconTint="?attr/colorSurface"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

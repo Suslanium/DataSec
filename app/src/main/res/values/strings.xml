@@ -209,7 +209,7 @@
     <string name="settings">Settings</string>
     <string name="copy">Copy</string>
     <string name="move">Move</string>
-    <string name="grantBattery">GRANT BATTERY PERMISSION</string>
+    <string name="grantBattery">Disable consumption optimization</string>
     <string name="grantStorage">GRANT STORAGE PERMISSION</string>
     <string name="confirmPass">Confirm password</string>
     <string name="welcomeToEncryptor">Welcome to DataCrypt!</string>
@@ -297,4 +297,6 @@
     <string name="aboutApp">DataCrypt is an application that helps you keep your important and sensitive data safe. You can encrypt and decrypt files, safely store all your passwords, save files in a secure folder or cloud encrypted with this application. There is also a full-fledged file manager. This application is a project of a student of the Samsung IT School.</string>
     <string name="version">Version:</string>
     <string name="sendFeedback">Send feedback</string>
+    <string name="whyPermissions">What are permissions for?</string>
+    <string name="whyPermissionsText">Access to the storage is necessary for the file manager and other functions to work, and disabling consumption optimization is necessary so that the application can perform operations in the background (Encryption, decryption, etc.). On some devices without this permission, background operations are very slow, and downloading or downloading files may be interrupted. Don\'t worry, the app will only run in the background when needed.</string>
 </resources>

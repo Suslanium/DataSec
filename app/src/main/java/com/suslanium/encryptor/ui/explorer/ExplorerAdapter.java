@@ -80,7 +80,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
     private static final String ACTIONTYPE = "actionType";
     private static final String INDEX = "index";
     private boolean searchEnded = false;
-    private boolean showPreviews = true;
+    private boolean showPreviews;
     private boolean canSelect = true;
     private String B = "B";
     private String KB = "KB";
@@ -557,7 +557,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         this.bottomBar = bottomBar;
         this.fragment = fragment;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext());
-        showPreviews = preferences.getBoolean("showPreviews", true);
+        showPreviews = preferences.getBoolean("showPreviews", false);
         B = activity.getString(R.string.b);
         KB = activity.getString(R.string.kb);
         MB = activity.getString(R.string.mb);

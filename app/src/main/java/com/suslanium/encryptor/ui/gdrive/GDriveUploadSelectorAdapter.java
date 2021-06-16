@@ -57,7 +57,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private int thumbnailLoadingCount = 0;
     private ExecutorService service;
     public boolean isSearching = false;
-    private boolean showPreviews = true;
+    private boolean showPreviews;
     private String B = "B";
     private String KB = "KB";
     private String MB = "MB";
@@ -225,7 +225,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         this.activity = activity;
         service = Executors.newCachedThreadPool();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
-        showPreviews = preferences.getBoolean("showPreviews", true);
+        showPreviews = preferences.getBoolean("showPreviews", false);
         B = activity.getString(R.string.b);
         KB = activity.getString(R.string.kb);
         MB = activity.getString(R.string.mb);

@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -63,6 +64,7 @@ public class WelcomeActivityFragment extends Fragment {
         Button grantStorage = view.findViewById(R.id.grantStorage);
         Button next = view.findViewById(R.id.next);
         ViewPager2 pager2 = requireActivity().findViewById(R.id.welcomePager);
+        FrameLayout whyPermissions = view.findViewById(R.id.whyPermissionsFrame);
         switch (position) {
             case 1:
                 if(WelcomeActivity.isDeviceRooted()){
@@ -83,6 +85,7 @@ public class WelcomeActivityFragment extends Fragment {
                 pass.setVisibility(View.GONE);
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
+                whyPermissions.setVisibility(View.GONE);
                 next.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -93,6 +96,21 @@ public class WelcomeActivityFragment extends Fragment {
             case 2:
                 confPass.setVisibility(View.GONE);
                 pass.setVisibility(View.GONE);
+                whyPermissions.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                                .setTitle(R.string.whyPermissions)
+                                .setMessage(R.string.whyPermissionsText)
+                                .setPositiveButton(R.string.cont, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        builder.show();
+                    }
+                });
                 topText.setText(R.string.letsSetupPermissions);
                 bottomText.setText(R.string.letsSetupPermissionsText);
                 grantBattery.setOnClickListener(new View.OnClickListener() {
@@ -147,6 +165,7 @@ public class WelcomeActivityFragment extends Fragment {
             case 3:
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
+                whyPermissions.setVisibility(View.GONE);
                 topText.setText(R.string.letsSetupPassword);
                 bottomText.setText(R.string.letsSetupPasswordText);
                 next.setText(R.string.finishSetup);

@@ -41,8 +41,8 @@
     <string name="decStarted">Дешифрование запущено!</string>
     <string name="privateFolder">Защищённая папка</string>
     <string name="swPrivate">Защищённая папка</string>
-    <string name="extStorage">"Внешнее хранилище "</string>
-    <string name="swExt">"Внешнее хранилище "</string>
+    <string name="extStorage">Внешнее хранилище </string>
+    <string name="swExt">Внешнее хранилище </string>
     <string name="swInt">Внутренняя память</string>
     <string name="pressToExit">Нажмите ещё раз для выхода</string>
     <string name="createFolder">Создать папку</string>
@@ -90,7 +90,7 @@
     <string name="channelDesc">Показывать уведомления при шифровании/дешифровании файлов и прочих операциях</string>
     <string name="serviceRunning">Сервис Encryptor запущен</string>
     <string name="encrypting">Идёт шифрование...</string>
-    <string name="serviceErrorEnc">"Что-то пошло не так при шифровании "</string>
+    <string name="serviceErrorEnc">Что-то пошло не так при шифровании </string>
     <string name="serviceEncSuccess">Файл(ы) были успешно зашифрованы!</string>
     <string name="share">Поделиться</string>
     <string name="errors">Ошибок:</string>
@@ -204,12 +204,12 @@
     <string name="settings">Настройки</string>
     <string name="copy">Копировать</string>
     <string name="move">Переместить</string>
-    <string name="grantBattery">Предоставить разрешение для батареи</string>
+    <string name="grantBattery">Отключить оптимизацию расхода</string>
     <string name="grantStorage">Предоставить доступ к хранилищу</string>
     <string name="confirmPass">Подтвердите пароль</string>
     <string name="welcomeToEncryptor">Добро пожаловать в DataCrypt!</string>
     <string name="swSt">Сменить хранилище</string>
-    <string name="welcomeToEncryptorText">"DataCrypt - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер. "</string>
+    <string name="welcomeToEncryptorText">DataCrypt - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер. </string>
     <string name="letsSetupPermissions">Давайте установим необходимые разрешения</string>
     <string name="letsSetupPermissionsText">Перед началом использования необходимо предоставить некоторые разрешения.</string>
     <string name="letsSetupPassword">Давайте установим пароль</string>
@@ -292,4 +292,6 @@
     <string name="aboutApp">DataCrypt - это приложение, которое поможет Вам безопасно хранить важные и конфиденциальные данные. Вы можете зашифровывать и расшифровывать файлы, безопасно хранить все свои пароли, сохранять файлы в защищённой папке или облаке в зашифрованном виде с этим приложением. Также здесь есть полноценный файловый менеджер. Данное приложение - проект ученика IT школы Samsung.</string>
     <string name="version">Версия:</string>
     <string name="sendFeedback">Отправить отзыв</string>
+    <string name="whyPermissions">Для чего нужны разрешения?</string>
+    <string name="whyPermissionsText">Доступ к хранилищу необходим для работы файлового менеджера и других функций, а отключение оптимизации расхода необходимо для того, чтобы приложение могло выполнять операции в фоне(Шифрование, дешифрование и т.д.). На некоторых устройствах без этого разрешения операции в фоне идут очень медленно, а загрузка или скачивание файлов может быть прервана. Не беспокойтесь, приложение будет работать в фоне только при необходимости.</string>
 </resources>
