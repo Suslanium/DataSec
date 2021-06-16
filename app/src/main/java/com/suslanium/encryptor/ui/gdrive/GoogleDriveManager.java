@@ -1,17 +1,6 @@
 package com.suslanium.encryptor.ui.gdrive;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -28,21 +17,28 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.api.services.drive.Drive;
-import com.suslanium.encryptor.util.DriveServiceHelper;
 import com.suslanium.encryptor.EncryptorService;
-import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 
 import java.util.ArrayList;
@@ -50,12 +46,8 @@ import java.util.ArrayList;
 public class GoogleDriveManager extends AppCompatActivity {
     Scope SCOPEEMAIL = new Scope(Scopes.EMAIL);
     Scope SCOPEAPP = new Scope(Scopes.DRIVE_APPFOLDER);
-    Drive googleDriveService = null;
-    DriveServiceHelper mDriveServiceHelper = null;
-    GoogleSignInClient mGoogleSignInClient;
     GoogleDriveAdapter adapter = null;
     int RCAUTHORIZEDRIVE = 1;
-    private View sView;
     public int currentOperationNumber = 0;
     private RecyclerView recyclerView;
     private BottomNavigationView bottomNavigationView;
@@ -72,12 +64,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         super.onStart();
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(R.string.menu_keyexchange);
-        Drawable drawable;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            drawable = ContextCompat.getDrawable(this, R.drawable.backarrow);
-        } else {
-            drawable = getResources().getDrawable(R.drawable.backarrow);
-        }
+        Drawable drawable = ContextCompat.getDrawable(this, R.drawable.backarrow);
         actionBar.setHomeAsUpIndicator(drawable);
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
@@ -92,7 +79,6 @@ public class GoogleDriveManager extends AppCompatActivity {
         else setTheme(R.style.Theme_Encryptor_Light_ActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_drive_manager);
-        sView = findViewById(R.id.gDriveBottomView);
         recyclerView = findViewById(R.id.gDriveFileList);
         if (viewModel.setDrive()) {
             checkForGooglePermissions();
@@ -101,13 +87,11 @@ public class GoogleDriveManager extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     public void checkFileBar() {
@@ -122,23 +106,13 @@ public class GoogleDriveManager extends AppCompatActivity {
             ExplorerFragment.fadeOut(bottomNavigationView);
             ExplorerFragment.fadeIn(newFolder);
             ExplorerFragment.fadeIn(upload);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.setCanSelect(true);
-                }
-            }, 200);
+            new Handler().postDelayed(() -> adapter.setCanSelect(true), 200);
         } else if (bottomNavigationView.getVisibility() == View.VISIBLE && checkedIds.isEmpty()) {
             adapter.setCanSelect(false);
             ExplorerFragment.fadeIn(bottomNavigationView);
             ExplorerFragment.fadeOut(newFolder);
             ExplorerFragment.fadeOut(upload);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.setCanSelect(true);
-                }
-            }, 200);
+            new Handler().postDelayed(() -> adapter.setCanSelect(true), 200);
         }
     }
 
@@ -165,7 +139,6 @@ public class GoogleDriveManager extends AppCompatActivity {
     public void onBackPressed() {
         if (viewModel.getPrevLists().size() > 1) {
             if (currentOperationNumber == 0) {
-                //folders.remove(folders.get(folders.size() - 1));
                 currentOperationNumber++;
                 recyclerView.stopScroll();
                 Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
@@ -195,51 +168,46 @@ public class GoogleDriveManager extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void driveSetUp() {
         viewModel.setUpDrive();
-        Observer<ArrayList<String>[]> listObserver = new Observer<ArrayList<String>[]>() {
-            @Override
-            public void onChanged(ArrayList<String>[] arrayLists) {
-                if (arrayLists != null) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (adapter == null) {
-                                recyclerView.setLayoutManager(new LinearLayoutManager(GoogleDriveManager.this));
-                                adapter = new GoogleDriveAdapter(arrayLists[0], viewModel.getmDriveServiceHelper(), arrayLists[1], GoogleDriveManager.this, recyclerView, arrayLists[2], viewModel);
-                                recyclerView.setAdapter(adapter);
-                                currentOperationNumber = 0;
-                            } else {
-                                recyclerView.suppressLayout(false);
-                                recyclerView.stopScroll();
-                                Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_in_left);
-                                fadeOut.setDuration(200);
-                                fadeOut.setAnimationListener(new Animation.AnimationListener() {
-                                    @Override
-                                    public void onAnimationStart(Animation animation) {
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animation animation) {
-                                        currentOperationNumber = 0;
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animation animation) {
-                                    }
-                                });
-                                recyclerView.startAnimation(fadeOut);
-                                adapter.setNewData(arrayLists[0], arrayLists[1], arrayLists[2]);
+        Observer<ArrayList<String>[]> listObserver = arrayLists -> {
+            if (arrayLists != null) {
+                new Handler().postDelayed(() -> {
+                    if (adapter == null) {
+                        recyclerView.setLayoutManager(new LinearLayoutManager(GoogleDriveManager.this));
+                        adapter = new GoogleDriveAdapter(arrayLists[0], arrayLists[1], GoogleDriveManager.this, recyclerView, arrayLists[2], viewModel);
+                        recyclerView.setAdapter(adapter);
+                        currentOperationNumber = 0;
+                    } else {
+                        recyclerView.suppressLayout(false);
+                        recyclerView.stopScroll();
+                        Animation fadeOut = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_in_left);
+                        fadeOut.setDuration(200);
+                        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
                             }
-                            checkFileBar();
-                            recyclerView.scrollToPosition(0);
-                        }
-                    }, 200);
-                } else {
-                    Intent intent = new Intent(GoogleDriveManager.this, Explorer.class);
-                    intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
-                    startActivity(intent);
-                }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                currentOperationNumber = 0;
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+                            }
+                        });
+                        recyclerView.startAnimation(fadeOut);
+                        adapter.setNewData(arrayLists[0], arrayLists[1], arrayLists[2]);
+                    }
+                    checkFileBar();
+                    recyclerView.scrollToPosition(0);
+                }, 200);
+            } else {
+                Intent intent = new Intent(GoogleDriveManager.this, Explorer.class);
+                intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
+                startActivity(intent);
             }
         };
         viewModel.getFileList().observe(this, listObserver);
@@ -277,25 +245,17 @@ public class GoogleDriveManager extends AppCompatActivity {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(GoogleDriveManager.this, R.style.MaterialAlertDialog_rounded)
                         .setTitle(R.string.warning)
                         .setMessage(R.string.goingToDelete)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
-                                intent.putExtra("actionType", "gDriveDelete");
-                                EncryptorService.uniqueID++;
-                                int i = EncryptorService.uniqueID;
-                                EncryptorService.paths.put(i, ids2);
-                                intent.putExtra("index", i);
-                                intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
-                                ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
-                            }
+                        .setPositiveButton(R.string.yes, (dialog, which) -> {
+                            Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
+                            intent.putExtra("actionType", "gDriveDelete");
+                            EncryptorService.uniqueID++;
+                            int i = EncryptorService.uniqueID;
+                            EncryptorService.paths.put(i, ids2);
+                            intent.putExtra("index", i);
+                            intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
+                            ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
                         })
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
+                        .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 builder.show();
             } else {
                 Snackbar.make(v, R.string.selectFiles, Snackbar.LENGTH_LONG).show();
@@ -327,25 +287,22 @@ public class GoogleDriveManager extends AppCompatActivity {
                 Snackbar.make(v, R.string.selectFiles, Snackbar.LENGTH_LONG).show();
             }
         };
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.action_decryptFilesG:
-                        downloadListener.onClick(bottomNavigationView);
-                        adapter.deselectAll();
-                        checkFileBar();
-                        break;
-                    case R.id.action_deleteFilesG:
-                        deleteListener.onClick(bottomNavigationView);
-                        adapter.deselectAll();
-                        checkFileBar();
-                        break;
-                    default:
-                        break;
-                }
-                return false;
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.action_decryptFilesG:
+                    downloadListener.onClick(bottomNavigationView);
+                    adapter.deselectAll();
+                    checkFileBar();
+                    break;
+                case R.id.action_deleteFilesG:
+                    deleteListener.onClick(bottomNavigationView);
+                    adapter.deselectAll();
+                    checkFileBar();
+                    break;
+                default:
+                    break;
             }
+            return false;
         });
         newFolder = findViewById(R.id.gDriveNewFolder);
         newFolder.setOnClickListener(v -> {
@@ -361,34 +318,31 @@ public class GoogleDriveManager extends AppCompatActivity {
                 builder.setPositiveButton(R.string.create, (dialog, which) -> {
                     String name = input.getText().toString();
                     if (!name.equals("") && !name.contains(".")) {
-                        Thread thread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                switch (viewModel.createFolder(name)) {
-                                    case 0:
-                                        if (recyclerView != null && adapter != null) {
-                                            if (currentOperationNumber == 0) {
-                                                runOnUiThread(() -> {
-                                                    recyclerView.stopScroll();
-                                                    Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
-                                                    fadeIn.setDuration(200);
-                                                    fadeIn.setFillAfter(true);
-                                                    recyclerView.startAnimation(fadeIn);
-                                                    recyclerView.suppressLayout(true);
-                                                });
-                                                updateUI(false);
-                                            }
+                        Thread thread = new Thread(() -> {
+                            switch (viewModel.createFolder(name)) {
+                                case 0:
+                                    if (recyclerView != null && adapter != null) {
+                                        if (currentOperationNumber == 0) {
+                                            runOnUiThread(() -> {
+                                                recyclerView.stopScroll();
+                                                Animation fadeIn = AnimationUtils.loadAnimation(GoogleDriveManager.this, android.R.anim.slide_out_right);
+                                                fadeIn.setDuration(200);
+                                                fadeIn.setFillAfter(true);
+                                                recyclerView.startAnimation(fadeIn);
+                                                recyclerView.suppressLayout(true);
+                                            });
+                                            updateUI(false);
                                         }
-                                        break;
-                                    case 1:
-                                        runOnUiThread(() -> Snackbar.make(v, R.string.failedToCreateG, Snackbar.LENGTH_LONG).show());
-                                        break;
-                                    case 2:
-                                        runOnUiThread(() -> Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                    }
+                                    break;
+                                case 1:
+                                    runOnUiThread(() -> Snackbar.make(v, R.string.failedToCreateG, Snackbar.LENGTH_LONG).show());
+                                    break;
+                                case 2:
+                                    runOnUiThread(() -> Snackbar.make(v, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
+                                    break;
+                                default:
+                                    break;
                             }
                         });
                         thread.start();
@@ -411,52 +365,42 @@ public class GoogleDriveManager extends AppCompatActivity {
     }
 
     public void showRootFilesInDrive() {
-        Thread thread = new Thread(() -> {
+        @SuppressLint("SetTextI18n") Thread thread = new Thread(() -> {
             try {
                 double[] freeSpace = viewModel.getFreeSpace();
                 if (freeSpace != null) {
                     int finalSpaceDivisonCount = (int) freeSpace[1];
                     double finalFreeSpace = freeSpace[0];
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            switch (finalSpaceDivisonCount) {
-                                case 0:
-                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.bytes));
-                                    break;
-                                case 1:
-                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.kbytes));
-                                    break;
-                                case 2:
-                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.mbytes));
-                                    break;
-                                case 3:
-                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.gbytes));
-                                    break;
-                                case 4:
-                                    sizeView.setText(finalFreeSpace + " " + getString(R.string.tbytes));
-                                    break;
-                                default:
-                                    break;
-                            }
+                    runOnUiThread(() -> {
+                        switch (finalSpaceDivisonCount) {
+                            case 0:
+                                sizeView.setText(finalFreeSpace + " " + getString(R.string.bytes));
+                                break;
+                            case 1:
+                                sizeView.setText(finalFreeSpace + " " + getString(R.string.kbytes));
+                                break;
+                            case 2:
+                                sizeView.setText(finalFreeSpace + " " + getString(R.string.mbytes));
+                                break;
+                            case 3:
+                                sizeView.setText(finalFreeSpace + " " + getString(R.string.gbytes));
+                                break;
+                            case 4:
+                                sizeView.setText(finalFreeSpace + " " + getString(R.string.tbytes));
+                                break;
+                            default:
+                                break;
                         }
                     });
                 } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            sizeView.setText("");
-                        }
-                    });
+                    runOnUiThread(() -> sizeView.setText(""));
                 }
                 if(viewModel.getFileList().getValue() == null) {
                     currentOperationNumber++;
                     viewModel.listFilesInFolder(viewModel.getCurrentFolderID().getValue(), false, true, getString(R.string.rootFolder));
                 }
-                runOnUiThread(() -> {
-                    constructAndSetPath();
-                });
-            } catch (Exception e) {}
+                runOnUiThread(this::constructAndSetPath);
+            } catch (Exception ignored) {}
         });
         thread.start();
     }

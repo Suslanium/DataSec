@@ -3,6 +3,7 @@ package com.suslanium.encryptor.ui.explorer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,46 +67,41 @@ import java.util.regex.Pattern;
 public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;
     private String path;
-    private RecyclerView recyclerView;
-    private Activity activity;
-    private ArrayList<ViewHolder> holders = new ArrayList<>();
-    private ArrayList<String> CheckedId = new ArrayList<>();
+    private final RecyclerView recyclerView;
+    private final Activity activity;
+    private final ArrayList<ViewHolder> holders = new ArrayList<>();
+    private final ArrayList<String> CheckedId = new ArrayList<>();
     public boolean isSearching = false;
     private int thumbnailLoadingCount = 0;
-    private ExecutorService service;
-    private BottomNavigationView bottomBar;
+    private final ExecutorService service;
+    private final BottomNavigationView bottomBar;
     private boolean isDoingFileOperations = false;
-    private ArrayList<String> deletedFilePaths = new ArrayList<>();
-    private ExplorerFragment fragment;
+    private final ArrayList<String> deletedFilePaths = new ArrayList<>();
+    private final ExplorerFragment fragment;
     private static final String ACTIONTYPE = "actionType";
     private static final String INDEX = "index";
     private boolean searchEnded = false;
-    private boolean showPreviews;
+    private final boolean showPreviews;
     private boolean canSelect = true;
-    private String B = "B";
-    private String KB = "KB";
-    private String MB = "MB";
-    private String GB = "GB";
-    private String TB = "TB";
-    private String Calc = "Calculating...";
-    private String items = "items";
-    private ColorStateList defTint;
-    private String password = null;
-    private Set<String> favorites = new HashSet<>();
-    private ExplorerViewModel viewModel;
-    private AsyncLayoutInflater.OnInflateFinishedListener listener;
+    private final String B;
+    private final String KB;
+    private final String MB;
+    private final String GB;
+    private final String TB;
+    private final String Calc;
+    private final String items;
+    private final ColorStateList defTint;
+    private final Set<String> favorites = new HashSet<>();
+    private final ExplorerViewModel viewModel;
+    private final AsyncLayoutInflater.OnInflateFinishedListener listener;
 
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder).
-     */
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;
         private ImageView fileImage;
         protected CheckBox fileCheckbox;
         private TextView dateView;
         private TextView sizeView;
-        private View parentView;
+        private final View parentView;
         public boolean encrypted = false;
         public String realPath;
         public int loadingCount = 0;
@@ -114,7 +110,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         public ViewHolder(View view) {
             super(view);
             parentView = view;
-            // Define click listener for the ViewHolder's View
         }
 
         public TextView getTextView() {
@@ -149,80 +144,74 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     }
                 }
             });
-            checkBoxButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    selectAll();
-                    return true;
-                }
+            checkBoxButton.setOnLongClickListener(v -> {
+                selectAll();
+                return true;
             });
-            fileButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (!isSearching) {
-                        String filePath = path + File.separator + realPath;
-                        if (!deletedFilePaths.contains(filePath)) {
-                            File file = new File(filePath);
-                            if ((file.isDirectory()) || (file.isFile() && !isDoingFileOperations)) {
-                                final EditText input = new EditText(fragment.requireContext());
-                                Typeface ubuntu = ResourcesCompat.getFont(fragment.requireContext(), R.font.ubuntu);
-                                input.setTypeface(ubuntu);
-                                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                                input.setSingleLine(true);
-                                input.setText(file.getName());
-                                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
-                                        .setTitle(R.string.renameFileFolder)
-                                        .setView(input)
-                                        .setCancelable(false)
-                                        .setPositiveButton(R.string.rename, (dialog, which) -> {
-                                        })
-                                        .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
-                                AlertDialog dialog = builder.create();
-                                dialog.show();
-                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v1 -> {
-                                    String newName = input.getText().toString();
-                                    String prevName = file.getName();
-                                    if (newName.matches("")) {
-                                        Snackbar.make(v1, R.string.enterAdapterNameErr, Snackbar.LENGTH_LONG).show();
-                                    } else if (newName.contains(File.separator)) {
-                                        Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
-                                    } else if (newName.matches(Pattern.quote(prevName))) {
-                                        Snackbar.make(v1, R.string.enterNewName, Snackbar.LENGTH_LONG).show();
-                                    } else if (localDataSet.contains(newName)) {
-                                        Snackbar.make(v1, R.string.folderExistsErr, Snackbar.LENGTH_LONG).show();
-                                    } else {
-                                        Thread thread = new Thread(() -> {
-                                            try {
-                                                String withoutName = filePath.substring(0, filePath.lastIndexOf(File.separator) + 1);
-                                                File testing = new File(withoutName + newName);
-                                                testing.createNewFile();
-                                                testing.delete();
-                                                file.renameTo(testing);
-                                                activity.runOnUiThread(() -> {
-                                                    dialog.dismiss();
-                                                    textView.setText(newName);
-                                                    for (int i = 0; i < localDataSet.size(); i++) {
-                                                        if (localDataSet.get(i).matches(Pattern.quote(realPath))) {
-                                                            realPath = testing.getPath().replace(path + File.separator, "");
-                                                            localDataSet.set(i, realPath);
-                                                        }
+            fileButton.setOnLongClickListener(v -> {
+                if (!isSearching) {
+                    String filePath = path + File.separator + realPath;
+                    if (!deletedFilePaths.contains(filePath)) {
+                        File file = new File(filePath);
+                        if ((file.isDirectory()) || (file.isFile() && !isDoingFileOperations)) {
+                            final EditText input = new EditText(fragment.requireContext());
+                            Typeface ubuntu = ResourcesCompat.getFont(fragment.requireContext(), R.font.ubuntu);
+                            input.setTypeface(ubuntu);
+                            input.setInputType(InputType.TYPE_CLASS_TEXT);
+                            input.setSingleLine(true);
+                            input.setText(file.getName());
+                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
+                                    .setTitle(R.string.renameFileFolder)
+                                    .setView(input)
+                                    .setCancelable(false)
+                                    .setPositiveButton(R.string.rename, (dialog, which) -> {
+                                    })
+                                    .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v1 -> {
+                                String newName = input.getText().toString();
+                                String prevName = file.getName();
+                                if (newName.matches("")) {
+                                    Snackbar.make(v1, R.string.enterAdapterNameErr, Snackbar.LENGTH_LONG).show();
+                                } else if (newName.contains(File.separator)) {
+                                    Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show();
+                                } else if (newName.matches(Pattern.quote(prevName))) {
+                                    Snackbar.make(v1, R.string.enterNewName, Snackbar.LENGTH_LONG).show();
+                                } else if (localDataSet.contains(newName)) {
+                                    Snackbar.make(v1, R.string.folderExistsErr, Snackbar.LENGTH_LONG).show();
+                                } else {
+                                    Thread thread = new Thread(() -> {
+                                        try {
+                                            String withoutName = filePath.substring(0, filePath.lastIndexOf(File.separator) + 1);
+                                            File testing = new File(withoutName + newName);
+                                            testing.createNewFile();
+                                            testing.delete();
+                                            file.renameTo(testing);
+                                            activity.runOnUiThread(() -> {
+                                                dialog.dismiss();
+                                                textView.setText(newName);
+                                                for (int i = 0; i < localDataSet.size(); i++) {
+                                                    if (localDataSet.get(i).matches(Pattern.quote(realPath))) {
+                                                        realPath = testing.getPath().replace(path + File.separator, "");
+                                                        localDataSet.set(i, realPath);
                                                     }
+                                                }
 
-                                                });
-                                            } catch (Exception e) {
-                                                activity.runOnUiThread(() -> Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
-                                            }
-                                        });
-                                        thread.start();
-                                    }
-                                });
-                            }
-                        } else {
-                            Snackbar.make(v, R.string.accessDeniedDelete, Snackbar.LENGTH_LONG).show();
+                                            });
+                                        } catch (Exception e) {
+                                            activity.runOnUiThread(() -> Snackbar.make(v1, R.string.enterValidNameErr, Snackbar.LENGTH_LONG).show());
+                                        }
+                                    });
+                                    thread.start();
+                                }
+                            });
                         }
+                    } else {
+                        Snackbar.make(v, R.string.accessDeniedDelete, Snackbar.LENGTH_LONG).show();
                     }
-                    return true;
                 }
+                return true;
             });
             fileButton.setOnClickListener(v -> {
                 if (!isSearching) {
@@ -238,17 +227,14 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                     fadeIn.setFillAfter(true);
                                     recyclerView.startAnimation(fadeIn);
                                     recyclerView.suppressLayout(true);
-                                    Thread thread = new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            viewModel.getFileNames(new File(filePath));
-                                            if (searchEnded) {
-                                                activity.runOnUiThread(()->fragment.cancelSearch());
-                                                searchEnded = false;
-                                            }
-                                            if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
-                                                activity.runOnUiThread(() -> fragment.showAddButton(true));
-                                            }
+                                    Thread thread = new Thread(() -> {
+                                        viewModel.getFileNames(new File(filePath));
+                                        if (searchEnded) {
+                                            activity.runOnUiThread(fragment::cancelSearch);
+                                            searchEnded = false;
+                                        }
+                                        if (!isDoingFileOperations && fragment.getAddButtonState() == View.GONE) {
+                                            activity.runOnUiThread(() -> fragment.showAddButton(true));
                                         }
                                     });
                                     thread.start();
@@ -258,7 +244,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                             }
                         } else {
                             if (!isDoingFileOperations) {
-                                CharSequence[] items = null;
+                                CharSequence[] items;
                                 if (encrypted) {
                                     if (!favorites.contains(filePath)) {
                                         items = new CharSequence[]{activity.getString(R.string.decryptFile), activity.getString(R.string.openFile), activity.getString(R.string.addToFav)};
@@ -274,34 +260,15 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                 }
                                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
                                 builder.setTitle(R.string.choose);
-                                builder.setItems(items, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        switch (which) {
-                                            case 0:
-                                                if (!encrypted) {
-                                                    if (new File(filePath + ".enc").exists()) {
-                                                        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                                        dialogBuilder.setTitle(R.string.warning);
-                                                        dialogBuilder.setMessage(R.string.encFileExists);
-                                                        dialogBuilder.setPositiveButton(R.string.yes, (dialog1, which1) -> {
-                                                            Snackbar.make(v, R.string.encStarted, Snackbar.LENGTH_LONG).show();
-                                                            ArrayList<String> paths = new ArrayList<>();
-                                                            paths.add(filePath);
-                                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
-                                                            intent.putExtra(ACTIONTYPE, "E");
-                                                            EncryptorService.uniqueID++;
-                                                            int i = EncryptorService.uniqueID;
-                                                            EncryptorService.paths.put(i, paths);
-                                                            intent.putExtra(INDEX, i);
-                                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                                        });
-                                                        dialogBuilder.setNegativeButton(R.string.no, (dialog12, which12) -> {
-
-                                                        });
-                                                        dialogBuilder.show();
-                                                    } else {
+                                builder.setItems(items, (dialog, which) -> {
+                                    switch (which) {
+                                        case 0:
+                                            if (!encrypted) {
+                                                if (new File(filePath + ".enc").exists()) {
+                                                    MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
+                                                    dialogBuilder.setTitle(R.string.warning);
+                                                    dialogBuilder.setMessage(R.string.encFileExists);
+                                                    dialogBuilder.setPositiveButton(R.string.yes, (dialog1, which1) -> {
                                                         Snackbar.make(v, R.string.encStarted, Snackbar.LENGTH_LONG).show();
                                                         ArrayList<String> paths = new ArrayList<>();
                                                         paths.add(filePath);
@@ -313,29 +280,30 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                         intent.putExtra(INDEX, i);
                                                         intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                         ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                                    }
+                                                    });
+                                                    dialogBuilder.setNegativeButton(R.string.no, (dialog12, which12) -> {
+
+                                                    });
+                                                    dialogBuilder.show();
                                                 } else {
-                                                    if (new File((filePath).substring(0, (filePath).length() - 4)).exists()) {
-                                                        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
-                                                        dialogBuilder.setTitle(R.string.warning);
-                                                        dialogBuilder.setMessage(R.string.decFileExists);
-                                                        dialogBuilder.setPositiveButton(R.string.yes, (dialog13, which13) -> {
-                                                            Snackbar.make(v, R.string.decStarted, Snackbar.LENGTH_LONG).show();
-                                                            ArrayList<String> paths = new ArrayList<>();
-                                                            paths.add(filePath);
-                                                            Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
-                                                            intent.putExtra(ACTIONTYPE, "D");
-                                                            EncryptorService.uniqueID++;
-                                                            int i = EncryptorService.uniqueID;
-                                                            EncryptorService.paths.put(i, paths);
-                                                            intent.putExtra(INDEX, i);
-                                                            intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-                                                            ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                                        });
-                                                        dialogBuilder.setNegativeButton(R.string.no, (dialog14, which14) -> {
-                                                        });
-                                                        dialogBuilder.show();
-                                                    } else {
+                                                    Snackbar.make(v, R.string.encStarted, Snackbar.LENGTH_LONG).show();
+                                                    ArrayList<String> paths = new ArrayList<>();
+                                                    paths.add(filePath);
+                                                    Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
+                                                    intent.putExtra(ACTIONTYPE, "E");
+                                                    EncryptorService.uniqueID++;
+                                                    int i = EncryptorService.uniqueID;
+                                                    EncryptorService.paths.put(i, paths);
+                                                    intent.putExtra(INDEX, i);
+                                                    intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                    ContextCompat.startForegroundService(activity.getBaseContext(), intent);
+                                                }
+                                            } else {
+                                                if (new File((filePath).substring(0, (filePath).length() - 4)).exists()) {
+                                                    MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded);
+                                                    dialogBuilder.setTitle(R.string.warning);
+                                                    dialogBuilder.setMessage(R.string.decFileExists);
+                                                    dialogBuilder.setPositiveButton(R.string.yes, (dialog13, which13) -> {
                                                         Snackbar.make(v, R.string.decStarted, Snackbar.LENGTH_LONG).show();
                                                         ArrayList<String> paths = new ArrayList<>();
                                                         paths.add(filePath);
@@ -347,76 +315,88 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                                                         intent.putExtra(INDEX, i);
                                                         intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
                                                         ContextCompat.startForegroundService(activity.getBaseContext(), intent);
-                                                    }
-                                                }
-                                                break;
-                                            case 1:
-                                                if (!encrypted) {
-                                                    try {
-                                                        File file = new File(filePath);
-                                                        Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
-                                                        String type = activity.getContentResolver().getType(uriForFile);
-                                                        Intent intent = new Intent();
-                                                        intent.setAction(Intent.ACTION_VIEW);
-                                                        intent.setDataAndType(uriForFile, type);
-                                                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                        activity.startActivity(intent);
-                                                    } catch (Exception e) {
-                                                        Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
-                                                    }
+                                                    });
+                                                    dialogBuilder.setNegativeButton(R.string.no, (dialog14, which14) -> {
+                                                    });
+                                                    dialogBuilder.show();
                                                 } else {
-                                                    File encrypted = new File(filePath);
-                                                    if (encrypted.length() <= 50 * 1024 * 1024) {
-                                                        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(fragment.requireContext(), R.style.MaterialAlertDialog_rounded);
-                                                        ProgressBar bar = new ProgressBar(fragment.requireContext());
-                                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                                                LinearLayout.LayoutParams.WRAP_CONTENT);
-                                                        bar.setLayoutParams(lp);
-                                                        builder2.setTitle(R.string.wait);
-                                                        builder2.setMessage(R.string.decryptionRunning);
-                                                        builder2.setView(bar);
-                                                        builder2.setCancelable(false);
-                                                        builder2.setPositiveButton(R.string.bckgnd, (dialog15, which15) -> dialog15.dismiss());
-                                                        AlertDialog alertDialog = builder2.create();
-                                                        alertDialog.show();
-                                                        File cached = new File((activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).substring(0, (activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).length() - 4));
-                                                        Thread thread = new Thread(() -> {
-                                                            try {
-                                                                cached.getParentFile().mkdirs();
-                                                                cached.delete();
-                                                                viewModel.decryptTemp(encrypted, cached, activity, alertDialog);
-                                                            } catch (Exception e) {
-                                                                e.printStackTrace();
-                                                                cached.delete();
-                                                                activity.runOnUiThread(new Runnable() {
-                                                                    @Override
-                                                                    public void run() {
-                                                                        alertDialog.dismiss();
-                                                                        Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                        thread.start();
-                                                    } else {
-                                                        Snackbar.make(v, R.string.fileTooBig, Snackbar.LENGTH_LONG).show();
-                                                    }
+                                                    Snackbar.make(v, R.string.decStarted, Snackbar.LENGTH_LONG).show();
+                                                    ArrayList<String> paths = new ArrayList<>();
+                                                    paths.add(filePath);
+                                                    Intent intent = new Intent(activity.getBaseContext(), EncryptorService.class);
+                                                    intent.putExtra(ACTIONTYPE, "D");
+                                                    EncryptorService.uniqueID++;
+                                                    int i = EncryptorService.uniqueID;
+                                                    EncryptorService.paths.put(i, paths);
+                                                    intent.putExtra(INDEX, i);
+                                                    intent.putExtra("pass", ((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
+                                                    ContextCompat.startForegroundService(activity.getBaseContext(), intent);
                                                 }
-                                                break;
-                                            case 2:
-                                                SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext()).edit();
-                                                if (favorites.contains(filePath)) {
-                                                    favorites.remove(filePath);
+                                            }
+                                            break;
+                                        case 1:
+                                            if (!encrypted) {
+                                                try {
+                                                    File file = new File(filePath);
+                                                    Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
+                                                    String type = activity.getContentResolver().getType(uriForFile);
+                                                    Intent intent = new Intent();
+                                                    intent.setAction(Intent.ACTION_VIEW);
+                                                    intent.setDataAndType(uriForFile, type);
+                                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                    activity.startActivity(intent);
+                                                } catch (Exception e) {
+                                                    Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                }
+                                            } else {
+                                                File encrypted = new File(filePath);
+                                                if (encrypted.length() <= 50 * 1024 * 1024) {
+                                                    MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(fragment.requireContext(), R.style.MaterialAlertDialog_rounded);
+                                                    ProgressBar bar = new ProgressBar(fragment.requireContext());
+                                                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                                    bar.setLayoutParams(lp);
+                                                    builder2.setTitle(R.string.wait);
+                                                    builder2.setMessage(R.string.decryptionRunning);
+                                                    builder2.setView(bar);
+                                                    builder2.setCancelable(false);
+                                                    builder2.setPositiveButton(R.string.bckgnd, (dialog15, which15) -> dialog15.dismiss());
+                                                    AlertDialog alertDialog = builder2.create();
+                                                    alertDialog.show();
+                                                    File cached = new File((activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).substring(0, (activity.getFilesDir().getPath() + File.separator + ".temp" + File.separator + encrypted.getName()).length() - 4));
+                                                    Thread thread = new Thread(() -> {
+                                                        try {
+                                                            cached.getParentFile().mkdirs();
+                                                            cached.delete();
+                                                            viewModel.decryptTemp(encrypted, cached, activity, alertDialog);
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                            cached.delete();
+                                                            activity.runOnUiThread(() -> {
+                                                                alertDialog.dismiss();
+                                                                Snackbar.make(v, R.string.failedToOpenFile, Snackbar.LENGTH_LONG).show();
+                                                            });
+                                                        }
+                                                    });
+                                                    thread.start();
                                                 } else {
-                                                    favorites.add(filePath);
+                                                    Snackbar.make(v, R.string.fileTooBig, Snackbar.LENGTH_LONG).show();
                                                 }
-                                                preferences.putStringSet("fav", favorites);
-                                                preferences.apply();
-                                                break;
-                                            default:
-                                                break;
-                                        }
+                                            }
+                                            break;
+                                        case 2:
+                                            SharedPreferences.Editor preferences = PreferenceManager.getDefaultSharedPreferences(fragment.requireContext()).edit();
+                                            if (favorites.contains(filePath)) {
+                                                favorites.remove(filePath);
+                                            } else {
+                                                favorites.add(filePath);
+                                            }
+                                            preferences.putStringSet("fav", favorites);
+                                            preferences.apply();
+                                            break;
+                                        default:
+                                            break;
                                     }
                                 });
                                 builder.show();
@@ -425,10 +405,9 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     } else {
                         Snackbar.make(v, R.string.accessDeniedDelete, Snackbar.LENGTH_LONG).show();
                     }
-                    //Move to next folder if clicked element is folder
                 }
             });
-            textView = (TextView) view.findViewById(R.id.fileName);
+            textView = view.findViewById(R.id.fileName);
         }
 
         public TextView getDateView() {
@@ -460,16 +439,8 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         }
     }
 
-    public void addDeletedFile(String path) {
-        deletedFilePaths.add(path);
-    }
-
     public void addAllDeletedFiles(ArrayList<String> paths) {
         deletedFilePaths.addAll(paths);
-    }
-
-    public void removeDeletedFile(String path) {
-        deletedFilePaths.remove(path);
     }
 
     public void removeAllDeletedFiles(ArrayList<String> paths) {
@@ -542,12 +513,6 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         }
     }
 
-    /**
-     * Initialize the dataset of the Adapter.
-     *
-     * @param dataSet String[] containing the data to populate views to be used
-     *                by RecyclerView.
-     */
     public ExplorerAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, BottomNavigationView bottomBar, ExplorerFragment fragment, ExplorerViewModel model) {
         localDataSet = dataSet;
         this.path = path;
@@ -570,24 +535,14 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         theme.resolveAttribute(R.attr.explorerIconColor, typedValue, true);
         @ColorInt int color = typedValue.data;
         defTint = ColorStateList.valueOf(color);
-        service.submit(() -> {
-            try {
-                password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
         favorites.addAll(preferences.getStringSet("fav", new HashSet<>()));
         viewModel = model;
         listener = (view1, resid, parent) -> parent.addView(view1);
     }
 
-    // Create new views (invoked by the layout manager)
     @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
-        //Log.d("ExplorerAdapter", "onCreateViewHolder();");
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.viewholder_dummy, viewGroup, false);
         AsyncLayoutInflater asyncLayoutInflater = new AsyncLayoutInflater(viewGroup.getContext());
@@ -595,7 +550,7 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         return new ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NotNull ViewHolder viewHolder, final int position) {
         service.submit(() -> {
@@ -635,19 +590,13 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
             } else {
                 activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(1f));
             }
-            // Get element from your dataset at this position and replace the
-            // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
             long lastModified = file.lastModified();
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             format.setTimeZone(TimeZone.getDefault());
             String formattedDate = format.format(new Date(lastModified));
             activity.runOnUiThread(() -> {if (viewHolder.getTextView().getText().toString().equals(file.getName()))viewHolder.getDateView().setText(formattedDate);});
-            if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
-                viewHolder.encrypted = true;
-            } else {
-                viewHolder.encrypted = false;
-            }
+            viewHolder.encrypted = file.getName().endsWith(".enc") || file.getName().endsWith("Enc");
             if (file.isFile()) {
                 Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
                 String type = activity.getContentResolver().getType(uriForFile);
@@ -662,14 +611,12 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     } else if (type.contains("video")) {
                         viewHolder.setFile(R.drawable.ic_movie);
                     } else if (type.contains("x-msdos-program")) {
-                        //EXE
                         viewHolder.setFile(R.drawable.exefile);
                     } else if (type.contains("vnd.android.package-archive")) {
                         viewHolder.setFile(R.drawable.apk);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
                         viewHolder.setFile(R.drawable.presentation);
                     } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {
-                        //DOCX
                         viewHolder.setFile(R.drawable.rtf);
                     } else if (type.contains("rar") || type.contains("zip") || type.contains("7z")) {
                         viewHolder.setFile(R.drawable.zipfile);
@@ -694,23 +641,18 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
                     switch (finalUnit) {
                         case 0:
                             viewHolder.getSizeView().setText(finalLength + " " + B);
-                            //B
                             break;
                         case 1:
                             viewHolder.getSizeView().setText(finalLength + " " + KB);
-                            //KB
                             break;
                         case 2:
                             viewHolder.getSizeView().setText(finalLength + " " + MB);
-                            //MB
                             break;
                         case 3:
                             viewHolder.getSizeView().setText(finalLength + " " + GB);
-                            //GB
                             break;
                         case 4:
                             viewHolder.getSizeView().setText(finalLength + " " + TB);
-                            //TB
                             break;
                         default:
                             break;
@@ -806,21 +748,10 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         return files;
     }
 
-    public HashMap<Integer, String> getCheckedNames() {
-        HashMap<Integer, String> files = new HashMap<>();
-        for (int i = 0; i < holders.size(); i++) {
-            if (holders.get(i).fileCheckbox.isChecked()) {
-                files.put(holders.get(i).getAdapterPosition(), (holders.get(i).realPath));
-            }
-        }
-        return files;
-    }
-
     public String getPath() {
         return path;
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return localDataSet.size();
@@ -841,7 +772,4 @@ public class ExplorerAdapter extends RecyclerView.Adapter<ExplorerAdapter.ViewHo
         notifyDataSetChanged();
     }
 
-    protected ArrayList<ViewHolder> getHolders(){
-        return holders;
-    }
 }

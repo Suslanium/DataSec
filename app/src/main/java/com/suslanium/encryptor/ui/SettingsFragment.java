@@ -3,7 +3,6 @@ package com.suslanium.encryptor.ui;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,6 +12,20 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.text.InputType;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.autofill.AutofillManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,22 +37,6 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
-
-import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.text.InputType;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.autofill.AutofillManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.Switch;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -61,7 +58,6 @@ public class SettingsFragment extends Fragment {
     private static final int SIGNIN = 0;
 
     public SettingsFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -76,7 +72,6 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
@@ -99,6 +94,7 @@ public class SettingsFragment extends Fragment {
         updateUI();
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateUI() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
@@ -129,60 +125,51 @@ public class SettingsFragment extends Fragment {
         Button signOut = requireActivity().findViewById(R.id.signOut);
         Button changeIc = requireActivity().findViewById(R.id.changeIc);
         Button showTutorial = requireActivity().findViewById(R.id.showTutorialAgain);
-        showTutorial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putBoolean("explorerTutorialComplete", false);
-                editor.putBoolean("gDriveTutorialComplete", false);
-                editor.putBoolean("messageCryptTutorialComplete", false);
-                editor.putBoolean("notebookTutorialComplete", false);
-                editor.putBoolean("passwordTutorialComplete", false);
-                editor.apply();
-                Snackbar.make(v,getString(R.string.applied),Snackbar.LENGTH_LONG).show();
-            }
+        showTutorial.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("explorerTutorialComplete", false);
+            editor.putBoolean("gDriveTutorialComplete", false);
+            editor.putBoolean("messageCryptTutorialComplete", false);
+            editor.putBoolean("notebookTutorialComplete", false);
+            editor.putBoolean("passwordTutorialComplete", false);
+            editor.apply();
+            Snackbar.make(v,getString(R.string.applied),Snackbar.LENGTH_LONG).show();
         });
-        changeIc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                        .setTitle(R.string.selectIcon)
-                        .setItems(new CharSequence[]{getString(R.string.defApp), getString(R.string.calcApp), getString(R.string.playStoreApp), getString(R.string.cameraApp)}, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which){
-                                    case 0:
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        break;
-                                    case 1:
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        break;
-                                    case 2:
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        break;
-                                    case 3:
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                Snackbar.make(v, R.string.appWillClose,Snackbar.LENGTH_LONG).show();
-                            }
-                        });
-                builder.show();
-            }
+        changeIc.setOnClickListener(v -> {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                    .setTitle(R.string.selectIcon)
+                    .setItems(new CharSequence[]{getString(R.string.defApp), getString(R.string.calcApp), getString(R.string.playStoreApp), getString(R.string.cameraApp)}, (dialog, which) -> {
+                        switch (which){
+                            case 0:
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                break;
+                            case 1:
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                break;
+                            case 2:
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                break;
+                            case 3:
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CameraIc"), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.PlayStoreIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.CalcIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                requireContext().getPackageManager().setComponentEnabledSetting(new ComponentName("com.suslanium.encryptor", "com.suslanium.encryptor.DefaultIc"), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                                break;
+                            default:
+                                break;
+                        }
+                        Snackbar.make(v, R.string.appWillClose,Snackbar.LENGTH_LONG).show();
+                    });
+            builder.show();
         });
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).searchButton != null)
@@ -196,11 +183,7 @@ public class SettingsFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             AutofillManager autofillManager = requireContext().getSystemService(AutofillManager.class);
             if (autofillManager.isAutofillSupported()) {
-                if (autofillManager.hasEnabledAutofillServices()) {
-                    enableAutofill.setChecked(true);
-                } else {
-                    enableAutofill.setChecked(false);
-                }
+                enableAutofill.setChecked(autofillManager.hasEnabledAutofillServices());
             } else {
                 enableAutofill.setEnabled(false);
             }
@@ -215,69 +198,57 @@ public class SettingsFragment extends Fragment {
             if(usesBioAuth){
                 bioSwitch.setChecked(true);
             }
-            bioSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked){
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                                .setTitle(R.string.warning)
-                                .setCancelable(false)
-                                .setMessage(R.string.bioWarning)
-                                .setPositiveButton(R.string.yes, (dialog, which) -> {
-                                    SharedPreferences.Editor prefEdit = preferences.edit();
-                                    prefEdit.putBoolean("usesBioAuth", isChecked);
-                                    prefEdit.apply();
-                                    Thread thread = new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
+            bioSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if(isChecked){
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.warning)
+                            .setCancelable(false)
+                            .setMessage(R.string.bioWarning)
+                            .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                SharedPreferences.Editor prefEdit = preferences.edit();
+                                prefEdit.putBoolean("usesBioAuth", isChecked);
+                                prefEdit.apply();
+                                Thread thread = new Thread(() -> {
+                                    try {
+                                        String pass = Encryptor.rsadecrypt(((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                                        MasterKey mainKey = new MasterKey.Builder(requireContext())
+                                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                                .build();
+                                        SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                        SharedPreferences.Editor edit = editor.edit();
+                                        edit.putString("pass", pass);
+                                        edit.apply();
+                                    } catch (Exception e) {
+                                        requireActivity().runOnUiThread(() -> {
                                             try {
-                                                String pass = Encryptor.rsadecrypt(((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                                                MasterKey mainKey = new MasterKey.Builder(requireContext())
-                                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                                        .build();
-                                                SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                                                SharedPreferences.Editor edit = editor.edit();
-                                                edit.putString("pass", pass);
-                                                edit.apply();
-                                            } catch (Exception e) {
-                                                requireActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        try {
-                                                            Snackbar.make(requireView(), R.string.authEnableFail, Snackbar.LENGTH_LONG).show();
-                                                            bioSwitch.setChecked(false);
-                                                        } catch (Exception e){}
-                                                        prefEdit.putBoolean("usesBioAuth", false);
-                                                        prefEdit.apply();
-                                                    }
-                                                });
-                                            }
-                                        }
-                                    });
-                                    thread.start();
-                                })
-                                .setNegativeButton(R.string.no, (dialog, which) -> {bioSwitch.setChecked(false);dialog.dismiss();});
-                        builder.show();
-                    } else {
-                        SharedPreferences.Editor prefEdit = preferences.edit();
-                        prefEdit.putBoolean("usesBioAuth", isChecked);
-                        prefEdit.apply();
-                        Thread thread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    MasterKey mainKey = new MasterKey.Builder(requireContext())
-                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                            .build();
-                                    SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                                    SharedPreferences.Editor edit = editor.edit();
-                                    edit.remove("pass");
-                                    edit.apply();
-                                } catch (Exception ignored) {}
-                            }
-                        });
-                        thread.start();
-                    }
+                                                Snackbar.make(requireView(), R.string.authEnableFail, Snackbar.LENGTH_LONG).show();
+                                                bioSwitch.setChecked(false);
+                                            } catch (Exception ignored){}
+                                            prefEdit.putBoolean("usesBioAuth", false);
+                                            prefEdit.apply();
+                                        });
+                                    }
+                                });
+                                thread.start();
+                            })
+                            .setNegativeButton(R.string.no, (dialog, which) -> {bioSwitch.setChecked(false);dialog.dismiss();});
+                    builder.show();
+                } else {
+                    SharedPreferences.Editor prefEdit = preferences.edit();
+                    prefEdit.putBoolean("usesBioAuth", isChecked);
+                    prefEdit.apply();
+                    Thread thread = new Thread(() -> {
+                        try {
+                            MasterKey mainKey = new MasterKey.Builder(requireContext())
+                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                    .build();
+                            SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                            SharedPreferences.Editor edit = editor.edit();
+                            edit.remove("pass");
+                            edit.apply();
+                        } catch (Exception ignored) {}
+                    });
+                    thread.start();
                 }
             });
         }
@@ -408,8 +379,7 @@ public class SettingsFragment extends Fragment {
                                     Intent intent2 = new Intent(requireContext(), PasswordActivity.class);
                                     startActivity(intent2);
                                 });
-                            } catch (Exception e) {
-
+                            } catch (Exception ignored) {
                             }
                         });
                         thread.start();
@@ -528,12 +498,10 @@ public class SettingsFragment extends Fragment {
                                                     case 2:
                                                         Snackbar.make(requireView(), R.string.databaseNotFound, Snackbar.LENGTH_LONG).show();
                                                         EncryptorService.backupRestoreReturn = 0;
-                                                        //No database
                                                         break;
                                                     case 3:
                                                         Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
                                                         EncryptorService.backupRestoreReturn = 0;
-                                                        //Error
                                                         break;
                                                     default:
                                                         break;
@@ -592,48 +560,43 @@ public class SettingsFragment extends Fragment {
         builder2.setCancelable(false);
         AlertDialog alertDialog = builder2.create();
         alertDialog.show();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread thread = new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+
+                Thread.currentThread().interrupt();
+            }
+            while (EncryptorService.deletingFiles.containsValue(true)) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
 
                     Thread.currentThread().interrupt();
                 }
-                while (EncryptorService.deletingFiles.containsValue(true)) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                requireActivity().runOnUiThread(() -> {
-                    alertDialog.dismiss();
-                    switch (EncryptorService.backupRestoreReturn) {
-                        case 0:
-                            Snackbar.make(requireView(), R.string.databaseRestoreSuccess, Snackbar.LENGTH_LONG).show();
-                            break;
-                        case 1:
-                            Snackbar.make(requireView(), R.string.databasePassNotMatch, Snackbar.LENGTH_LONG).show();
-                            EncryptorService.backupRestoreReturn = 0;
-                            break;
-                        case 2:
-                            Snackbar.make(requireView(), R.string.noDBfoundInCloud, Snackbar.LENGTH_LONG).show();
-                            EncryptorService.backupRestoreReturn = 0;
-                            //No database
-                            break;
-                        case 3:
-                            Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
-                            EncryptorService.backupRestoreReturn = 0;
-                            //Error
-                            break;
-                        default:
-                            break;
-                    }
-                });
             }
+            requireActivity().runOnUiThread(() -> {
+                alertDialog.dismiss();
+                switch (EncryptorService.backupRestoreReturn) {
+                    case 0:
+                        Snackbar.make(requireView(), R.string.databaseRestoreSuccess, Snackbar.LENGTH_LONG).show();
+                        break;
+                    case 1:
+                        Snackbar.make(requireView(), R.string.databasePassNotMatch, Snackbar.LENGTH_LONG).show();
+                        EncryptorService.backupRestoreReturn = 0;
+                        break;
+                    case 2:
+                        Snackbar.make(requireView(), R.string.noDBfoundInCloud, Snackbar.LENGTH_LONG).show();
+                        EncryptorService.backupRestoreReturn = 0;
+                        break;
+                    case 3:
+                        Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                        EncryptorService.backupRestoreReturn = 0;
+                        break;
+                    default:
+                        break;
+                }
+            });
         });
         thread.start();
     }

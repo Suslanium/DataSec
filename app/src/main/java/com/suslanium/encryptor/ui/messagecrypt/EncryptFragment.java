@@ -35,7 +35,6 @@ import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.getTapTarget;
 public class EncryptFragment extends Fragment {
     public static final String ARG_OBJECT = "intType";
     private boolean isLoading = false;
-    private boolean tutorialComplete = false;
 
     @Nullable
     @Override
@@ -50,7 +49,7 @@ public class EncryptFragment extends Fragment {
         Bundle args = getArguments();
         int position = args.getInt(ARG_OBJECT);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        tutorialComplete = preferences.getBoolean("messageCryptTutorialComplete",false);
+        boolean tutorialComplete = preferences.getBoolean("messageCryptTutorialComplete", false);
         TextInputEditText plain = view.findViewById(R.id.plainEditText);
         plain.setSingleLine(true);
         TextInputEditText key = view.findViewById(R.id.keyEditText);

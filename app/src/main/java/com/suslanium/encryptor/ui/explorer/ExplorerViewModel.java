@@ -27,12 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ExplorerViewModel extends AndroidViewModel {
-    private MutableLiveData<ArrayList<String>> paths;
-    private boolean showHiddenFiles;
-    private MutableLiveData<String> currentPath;
-    private MutableLiveData<double[]> freeSpace;
-    private MutableLiveData<String> currentStoragePath;
-    private MutableLiveData<String> currentStorageName;
+    private final MutableLiveData<ArrayList<String>> paths;
+    private final boolean showHiddenFiles;
+    private final MutableLiveData<String> currentPath;
+    private final MutableLiveData<double[]> freeSpace;
+    private final MutableLiveData<String> currentStoragePath;
+    private final MutableLiveData<String> currentStorageName;
     private String password = null;
 
     public ExplorerViewModel(@NonNull Application application) {
@@ -46,7 +46,7 @@ public class ExplorerViewModel extends AndroidViewModel {
         showHiddenFiles = preferences.getBoolean("showHidden", false);
     }
 
-    public LiveData<ArrayList<String>> getFileNames(File parent){
+    public void getFileNames(File parent){
         File[] files2 = parent.listFiles();
         ArrayList<String> paths14 = new ArrayList<>();
         for (int i = 0; i < files2.length; i++) {
@@ -66,7 +66,6 @@ public class ExplorerViewModel extends AndroidViewModel {
         }
         paths.postValue(fileNames2);
         setPath(parent);
-        return paths;
     }
 
     public LiveData<ArrayList<String>> getCurrentNames(){
@@ -175,7 +174,7 @@ public class ExplorerViewModel extends AndroidViewModel {
         return sortedFiles;
     }
 
-    public LiveData<double[]> calculateFreeSpace(String path){
+    public void calculateFreeSpace(String path){
         StatFs fs = new StatFs(path);
         double freeSpace = fs.getFreeBlocksLong() * fs.getBlockSizeLong();
         int spaceDivisonCount = 0;
@@ -185,7 +184,6 @@ public class ExplorerViewModel extends AndroidViewModel {
         }
         freeSpace = (double) Math.round(freeSpace * 100) / 100;
         this.freeSpace.setValue(new double[]{spaceDivisonCount,freeSpace});
-        return this.freeSpace;
     }
     public LiveData<double[]> getFreeSpace(){
         return freeSpace;
@@ -244,12 +242,9 @@ public class ExplorerViewModel extends AndroidViewModel {
         intent.setAction(Intent.ACTION_VIEW);
         intent.setDataAndType(uriForFile, type);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                alertDialog.dismiss();
-                activity.startActivityForResult(intent, 101);
-            }
+        activity.runOnUiThread(() -> {
+            alertDialog.dismiss();
+            activity.startActivityForResult(intent, 101);
         });
     }
 }

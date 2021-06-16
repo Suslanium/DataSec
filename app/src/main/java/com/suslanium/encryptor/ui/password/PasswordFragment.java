@@ -210,70 +210,47 @@ public class PasswordFragment extends Fragment {
         searchText = requireView().findViewById(R.id.passwordSearchText);
         newCategory = requireActivity().findViewById(R.id.newCategory);
         LiveData<ArrayList<Integer>> ids = viewModel.getIds();
-        final Observer<ArrayList<Integer>> idObserver = new Observer<ArrayList<Integer>>() {
-            @Override
-            public void onChanged(ArrayList<Integer> integers) {
-                onThreadDone(viewModel.getNames().getValue(), integers, viewModel.getLogins().getValue(), viewModel.getIcons().getValue());
-            }
-        };
+        final Observer<ArrayList<Integer>> idObserver = integers -> onThreadDone(viewModel.getNames().getValue(), integers, viewModel.getLogins().getValue(), viewModel.getIcons().getValue());
         ids.observe(getViewLifecycleOwner(), idObserver);
-        newCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentOperationNumber == 0) {
-                    final EditText input = new EditText(requireContext());
-                    Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
-                    input.setTypeface(ubuntu);
-                    input.setInputType(InputType.TYPE_CLASS_TEXT);
-                    input.setSingleLine(true);
-                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
-                    builder.setTitle(R.string.categoryName);
-                    builder.setView(input);
-                    builder.setCancelable(false);
-                    builder.setPositiveButton(R.string.create, (dialog, which) -> {
-                    });
-                    builder.setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    });
-                    AlertDialog dialog2 = builder.create();
-                    dialog2.show();
-                    dialog2.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            String name = input.getText().toString();
-                            if (!name.matches("")) {
-                                Thread thread = new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            boolean created = viewModel.createCategory(name);
-                                            if (created) {
-                                                requireActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        dialog2.dismiss();
-                                                        updateView(requireView());
-                                                    }
-                                                });
-                                            } else {
-                                                requireActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        Snackbar.make(v, R.string.catExists, Snackbar.LENGTH_LONG);
-                                                    }
-                                                });
-                                            }
-                                        } catch (Exception e) {
-
-                                        }
-                                    }
-                                });
-                                thread.start();
-                            } else {
-                                Snackbar.make(v, R.string.enterCatName, Snackbar.LENGTH_LONG);
+        newCategory.setOnClickListener(v -> {
+            if (currentOperationNumber == 0) {
+                final EditText input = new EditText(requireContext());
+                Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
+                input.setTypeface(ubuntu);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setSingleLine(true);
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);
+                builder.setTitle(R.string.categoryName);
+                builder.setView(input);
+                builder.setCancelable(false);
+                builder.setPositiveButton(R.string.create, (dialog, which) -> {
+                });
+                builder.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                });
+                AlertDialog dialog2 = builder.create();
+                dialog2.show();
+                dialog2.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
+                    String name = input.getText().toString();
+                    if (!name.matches("")) {
+                        Thread thread = new Thread(() -> {
+                            try {
+                                boolean created = viewModel.createCategory(name);
+                                if (created) {
+                                    requireActivity().runOnUiThread(() -> {
+                                        dialog2.dismiss();
+                                        updateView(requireView());
+                                    });
+                                } else {
+                                    requireActivity().runOnUiThread(() -> Snackbar.make(v12, R.string.catExists, Snackbar.LENGTH_LONG));
+                                }
+                            } catch (Exception ignored) {
                             }
-                        }
-                    });
-                }
+                        });
+                        thread.start();
+                    } else {
+                        Snackbar.make(v12, R.string.enterCatName, Snackbar.LENGTH_LONG);
+                    }
+                });
             }
         });
     }
@@ -334,15 +311,10 @@ public class PasswordFragment extends Fragment {
                 try {
                     boolean b = viewModel.updateList();
                     if (b) {
-                        requireActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                newCategory.setEnabled(true);
-                            }
-                        });
+                        requireActivity().runOnUiThread(() -> newCategory.setEnabled(true));
                     }
                 } catch (Exception e) {
-                    requireActivity().runOnUiThread(() -> Snackbar.make(view, "Failed to read database(perhaps your password is wrong?).", Snackbar.LENGTH_LONG).show());
+                    requireActivity().runOnUiThread(() -> Snackbar.make(view, getString(R.string.failedToReadDB), Snackbar.LENGTH_LONG).show());
                     e.printStackTrace();
                 }
             });

@@ -28,7 +28,7 @@ public class NotebookViewModel extends AndroidViewModel {
         if (inputStream != null) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String receiveString = "";
+            String receiveString;
             StringBuilder stringBuilder = new StringBuilder();
             boolean first = true;
             while ((receiveString = bufferedReader.readLine()) != null) {

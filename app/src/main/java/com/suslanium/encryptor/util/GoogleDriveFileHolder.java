@@ -1,32 +1,10 @@
 package com.suslanium.encryptor.util;
 
-import com.google.api.client.util.DateTime;
-
 public class GoogleDriveFileHolder {
 
     private String id;
     private String name;
-    private DateTime modifiedTime;
     private long size;
-    private DateTime createdTime;
-    private Boolean starred;
-
-
-    public DateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(DateTime createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public Boolean getStarred() {
-        return starred;
-    }
-
-    public void setStarred(Boolean starred) {
-        this.starred = starred;
-    }
 
     public String getId() {
         return id;
@@ -42,14 +20,6 @@ public class GoogleDriveFileHolder {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public DateTime getModifiedTime() {
-        return modifiedTime;
-    }
-
-    public void setModifiedTime(DateTime modifiedTime) {
-        this.modifiedTime = modifiedTime;
     }
 
     public long getSize() {

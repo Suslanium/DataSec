@@ -299,4 +299,5 @@
     <string name="sendFeedback">Send feedback</string>
     <string name="whyPermissions">What are permissions for?</string>
     <string name="whyPermissionsText">Access to the storage is necessary for the file manager and other functions to work, and disabling consumption optimization is necessary so that the application can perform operations in the background (Encryption, decryption, etc.). On some devices without this permission, background operations are very slow, and downloading or downloading files may be interrupted. Don\'t worry, the app will only run in the background when needed.</string>
+    <string name="failedToReadDB">Failed to read database(perhaps your password is wrong?).</string>
 </resources>

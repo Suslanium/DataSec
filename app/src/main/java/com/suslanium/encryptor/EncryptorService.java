@@ -58,7 +58,7 @@ import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRON
 public class EncryptorService extends Service {
     private static final String CHANNEL_ID = "Encryptor";
     private int id = 1;
-    private ArrayList<Boolean> isRunning = new ArrayList<>();
+    private final ArrayList<Boolean> isRunning = new ArrayList<>();
     public static HashMap<Integer, ArrayList<String>> paths = new HashMap<>();
     public static HashMap<Integer, String> path = new HashMap<>();
     public static HashMap<Integer, String> originalPath = new HashMap<>();
@@ -679,13 +679,12 @@ public class EncryptorService extends Service {
                     String password = null;
                     try {
                         password = Encryptor.rsadecrypt(pass);
-                    } catch (Exception e) {
-
+                    } catch (Exception ignored) {
                     }
                     String newPass = null;
                     try {
                         newPass = Encryptor.rsadecrypt(newPassEnc);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
 
                     }
                     if(origin.exists()) {
@@ -734,7 +733,7 @@ public class EncryptorService extends Service {
                                             Encryptor.encryptFileAES256(temp, newPass, noteFiles[i]);
                                             Encryptor.wipeFile(temp);
                                             temp.delete();
-                                        } catch (Exception e){
+                                        } catch (Exception ignored){
 
                                         }
                                     }
@@ -787,8 +786,7 @@ public class EncryptorService extends Service {
                             edit.putString("passHash", Encryptor.calculateHash(newPass, "SHA-512"));
                             if(finalUsesBioAuth) edit.putString("pass", newPass);
                             edit.apply();
-                        } catch (Exception e){
-
+                        } catch (Exception ignored){
                         }
                         EncryptorService.changingPassword = false;
                         isRunning.remove(true);
@@ -825,7 +823,7 @@ public class EncryptorService extends Service {
                 String currentOriginalPath = EncryptorService.originalPath.remove(index);
                 HashMap<String, String> pathsToReplace = EncryptorService.folderReplacements.remove(index);
                 Thread thread = new Thread(() -> {
-                    NotificationCompat.Builder builder3 = null;
+                    NotificationCompat.Builder builder3;
                     if (pathsList != null) {
                         builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_baseline_lock_24)
@@ -864,55 +862,52 @@ public class EncryptorService extends Service {
             }
             case "gDriveDBU": {
                 EncryptorService.deletingFiles.put(index, true);
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            File fileToUpload = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
-                            if (fileToUpload.exists()) {
-                                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                        .requestEmail()
-                                        .build();
-                                GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(getApplicationContext(), gso);
-                                GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
-                                if (acct != null) {
-                                    GoogleSignInAccount mAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
-                                    GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Collections.singleton(Scopes.DRIVE_APPFOLDER));
-                                    if (mAccount != null) {
-                                        credential.setSelectedAccount(mAccount.getAccount());
-                                    }
-                                    Drive googleDriveService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).setApplicationName(CHANNEL_ID).build();
-                                    DriveServiceHelper mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-                                    List<com.google.api.services.drive.model.File> driveFiles = mDriveServiceHelper.listDriveFiles(null);
-                                    ArrayList<String> driveFileNames = new ArrayList<>();
-                                    if (driveFiles != null) {
-                                        for (int i = 0; i < driveFiles.size(); i++) {
-                                            driveFileNames.add(driveFiles.get(i).getName());
-                                        }
-                                    }
-                                    if (driveFileNames.contains(fileToUpload.getName())) {
-                                        for (int j = 0; j < driveFiles.size(); j++) {
-                                            if (driveFiles.get(j).getName().equals(fileToUpload.getName())) {
-                                                mDriveServiceHelper.deleteFolderFile(driveFiles.get(j).getId());
-                                                mDriveServiceHelper.uploadFile(fileToUpload, null);
-                                                break;
-                                            }
-                                        }
-                                    } else {
-                                        mDriveServiceHelper.uploadFile(fileToUpload, null);
+                Thread thread = new Thread(() -> {
+                    try {
+                        File fileToUpload = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
+                        if (fileToUpload.exists()) {
+                            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestEmail()
+                                    .build();
+                            GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(getApplicationContext(), gso);
+                            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+                            if (acct != null) {
+                                GoogleSignInAccount mAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+                                GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Collections.singleton(Scopes.DRIVE_APPFOLDER));
+                                if (mAccount != null) {
+                                    credential.setSelectedAccount(mAccount.getAccount());
+                                }
+                                Drive googleDriveService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).setApplicationName(CHANNEL_ID).build();
+                                DriveServiceHelper mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
+                                List<com.google.api.services.drive.model.File> driveFiles = mDriveServiceHelper.listDriveFiles(null);
+                                ArrayList<String> driveFileNames = new ArrayList<>();
+                                if (driveFiles != null) {
+                                    for (int i = 0; i < driveFiles.size(); i++) {
+                                        driveFileNames.add(driveFiles.get(i).getName());
                                     }
                                 }
-                            } else {
-                                EncryptorService.backupRestoreReturn = 2;
+                                if (driveFileNames.contains(fileToUpload.getName())) {
+                                    for (int j = 0; j < driveFiles.size(); j++) {
+                                        if (driveFiles.get(j).getName().equals(fileToUpload.getName())) {
+                                            mDriveServiceHelper.deleteFolderFile(driveFiles.get(j).getId());
+                                            mDriveServiceHelper.uploadFile(fileToUpload, null);
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    mDriveServiceHelper.uploadFile(fileToUpload, null);
+                                }
                             }
-                        } catch (Exception e) {
-
-                            EncryptorService.backupRestoreReturn = 3;
+                        } else {
+                            EncryptorService.backupRestoreReturn = 2;
                         }
-                        EncryptorService.deletingFiles.remove(index);
-                        isRunning.remove(true);
-                        if (!isRunning.contains(true)) stopSelf();
+                    } catch (Exception e) {
+
+                        EncryptorService.backupRestoreReturn = 3;
                     }
+                    EncryptorService.deletingFiles.remove(index);
+                    isRunning.remove(true);
+                    if (!isRunning.contains(true)) stopSelf();
                 });
                 thread.start();
                 break;
@@ -967,8 +962,7 @@ public class EncryptorService extends Service {
                                                 in.close();
                                                 Encryptor.wipeFile(toDownload);
                                                 toDownload.delete();
-                                            } catch (Exception e) {
-
+                                            } catch (Exception ignored) {
                                             }
                                         } else {
                                             SQLiteDatabase downloadedDatabase = Encryptor.openDownloadedTable(toDownload, password, getBaseContext());
@@ -998,12 +992,10 @@ public class EncryptorService extends Service {
                                         Encryptor.wipeFile(toDownload);
                                         toDownload.delete();
                                         EncryptorService.backupRestoreReturn = 1;
-                                        //Password doesn't match
                                     }
                                 }
                             } else {
                                 EncryptorService.backupRestoreReturn = 2;
-                                //No database found
                             }
                         }
                     } catch (Exception e) {

@@ -52,7 +52,6 @@ public class PasswordEntry extends AppCompatActivity {
     private String passName = "";
     private String websiteName = "";
     private String notesName = "";
-    private byte[] image = null;
     private ImageView icon;
     private TextInputEditText name;
     private TextInputEditText login;
@@ -224,16 +223,12 @@ public class PasswordEntry extends AppCompatActivity {
         TextInputLayout nameLayout = findViewById(R.id.name1);
         nameLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         nameLayout.setEndIconDrawable(R.drawable.copysmall);
-        nameLayout.setEndIconOnClickListener(v -> {
-            copyToClipboard(name, v);
-        });
+        nameLayout.setEndIconOnClickListener(v -> copyToClipboard(name, v));
         TextInputLayout passLayout = findViewById(R.id.pass1);
         TextInputLayout loginLayout = findViewById(R.id.login1);
         loginLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         loginLayout.setEndIconDrawable(R.drawable.copysmall);
-        loginLayout.setEndIconOnClickListener(v -> {
-            copyToClipboard(login, v);
-        });
+        loginLayout.setEndIconOnClickListener(v -> copyToClipboard(login, v));
         TextInputLayout websiteLayout = findViewById(R.id.website1);
         websiteLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         websiteLayout.setEndIconDrawable(R.drawable.browsericon);
@@ -251,9 +246,7 @@ public class PasswordEntry extends AppCompatActivity {
         TextInputLayout noteLayout = findViewById(R.id.notes1);
         noteLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
         noteLayout.setEndIconDrawable(R.drawable.copysmall);
-        noteLayout.setEndIconOnClickListener(v -> {
-            copyToClipboard(notes, v);
-        });
+        noteLayout.setEndIconOnClickListener(v -> copyToClipboard(notes, v));
         ProgressBar strength = findViewById(R.id.passwordStrengthBar2);
         strength.setMax(1000);
         strength.setProgressTintList(ColorStateList.valueOf(colorFrom));

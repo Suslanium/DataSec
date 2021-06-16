@@ -64,7 +64,7 @@ public class EncryptorAutofillService extends AutofillService {
                 parseAutoFillFields(structure.getWindowNodeAt(0).getRootViewNode(), passNodes, true);
                 getPossibleAppNames(structure.getWindowNodeAt(0).getRootViewNode(), texts);
                 ArrayList<AutofillId> ids = new ArrayList<>();
-                int type = 0;
+                int type;
                 if (loginNodes.size() > 0 && passNodes.size() > 0) {
                     for (int i = 0; i < loginNodes.size(); i++) {
                         ids.add(loginNodes.get(i).getAutofillId());

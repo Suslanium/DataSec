@@ -21,9 +21,7 @@ import com.suslanium.encryptor.R;
 public class MessageFragment extends Fragment {
     MessageCryptCollectionAdapter messageCryptCollectionAdapter;
     ViewPager2 viewPager;
-    public MessageFragment() {
-        // Required empty public constructor
-    }
+    public MessageFragment() {}
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_message, container, false);

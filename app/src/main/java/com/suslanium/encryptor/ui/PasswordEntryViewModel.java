@@ -96,8 +96,7 @@ public class PasswordEntryViewModel extends AndroidViewModel {
             thumbnail.copyPixelsToBuffer(byteBuffer);
             image = byteBuffer.array();
             return thumbnail;
-        } catch (IOException e) {
-
+        } catch (IOException ignored) {
         }
         return null;
     }

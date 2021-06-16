@@ -24,25 +24,6 @@ public class DriveServiceHelper {
         mDriveService = driveService;
     }
 
-    public GoogleDriveFileHolder createFile(String folderId, String filename) throws Exception {
-        GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-        List<String> root;
-        if (folderId == null) {
-            root = Collections.singletonList(APPDATAFOLDER);
-        } else {
-            root = Collections.singletonList(folderId);
-        }
-        File metadata = new File()
-                .setParents(root)
-                .setName(filename);
-        File googleFile = mDriveService.files().create(metadata).execute();
-        if (googleFile == null) {
-            throw new Exception("File hasn't been created");
-        }
-        googleDriveFileHolder.setId(googleFile.getId());
-        return googleDriveFileHolder;
-    }
-
     public GoogleDriveFileHolder createFolder(String folderName, String folderId) throws Exception {
         GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
         List<String> root;
@@ -67,8 +48,7 @@ public class DriveServiceHelper {
     public void downloadFile(java.io.File targetFile, String fileId) {
         try(OutputStream outputStream = new FileOutputStream(targetFile)) {
             mDriveService.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-        } catch (IOException e) {
-
+        } catch (IOException ignored) {
         }
     }
 
@@ -109,7 +89,6 @@ public class DriveServiceHelper {
     }
 
     public void uploadFile(final java.io.File localFile, @Nullable final String folderId) throws Exception {
-        // Retrieve the metadata as a File object.
         List<String> root;
         if (folderId == null) {
             root = Collections.singletonList(APPDATAFOLDER);
@@ -126,7 +105,4 @@ public class DriveServiceHelper {
         googleDriveFileHolder.setName(fileMeta.getName());
     }
 
-    public Drive getDrive(){
-        return mDriveService;
-    }
 }

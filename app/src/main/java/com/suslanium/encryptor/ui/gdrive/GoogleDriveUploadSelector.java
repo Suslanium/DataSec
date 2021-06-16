@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,7 +39,7 @@ import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 public class GoogleDriveUploadSelector extends AppCompatActivity {
-    private ArrayList<String> fileList = new ArrayList<>();
+    private final ArrayList<String> fileList = new ArrayList<>();
     public FloatingActionButton upFolder;
     public int currentOperationNumber = 0;
     private TextView storagePath;
@@ -79,75 +80,64 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         ListIterator<String> pathIterator = storagePaths.listIterator();
         pathIterator.next();
         final GDriveUploadSelectorAdapter[] adapter = {null};
-        //fileView.setLayoutManager(new LinearLayoutManager(this));
-        //fileView.setAdapter(adapter);
         LiveData<double[]> freeSpaces = viewModel.getFreeSpace();
-        final Observer<double[]> spaceObserver = new Observer<double[]>() {
-            @Override
-            public void onChanged(double[] doubles) {
-                double freeSpace1 = doubles[1];
-                double spaceDivisionCount = doubles[0];
-                switch ((int) spaceDivisionCount) {
-                    case 0:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
-                        break;
-                    case 1:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
-                        break;
-                    case 2:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
-                        break;
-                    case 3:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
-                        break;
-                    case 4:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
-                        break;
-                    default:
-                        break;
-                }
+        @SuppressLint("SetTextI18n") final Observer<double[]> spaceObserver = doubles -> {
+            double freeSpace1 = doubles[1];
+            double spaceDivisionCount = doubles[0];
+            switch ((int) spaceDivisionCount) {
+                case 0:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
+                    break;
+                case 1:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
+                    break;
+                case 2:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
+                    break;
+                case 3:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
+                    break;
+                case 4:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
+                    break;
+                default:
+                    break;
             }
         };
         freeSpaces.observe(this, spaceObserver);
         LiveData<ArrayList<String>> currentNames = viewModel.getCurrentNames();
         viewModel.calculateFreeSpace(viewModel.getPath().getValue());
-        final Observer<ArrayList<String>> pathsObserver = new Observer<ArrayList<String>>() {
-            @Override
-            public void onChanged(ArrayList<String> strings) {
-                fileList.clear();
-                fileList.addAll(strings);
-                if(adapter[0] != null) {
-                    new Handler().postDelayed(new Runnable() {
+        final Observer<ArrayList<String>> pathsObserver = strings -> {
+            fileList.clear();
+            fileList.addAll(strings);
+            if(adapter[0] != null) {
+                new Handler().postDelayed(() -> {
+                    Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
+                    fadeOut1.setAnimationListener(new Animation.AnimationListener() {
                         @Override
-                        public void run() {
-                            Animation fadeOut1 = AnimationUtils.loadAnimation(GoogleDriveUploadSelector.this, android.R.anim.slide_in_left);
-                            fadeOut1.setAnimationListener(new Animation.AnimationListener() {
-                                @Override
-                                public void onAnimationStart(Animation animation) {
-                                }
-
-                                @Override
-                                public void onAnimationEnd(Animation animation) {
-                                    currentOperationNumber = 0;
-                                }
-
-                                @Override
-                                public void onAnimationRepeat(Animation animation) {
-                                }
-                            });
-                            fileView.suppressLayout(false);
-                            fadeOut1.setDuration(200);
-                            fileView.startAnimation(fadeOut1);
-                            adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
-                            fileView.scrollToPosition(0);
-                            setStoragePath(viewModel.getPath().getValue());
+                        public void onAnimationStart(Animation animation) {
                         }
-                    }, 200);
-                } else {
-                    adapter[0] = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, GoogleDriveUploadSelector.this, viewModel);
-                    fileView.setLayoutManager(new LinearLayoutManager(GoogleDriveUploadSelector.this));
-                    fileView.setAdapter(adapter[0]);
-                }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            currentOperationNumber = 0;
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    fileView.suppressLayout(false);
+                    fadeOut1.setDuration(200);
+                    fileView.startAnimation(fadeOut1);
+                    adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
+                    fileView.scrollToPosition(0);
+                    setStoragePath(viewModel.getPath().getValue());
+                }, 200);
+            } else {
+                adapter[0] = new GDriveUploadSelectorAdapter(fileList, Environment.getExternalStorageDirectory().getPath(), fileView, GoogleDriveUploadSelector.this, viewModel);
+                fileView.setLayoutManager(new LinearLayoutManager(GoogleDriveUploadSelector.this));
+                fileView.setAdapter(adapter[0]);
             }
         };
         currentNames.observe(this, pathsObserver);
@@ -276,8 +266,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                                     ExplorerFragment.fadeIn(search[0]);
                                     ExplorerFragment.fadeIn(bar[0]);
                                     Snackbar.make(v, R.string.noResults, Snackbar.LENGTH_LONG).show();
-                                } catch (Exception e) {
-
+                                } catch (Exception ignored) {
                                 }
                             });
                         } else {
@@ -314,7 +303,6 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
                 final InputMethodManager inputMethodManager = (InputMethodManager) GoogleDriveUploadSelector.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
             } else {
-                //Search
                 searchListener.onClick(v);
             }
         });

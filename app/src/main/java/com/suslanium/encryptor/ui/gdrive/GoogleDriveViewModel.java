@@ -13,7 +13,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.api.Scope;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.gson.GsonFactory;
@@ -28,17 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GoogleDriveViewModel extends AndroidViewModel {
-    private MutableLiveData<ArrayList<String>[]> names;
-    private HashMap<Integer, ArrayList<String>[]> prevLists = new HashMap<>();
-    private Scope SCOPEEMAIL = new Scope(Scopes.EMAIL);
-    private Scope SCOPEAPP = new Scope(Scopes.DRIVE_APPFOLDER);
+    private final MutableLiveData<ArrayList<String>[]> names;
+    private final HashMap<Integer, ArrayList<String>[]> prevLists = new HashMap<>();
     private Drive googleDriveService = null;
     private DriveServiceHelper mDriveServiceHelper = null;
-    private GoogleSignInClient mGoogleSignInClient;
-    private MutableLiveData<String> currentFolderID;
-    private ArrayList<String> ids = new ArrayList<>();
-    private ArrayList<String> folders = new ArrayList<>();
-    int RCAUTHORIZEDRIVE = 1;
+    private final MutableLiveData<String> currentFolderID;
+    private final ArrayList<String> ids = new ArrayList<>();
+    private final ArrayList<String> folders = new ArrayList<>();
+
     public GoogleDriveViewModel(@NonNull Application application) {
         super(application);
         names = new MutableLiveData<>();
@@ -49,7 +45,7 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(getApplication().getBaseContext(), gso);
+        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(getApplication().getBaseContext(), gso);
         GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplication().getBaseContext());
         return acct != null;
     }
@@ -75,10 +71,10 @@ public class GoogleDriveViewModel extends AndroidViewModel {
             if (about.getStorageQuota().getUsage() != null) {
                 used = about.getStorageQuota().getUsage();
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
-        long free = 0;
+        long free;
         if (total != 0 && used != 0) {
             free = total - used;
             double freeSpace = free;
@@ -94,7 +90,7 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         }
     }
 
-    protected LiveData<ArrayList<String>[]> listFilesInFolder(String currentFolderID, boolean backPress,boolean addFolderAndID,@Nullable String folderName) throws Exception{
+    protected void listFilesInFolder(String currentFolderID, boolean backPress, boolean addFolderAndID, @Nullable String folderName) throws Exception{
         if(!backPress) {
             List<File> files = mDriveServiceHelper.listDriveFiles(currentFolderID);
             ArrayList<String>[] names = new ArrayList[]{null, null, null};
@@ -117,7 +113,6 @@ public class GoogleDriveViewModel extends AndroidViewModel {
             }
             this.currentFolderID.postValue(currentFolderID);
             this.names.postValue(names);
-            return this.names;
         } else {
             if(prevLists.size() > 1){
                 ArrayList<String>[] list = prevLists.get(prevLists.size() - 2);
@@ -126,9 +121,6 @@ public class GoogleDriveViewModel extends AndroidViewModel {
                 folders.remove(folders.get(folders.size() - 1));
                 this.names.postValue(list);
                 prevLists.remove(prevLists.size() - 1);
-                return this.names;
-            } else {
-                return null;
             }
         }
     }
@@ -145,16 +137,8 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         return folders;
     }
 
-    protected ArrayList<String> getIds(){
-        return ids;
-    }
-
     protected HashMap<Integer,ArrayList<String>[]> getPrevLists(){
         return prevLists;
-    }
-
-    protected DriveServiceHelper getmDriveServiceHelper(){
-        return mDriveServiceHelper;
     }
 
     public int createFolder(String name){

@@ -1,7 +1,6 @@
 package com.suslanium.encryptor.ui.password;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -10,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,8 +23,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.suslanium.encryptor.ui.PasswordEntry;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.PasswordEntry;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -42,20 +40,17 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
     private ArrayList<String> localDataSet;
     private ArrayList<Integer> localids;
     private ArrayList<String> localLogins;
-    private ArrayList<String> localCategories = new ArrayList<>();
-    private Intent intent;
+    private ArrayList<String> localCategories;
+    private final Intent intent;
     private ArrayList<Bitmap> icons = new ArrayList<>();
-    private Activity activity;
-    private PasswordFragment fragment;
-    private boolean showLogins = true;
+    private final Activity activity;
+    private final PasswordFragment fragment;
+    private final boolean showLogins;
     private static ColorStateList defTint;
-    private ExecutorService service;
-    private AsyncLayoutInflater.OnInflateFinishedListener onInflateFinishedListener;
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder).
-     */
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    private final ExecutorService service;
+    private final AsyncLayoutInflater.OnInflateFinishedListener onInflateFinishedListener;
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;
         private boolean isCategory = false;
         protected int id = 0;
@@ -64,7 +59,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         private ImageView iconView;
         private TextView loginView;
         private PasswordFragment fragment;
-        private View parentView;
+        private final View parentView;
 
         public ViewHolder(View view) {
             super(view);
@@ -96,36 +91,25 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fragment.requireContext(),R.style.MaterialAlertDialog_rounded)
                             .setTitle(R.string.renameCategory)
                             .setView(input)
-                            .setPositiveButton(R.string.rename, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if(fragment.currentOperationNumber == 0) {
-                                        fragment.currentOperationNumber++;
-                                        fadeIn(fragment.recyclerView);
-                                        fadeOut(fragment.searchProgress);
-                                        fadeOut(fragment.searchText);
-                                        fragment.fab.setEnabled(false);
-                                        fragment.viewModel.renameCategory(textView.getText().toString(), input.getText().toString());
-                                    }
+                            .setPositiveButton(R.string.rename, (dialog, which) -> {
+                                if(fragment.currentOperationNumber == 0) {
+                                    fragment.currentOperationNumber++;
+                                    fadeIn(fragment.recyclerView);
+                                    fadeOut(fragment.searchProgress);
+                                    fadeOut(fragment.searchText);
+                                    fragment.fab.setEnabled(false);
+                                    fragment.viewModel.renameCategory(textView.getText().toString(), input.getText().toString());
                                 }
                             })
-                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if(fragment.currentOperationNumber == 0) {
-                                        fragment.currentOperationNumber++;
-                                        fadeIn(fragment.recyclerView);
-                                        fadeOut(fragment.searchProgress);
-                                        fadeOut(fragment.searchText);
-                                        fragment.fab.setEnabled(false);
-                                        fragment.viewModel.deleteCategory(textView.getText().toString());
-                                    }
+                            .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+                            .setNeutralButton(R.string.delete, (dialog, which) -> {
+                                if(fragment.currentOperationNumber == 0) {
+                                    fragment.currentOperationNumber++;
+                                    fadeIn(fragment.recyclerView);
+                                    fadeOut(fragment.searchProgress);
+                                    fadeOut(fragment.searchText);
+                                    fragment.fab.setEnabled(false);
+                                    fragment.viewModel.deleteCategory(textView.getText().toString());
                                 }
                             });
                     builder.show();
@@ -168,12 +152,6 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         }
     }
 
-    /**
-     * Initialize the dataset of the Adapter.
-     *
-     * @param dataSet String[] containing the data to populate views to be used
-     *                by RecyclerView.
-     */
     public PasswordAdapter(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories, Intent intent, Activity activity, PasswordFragment fragment) {
         localCategories = categories;
         localDataSet = dataSet;
@@ -193,11 +171,9 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         onInflateFinishedListener = (view, resid, parent) -> parent.addView(view);
     }
 
-    // Create new views (invoked by the layout manager)
     @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.viewholder_dummy, viewGroup, false);
         AsyncLayoutInflater inflater = new AsyncLayoutInflater(viewGroup.getContext());
@@ -205,66 +181,56 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         return new ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        service.submit(new Runnable() {
-            @Override
-            public void run() {
-                while (viewHolder.parentView.findViewById(R.id.serviceName) == null) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException ignored) {
-                    }
+    public void onBindViewHolder(@NotNull ViewHolder viewHolder, final int position) {
+        service.submit(() -> {
+            while (viewHolder.parentView.findViewById(R.id.serviceName) == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
                 }
-                if (viewHolder.getTextView() == null)
-                    activity.runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
-                while (viewHolder.getTextView() == null) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (position < localCategories.size()) {
-                            viewHolder.getTextView().setText(localCategories.get(position));
-                            viewHolder.setCategory();
-                            viewHolder.getLoginView().setText("");
-                        } else {
-                            if(position - localCategories.size() >= 0) {
-                                viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
-                                viewHolder.getLoginView().setText("");
-                                viewHolder.setNonCategory();
-                                if (localLogins.get(position - localCategories.size()) != null && showLogins) {
-                                    viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
-                                }
-                                viewHolder.id = localids.get(position - localCategories.size());
-                                viewHolder.main_intent = intent;
-                                viewHolder.position = position - localCategories.size();
-                                try {
-                                    if (icons.get(position - localCategories.size()) != null) {
-                                        viewHolder.removeTint();
-                                        viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
-                                    } else {
-                                        viewHolder.setDefaultIcon();
-                                    }
-                                } catch (Exception e) {
-                                    viewHolder.setDefaultIcon();
-                                }
-                            }
-                        }
-                        viewHolder.fragment = fragment;
-                    }
-                });
             }
+            if (viewHolder.getTextView() == null)
+                activity.runOnUiThread(() -> viewHolder.setupHolder(viewHolder.parentView));
+            while (viewHolder.getTextView() == null) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            activity.runOnUiThread(() -> {
+                if (position < localCategories.size()) {
+                    viewHolder.getTextView().setText(localCategories.get(position));
+                    viewHolder.setCategory();
+                    viewHolder.getLoginView().setText("");
+                } else {
+                    if(position - localCategories.size() >= 0) {
+                        viewHolder.getTextView().setText(localDataSet.get(position - localCategories.size()));
+                        viewHolder.getLoginView().setText("");
+                        viewHolder.setNonCategory();
+                        if (localLogins.get(position - localCategories.size()) != null && showLogins) {
+                            viewHolder.getLoginView().setText(localLogins.get(position - localCategories.size()));
+                        }
+                        viewHolder.id = localids.get(position - localCategories.size());
+                        viewHolder.main_intent = intent;
+                        viewHolder.position = position - localCategories.size();
+                        try {
+                            if (icons.get(position - localCategories.size()) != null) {
+                                viewHolder.removeTint();
+                                viewHolder.setIconBitmap(icons.get(position - localCategories.size()));
+                            } else {
+                                viewHolder.setDefaultIcon();
+                            }
+                        } catch (Exception e) {
+                            viewHolder.setDefaultIcon();
+                        }
+                    }
+                }
+                viewHolder.fragment = fragment;
+            });
         });
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         if (localids.size() > 0) {

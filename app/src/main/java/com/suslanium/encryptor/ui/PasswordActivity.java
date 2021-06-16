@@ -226,7 +226,6 @@ public class PasswordActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
             } catch (Exception ignored) {
-                ignored.printStackTrace();
             }
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -339,7 +338,7 @@ public class PasswordActivity extends AppCompatActivity {
                                 break;
                         }
                     }
-                    FillResponse response = null;
+                    FillResponse response;
                     try {
                         response = builder2.build();
                     } catch (Exception e) {

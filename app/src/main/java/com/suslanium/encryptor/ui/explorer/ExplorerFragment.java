@@ -108,7 +108,7 @@ public class ExplorerFragment extends Fragment {
     }
 
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -130,17 +130,8 @@ public class ExplorerFragment extends Fragment {
         pathIterator = storagePaths.listIterator();
         pathIterator.next();
         LiveData<ArrayList<String>> currentNames = viewModel.getCurrentNames();
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
-        } else {
-            createDrawable = getResources().getDrawable(android.R.drawable.ic_input_add);
-        }
-        cancelDrawable = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            cancelDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_delete);
-        } else {
-            cancelDrawable = getResources().getDrawable(android.R.drawable.ic_delete);
-        }
+        createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
+        cancelDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_delete);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).searchButton != null)
             t.removeView(((Explorer) requireActivity()).searchButton);
@@ -171,79 +162,66 @@ public class ExplorerFragment extends Fragment {
         search[0].setVisibility(View.INVISIBLE);
         bar[0].setVisibility(View.INVISIBLE);
         final ExplorerAdapter[] adapter = {null};
-        //LinearLayoutManager manager = new LinearLayoutManager(requireContext());
-        //manager.setSmoothScrollbarEnabled(true);
-        //fileView.setLayoutManager(manager);
-        //fileView.setAdapter(adapter);
         LiveData<double[]> freeSpaces = viewModel.getFreeSpace();
-        final Observer<double[]> spaceObserver = new Observer<double[]>() {
-            @Override
-            public void onChanged(double[] doubles) {
-                double freeSpace1 = doubles[1];
-                double spaceDivisionCount = doubles[0];
-                switch ((int) spaceDivisionCount) {
-                    case 0:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
-                        break;
-                    case 1:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
-                        break;
-                    case 2:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
-                        break;
-                    case 3:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
-                        break;
-                    case 4:
-                        freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
-                        break;
-                    default:
-                        break;
-                }
+        @SuppressLint("SetTextI18n") final Observer<double[]> spaceObserver = doubles -> {
+            double freeSpace1 = doubles[1];
+            double spaceDivisionCount = doubles[0];
+            switch ((int) spaceDivisionCount) {
+                case 0:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.bytes));
+                    break;
+                case 1:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.kbytes));
+                    break;
+                case 2:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.mbytes));
+                    break;
+                case 3:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.gbytes));
+                    break;
+                case 4:
+                    freeSpace.setText(freeSpace1 + " " + getString(R.string.tbytes));
+                    break;
+                default:
+                    break;
             }
         };
         freeSpaces.observe(getViewLifecycleOwner(), spaceObserver);
         viewModel.calculateFreeSpace(viewModel.getPath().getValue());
-        final Observer<ArrayList<String>> pathsObserver = new Observer<ArrayList<String>>() {
-            @Override
-            public void onChanged(ArrayList<String> strings) {
-                fileList.clear();
-                fileList.addAll(strings);
-                if (adapter[0] != null) {
-                    new Handler().postDelayed(new Runnable() {
+        final Observer<ArrayList<String>> pathsObserver = strings -> {
+            fileList.clear();
+            fileList.addAll(strings);
+            if (adapter[0] != null) {
+                new Handler().postDelayed(() -> {
+                    Animation fadeOut1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_in_left);
+                    fadeOut1.setAnimationListener(new Animation.AnimationListener() {
                         @Override
-                        public void run() {
-                            Animation fadeOut1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_in_left);
-                            fadeOut1.setAnimationListener(new Animation.AnimationListener() {
-                                @Override
-                                public void onAnimationStart(Animation animation) {
-                                }
-
-                                @Override
-                                public void onAnimationEnd(Animation animation) {
-                                    ((Explorer) requireActivity()).currentOperationNumber = 0;
-                                }
-
-                                @Override
-                                public void onAnimationRepeat(Animation animation) {
-                                }
-                            });
-                            fileView.suppressLayout(false);
-                            fadeOut1.setDuration(200);
-                            fileView.startAnimation(fadeOut1);
-                            adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
-                            fileView.scrollToPosition(0);
-                            setStoragePath(viewModel.getPath().getValue());
+                        public void onAnimationStart(Animation animation) {
                         }
-                    }, 200);
-                } else {
-                    adapter[0] = new ExplorerAdapter(fileList, viewModel.getPath().getValue(), fileView, requireActivity(), bottomBar, ExplorerFragment.this, viewModel);
-                    LinearLayoutManager manager = new LinearLayoutManager(requireContext());
-                    manager.setSmoothScrollbarEnabled(true);
-                    fileView.setLayoutManager(manager);
-                    fileView.setAdapter(adapter[0]);
-                    if(!tutorialComplete)showHints(fileView,t);
-                }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            ((Explorer) requireActivity()).currentOperationNumber = 0;
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    fileView.suppressLayout(false);
+                    fadeOut1.setDuration(200);
+                    fileView.startAnimation(fadeOut1);
+                    adapter[0].setNewData(viewModel.getPath().getValue(), fileList);
+                    fileView.scrollToPosition(0);
+                    setStoragePath(viewModel.getPath().getValue());
+                }, 200);
+            } else {
+                adapter[0] = new ExplorerAdapter(fileList, viewModel.getPath().getValue(), fileView, requireActivity(), bottomBar, ExplorerFragment.this, viewModel);
+                LinearLayoutManager manager = new LinearLayoutManager(requireContext());
+                manager.setSmoothScrollbarEnabled(true);
+                fileView.setLayoutManager(manager);
+                fileView.setAdapter(adapter[0]);
+                if(!tutorialComplete)showHints(fileView,t);
             }
         };
         if (currentNames.getValue() != null && !currentNames.getValue().isEmpty()) {
@@ -260,16 +238,13 @@ public class ExplorerFragment extends Fragment {
         Intent intent2 = ((Explorer) requireActivity()).getIntent2();
         FloatingActionButton confirm = requireActivity().findViewById(R.id.confirmButton);
         FloatingActionButton cancel = requireActivity().findViewById(R.id.cancelButton);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                updateUI(adapter[0], fileView, new File(viewModel.getPath().getValue()));
-                cancelSearch();
-                if (!adapter[0].getDoingFileOperations() && getAddButtonState() == View.GONE) {
-                    showAddButton(true);
-                }
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            updateUI(adapter[0], fileView, new File(viewModel.getPath().getValue()));
+            cancelSearch();
+            if (!adapter[0].getDoingFileOperations() && getAddButtonState() == View.GONE) {
+                showAddButton(true);
             }
+            swipeRefreshLayout.setRefreshing(false);
         });
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
@@ -557,7 +532,7 @@ public class ExplorerFragment extends Fragment {
                     snackbar.setAction(getString(R.string.swSt), v1 -> {
                         try {
                             changeStorage.performClick();
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
                         }
                     });
                     snackbar.show();
@@ -664,8 +639,7 @@ public class ExplorerFragment extends Fragment {
                                     search[0].startAnimation(fadeIn);
                                     bar[0].startAnimation(fadeIn);
                                     Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
-                                } catch (Exception e) {
-
+                                } catch (Exception ignored) {
                                 }
                             });
                         } else {
@@ -733,7 +707,6 @@ public class ExplorerFragment extends Fragment {
                 inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
                 ((Explorer) requireActivity()).searchBar = layout;
             } else {
-                //Search
                 searchListener.onClick(v);
             }
         });
@@ -754,9 +727,7 @@ public class ExplorerFragment extends Fragment {
             fadeIn1.setFillAfter(true);
             fileView.startAnimation(fadeIn1);
             fileView.suppressLayout(true);
-            Thread thread1 = new Thread(() -> {
-                viewModel.getFileNames(parent);
-            });
+            Thread thread1 = new Thread(() -> viewModel.getFileNames(parent));
             thread1.start();
         }
     }
@@ -811,8 +782,7 @@ public class ExplorerFragment extends Fragment {
             shareIntent.putExtra(Intent.EXTRA_STREAM, filePaths);
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             requireContext().startActivity(shareIntent);
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
     }
 
@@ -918,8 +888,6 @@ public class ExplorerFragment extends Fragment {
                                         case 2:
                                             skip[0] = 2;
                                             toRemoveList.add(checkedFiles2.get(i));
-                                            break;
-                                        case 3:
                                             break;
                                         case 4:
                                             toRemoveList.add(checkedFiles2.get(i));
@@ -1170,8 +1138,7 @@ public class ExplorerFragment extends Fragment {
                 textWidth = text.getPaint().measureText(newText);
                 startIndex++;
             }
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
         return newText;
     }

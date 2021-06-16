@@ -2,7 +2,6 @@ package com.suslanium.encryptor.ui.welcomescreen;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -33,9 +32,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.suslanium.encryptor.util.Encryptor;
-import com.suslanium.encryptor.ui.PasswordActivity;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.PasswordActivity;
+import com.suslanium.encryptor.util.Encryptor;
 
 import static android.content.Context.POWER_SERVICE;
 
@@ -72,44 +71,25 @@ public class WelcomeActivityFragment extends Fragment {
                             .setTitle(R.string.warning)
                             .setMessage(R.string.rootWarning)
                             .setCancelable(false)
-                            .setPositiveButton(R.string.cont, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setPositiveButton(R.string.cont, (dialog, which) -> dialog.dismiss());
                     builder.show();
                 }
-                //Welcome
                 confPass.setVisibility(View.GONE);
                 pass.setVisibility(View.GONE);
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
                 whyPermissions.setVisibility(View.GONE);
-                next.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        pager2.setCurrentItem(1, true);
-                    }
-                });
+                next.setOnClickListener(v -> pager2.setCurrentItem(1, true));
                 break;
             case 2:
                 confPass.setVisibility(View.GONE);
                 pass.setVisibility(View.GONE);
-                whyPermissions.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
-                                .setTitle(R.string.whyPermissions)
-                                .setMessage(R.string.whyPermissionsText)
-                                .setPositiveButton(R.string.cont, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
-                        builder.show();
-                    }
+                whyPermissions.setOnClickListener(v -> {
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                            .setTitle(R.string.whyPermissions)
+                            .setMessage(R.string.whyPermissionsText)
+                            .setPositiveButton(R.string.cont, (dialog, which) -> dialog.dismiss());
+                    builder.show();
                 });
                 topText.setText(R.string.letsSetupPermissions);
                 bottomText.setText(R.string.letsSetupPermissionsText);
@@ -130,38 +110,30 @@ public class WelcomeActivityFragment extends Fragment {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                     grantBattery.setVisibility(View.GONE);
                 }
-                grantStorage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                        }
+                grantStorage.setOnClickListener(v -> {
+                    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                     }
                 });
-                next.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String packageName = requireContext().getPackageName();
-                        PowerManager pm = (PowerManager) requireContext().getSystemService(POWER_SERVICE);
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                            if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                                pager2.setCurrentItem(2, true);
-                            } else {
-                                Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
-                            }
+                next.setOnClickListener(v -> {
+                    String packageName = requireContext().getPackageName();
+                    PowerManager pm = (PowerManager) requireContext().getSystemService(POWER_SERVICE);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                            pager2.setCurrentItem(2, true);
                         } else {
-                            if (pm.isIgnoringBatteryOptimizations(packageName) && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                                pager2.setCurrentItem(2, true);
-                            } else {
-                                Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
-                            }
+                            Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
+                        }
+                    } else {
+                        if (pm.isIgnoringBatteryOptimizations(packageName) && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            pager2.setCurrentItem(2, true);
+                        } else {
+                            Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
                         }
                     }
                 });
-                //Let's setup permissions
                 break;
-            //Let's setup password
             case 3:
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
@@ -169,33 +141,30 @@ public class WelcomeActivityFragment extends Fragment {
                 topText.setText(R.string.letsSetupPassword);
                 bottomText.setText(R.string.letsSetupPasswordText);
                 next.setText(R.string.finishSetup);
-                next.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(!passL.getText().toString().matches("")){
-                            if (passL.getText().toString().equals(conf.getText().toString())){
-                                String password = passL.getText().toString();
-                                String packageName = requireContext().getPackageName();
-                                PowerManager pm = (PowerManager) requireContext().getSystemService(POWER_SERVICE);
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                                    if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                                        finishSetup(password,v);
-                                    } else {
-                                        Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
-                                    }
+                next.setOnClickListener(v -> {
+                    if(!passL.getText().toString().matches("")){
+                        if (passL.getText().toString().equals(conf.getText().toString())){
+                            String password = passL.getText().toString();
+                            String packageName = requireContext().getPackageName();
+                            PowerManager pm = (PowerManager) requireContext().getSystemService(POWER_SERVICE);
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                                if(ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                                    finishSetup(password,v);
                                 } else {
-                                    if (pm.isIgnoringBatteryOptimizations(packageName) && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                                        finishSetup(password,v);
-                                    } else {
-                                        Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
-                                    }
+                                    Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
                                 }
                             } else {
-                                Snackbar.make(v, R.string.passwsMatchErr, Snackbar.LENGTH_LONG).show();
+                                if (pm.isIgnoringBatteryOptimizations(packageName) && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                                    finishSetup(password,v);
+                                } else {
+                                    Snackbar.make(v, R.string.pleaseGrantPermissions, Snackbar.LENGTH_LONG).show();
+                                }
                             }
                         } else {
-                            Snackbar.make(v, R.string.enterPassErr, Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(v, R.string.passwsMatchErr, Snackbar.LENGTH_LONG).show();
                         }
+                    } else {
+                        Snackbar.make(v, R.string.enterPassErr, Snackbar.LENGTH_LONG).show();
                     }
                 });
                 break;
@@ -205,30 +174,22 @@ public class WelcomeActivityFragment extends Fragment {
     }
 
     private void finishSetup(String password, View v){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MasterKey mainKey = new MasterKey.Builder(requireContext())
-                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                            .build();
-                    SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                    SharedPreferences.Editor edit = editor.edit();
-                    edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
-                    edit.apply();
-                    SharedPreferences.Editor edit1 = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
-                    edit1.putBoolean("setupComplete", true);
-                    edit1.apply();
-                    Intent intent = new Intent(requireContext(), PasswordActivity.class);
-                    startActivity(intent);
-                } catch (Exception e){
-                    requireActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Snackbar.make(v, R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
-                        }
-                    });
-                }
+        Thread thread = new Thread(() -> {
+            try {
+                MasterKey mainKey = new MasterKey.Builder(requireContext())
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build();
+                SharedPreferences editor = EncryptedSharedPreferences.create(requireContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                SharedPreferences.Editor edit = editor.edit();
+                edit.putString("passHash", Encryptor.calculateHash(password, "SHA-512"));
+                edit.apply();
+                SharedPreferences.Editor edit1 = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                edit1.putBoolean("setupComplete", true);
+                edit1.apply();
+                Intent intent = new Intent(requireContext(), PasswordActivity.class);
+                startActivity(intent);
+            } catch (Exception e){
+                requireActivity().runOnUiThread(() -> Snackbar.make(v, R.string.smthWentWrong, Snackbar.LENGTH_LONG).show());
             }
         });
         thread.start();

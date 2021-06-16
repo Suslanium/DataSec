@@ -2,6 +2,7 @@ package com.suslanium.encryptor.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -97,14 +98,12 @@ public class Explorer extends AppCompatActivity {
             intent.removeExtra("fromSettings");
         }
         if(id.getValue() != 0){navController.navigate(id.getValue());}
-        final Observer<Integer> integerObserver = new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                if(integer != 0) navController.navigate(integer);
-            }
+        final Observer<Integer> integerObserver = integer -> {
+            if(integer != 0) navController.navigate(integer);
         };
         id.observe(this,integerObserver);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int millis = 400;
@@ -178,8 +177,7 @@ public class Explorer extends AppCompatActivity {
             Thread thread = new Thread(() -> {
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
-
+                } catch (InterruptedException ignored) {
                 }
                 backPressedCount--;
             });
@@ -187,21 +185,19 @@ public class Explorer extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_settings:
-                Intent intent = new Intent(this, AboutActivity.class);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.action_settings) {
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.explorer, menu);
         return true;
     }

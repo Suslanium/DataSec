@@ -260,9 +260,9 @@ public final class Encryptor {
         String fileName = f.getName();
         List<File> splittedFiles = new LinkedList<>();
         try (FileInputStream fis = new FileInputStream(f); BufferedInputStream bis = new BufferedInputStream(fis)) {
-            int bytesAmount = 0;
+            int bytesAmount;
             while ((bytesAmount = bis.read(buffer)) > 0) {
-                String filePartName = fileName + Integer.toString(partCounter);
+                String filePartName = fileName + partCounter;
                 partCounter++;
                 File newFile = new File(f.getParent(), filePartName);
                 try (FileOutputStream out = new FileOutputStream(newFile)) {
@@ -314,7 +314,6 @@ public final class Encryptor {
                         fos.write(buffer, 0, len);
                     }
                     output.add(destFile);
-                    //fos.close();
                 } finally {
                     zipEntry = zis.getNextEntry();
                 }
@@ -327,7 +326,7 @@ public final class Encryptor {
         zos.putNextEntry(new ZipEntry(file.getName()));
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[512];
-            int byteCount = 0;
+            int byteCount;
             while ((byteCount = fis.read(buffer)) != -1) {
                 zos.write(buffer, 0, byteCount);
             }
@@ -349,7 +348,7 @@ public final class Encryptor {
             }
             return hexString.toString();
 
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException ignored) {
 
         }
         return "";
@@ -385,7 +384,6 @@ public final class Encryptor {
     }
 
     public static void insertDataIntoPasswordTable(SQLiteDatabase database, String name, String login, String password, byte[] image, String website, String notes, String category) {
-        //database.execSQL("INSERT INTO passwordTable (id, name, login, pass, image) VALUES ($next_id, '" + name + "', '" + login + "', '" + password + "', '"+ image +"');");
         ContentValues cv = new ContentValues();
         cv.put("name", name);
         cv.put("login", login);
@@ -490,7 +488,6 @@ public final class Encryptor {
     }
 
     public static void updateDataIntoPasswordTable(SQLiteDatabase database, int id, String name, String login, String password, byte[] image, String website, String notes, String category) {
-        //database.execSQL("UPDATE passwordTable SET name = '" + name + "', login = '" + login + "', pass = '" + password + "', image = '"+ image + "' WHERE id = " + id + ";");
         ContentValues cv = new ContentValues();
         cv.put("name", name);
         cv.put("login", login);

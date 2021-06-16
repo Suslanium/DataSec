@@ -14,10 +14,8 @@ public class MessageCryptCollectionAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        // Return a NEW fragment instance in createFragment(int)
         Fragment fragment = new EncryptFragment();
         Bundle args = new Bundle();
-        // Our object is just an integer :-P
         args.putInt(EncryptFragment.ARG_OBJECT, position + 1);
         fragment.setArguments(args);
         return fragment;

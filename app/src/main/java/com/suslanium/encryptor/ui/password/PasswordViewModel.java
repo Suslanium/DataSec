@@ -21,11 +21,11 @@ import java.util.Set;
 public class PasswordViewModel extends AndroidViewModel {
     private MutableLiveData<String> currentSearchQuery;
     private MutableLiveData<String> currentCategory;
-    private MutableLiveData<ArrayList<String>> names;
-    private MutableLiveData<ArrayList<String>> logins;
-    private MutableLiveData<ArrayList<Integer>> ids;
-    private MutableLiveData<ArrayList<Bitmap>> bitmaps;
-    private MutableLiveData<ArrayList<String>> categories;
+    private final MutableLiveData<ArrayList<String>> names;
+    private final MutableLiveData<ArrayList<String>> logins;
+    private final MutableLiveData<ArrayList<Integer>> ids;
+    private final MutableLiveData<ArrayList<Bitmap>> bitmaps;
+    private final MutableLiveData<ArrayList<String>> categories;
     private Intent intent;
 
     public PasswordViewModel(@NonNull Application application) {
@@ -170,25 +170,22 @@ public class PasswordViewModel extends AndroidViewModel {
     }
 
     protected void renameCategory(String oldName,String newName){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread thread = new Thread(() -> {
+            try {
+                if(!oldName.equals(newName)) {
+                    byte[] pass = intent.getByteArrayExtra("pass");
+                    String password = Encryptor.rsadecrypt(pass);
+                    SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
+                    Encryptor.deleteCategory(database, oldName);
+                    if(!Encryptor.getCategories(database).contains(newName)) Encryptor.createCategoryStub(database, newName);
+                    Encryptor.renameCategory(database, oldName, newName);
+                    Encryptor.closeDataBase(database);
+                }
+            } catch (Exception ignored){
+            } finally {
                 try {
-                    if(!oldName.equals(newName)) {
-                        byte[] pass = intent.getByteArrayExtra("pass");
-                        String password = Encryptor.rsadecrypt(pass);
-                        SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
-                        Encryptor.deleteCategory(database, oldName);
-                        if(!Encryptor.getCategories(database).contains(newName)) Encryptor.createCategoryStub(database, newName);
-                        Encryptor.renameCategory(database, oldName, newName);
-                        Encryptor.closeDataBase(database);
-                    }
-                } catch (Exception ignored){
-                } finally {
-                    try {
-                        updateList();
-                    } catch (Exception ignored) {
-                    }
+                    updateList();
+                } catch (Exception ignored) {
                 }
             }
         });
@@ -196,21 +193,18 @@ public class PasswordViewModel extends AndroidViewModel {
     }
 
     protected void deleteCategory(String name){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread thread = new Thread(() -> {
+            try {
+                byte[] pass = intent.getByteArrayExtra("pass");
+                String password = Encryptor.rsadecrypt(pass);
+                SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
+                Encryptor.deleteCategory(database, name);
+                Encryptor.closeDataBase(database);
+            } catch (Exception ignored){
+            } finally {
                 try {
-                    byte[] pass = intent.getByteArrayExtra("pass");
-                    String password = Encryptor.rsadecrypt(pass);
-                    SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);
-                    Encryptor.deleteCategory(database, name);
-                    Encryptor.closeDataBase(database);
-                } catch (Exception ignored){
-                } finally {
-                    try {
-                        updateList();
-                    } catch (Exception ignored) {
-                    }
+                    updateList();
+                } catch (Exception ignored) {
                 }
             }
         });

@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class ExplorerActivityViewModel extends AndroidViewModel {
-    private MutableLiveData<Integer> currentFragmentID;
+    private final MutableLiveData<Integer> currentFragmentID;
     public ExplorerActivityViewModel(@NonNull Application application) {
         super(application);
         currentFragmentID = new MutableLiveData<>(0);

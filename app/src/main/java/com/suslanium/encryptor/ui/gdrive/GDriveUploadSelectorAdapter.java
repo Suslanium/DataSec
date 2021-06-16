@@ -1,16 +1,13 @@
 package com.suslanium.encryptor.ui.gdrive;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
-import java.text.SimpleDateFormat;
-
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -35,13 +32,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.R;
-import com.suslanium.encryptor.ui.explorer.ExplorerAdapter;
 import com.suslanium.encryptor.ui.explorer.ExplorerViewModel;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -50,137 +48,110 @@ import java.util.concurrent.Executors;
 public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUploadSelectorAdapter.ViewHolder> {
     private ArrayList<String> localDataSet;
     private String path;
-    private RecyclerView Recview;
-    private Activity activity;
-    private ArrayList<ViewHolder> holders = new ArrayList<>();
-    private ArrayList<String> CheckedId = new ArrayList<>();
+    private final RecyclerView Recview;
+    private final Activity activity;
+    private final ArrayList<ViewHolder> holders = new ArrayList<>();
+    private final ArrayList<String> CheckedId = new ArrayList<>();
     private int thumbnailLoadingCount = 0;
-    private ExecutorService service;
+    private final ExecutorService service;
     public boolean isSearching = false;
-    private boolean showPreviews;
-    private String B = "B";
-    private String KB = "KB";
-    private String MB = "MB";
-    private String GB = "GB";
-    private String TB = "TB";
-    private String Calc = "Calculating...";
-    private String items = "items";
-    private ColorStateList defTint;
-    private ExplorerViewModel viewModel;
-    private AsyncLayoutInflater.OnInflateFinishedListener listener;
+    private final boolean showPreviews;
+    private final String B;
+    private final String KB;
+    private final String MB;
+    private final String GB;
+    private final String TB;
+    private final String Calc;
+    private final String items;
+    private final ColorStateList defTint;
+    private final ExplorerViewModel viewModel;
+    private final AsyncLayoutInflater.OnInflateFinishedListener listener;
 
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder).
-     */
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView textView;
-        private Button fileButton;
         private ImageView fileImage;
         private CheckBox fileCheckbox;
-        private Button checkBoxButton;
         private TextView dateView;
         private TextView sizeView;
         public String realPath;
         public boolean encrypted;
         public int loadingCount = 0;
-        private View parentView;
+        private final View parentView;
 
         public ViewHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
             parentView = view;
         }
 
         public void setupHolder(View view) {
-            fileImage = (ImageView) view.findViewById(R.id.fileImage);
-            fileButton = (Button) view.findViewById(R.id.fileButton);
-            fileCheckbox = (CheckBox) view.findViewById(R.id.fileCheckbox);
-            checkBoxButton = (Button) view.findViewById(R.id.checkBoxButton);
-            dateView = (TextView) view.findViewById(R.id.modDate);
-            sizeView = (TextView) view.findViewById(R.id.fileSize);
-            checkBoxButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!isSearching) {
-                        if (fileCheckbox.isChecked()) {
-                            fileCheckbox.setChecked(false);
-                            CheckedId.remove(textView.getText().toString());
-                        } else {
-                            fileCheckbox.setChecked(true);
-                            CheckedId.add(textView.getText().toString());
-                        }
+            fileImage = view.findViewById(R.id.fileImage);
+            Button fileButton = view.findViewById(R.id.fileButton);
+            fileCheckbox = view.findViewById(R.id.fileCheckbox);
+            Button checkBoxButton = view.findViewById(R.id.checkBoxButton);
+            dateView = view.findViewById(R.id.modDate);
+            sizeView = view.findViewById(R.id.fileSize);
+            checkBoxButton.setOnClickListener(v -> {
+                if (!isSearching) {
+                    if (fileCheckbox.isChecked()) {
+                        fileCheckbox.setChecked(false);
+                        CheckedId.remove(textView.getText().toString());
+                    } else {
+                        fileCheckbox.setChecked(true);
+                        CheckedId.add(textView.getText().toString());
                     }
                 }
             });
-            checkBoxButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    selectAll();
-                    return true;
-                }
+            checkBoxButton.setOnLongClickListener(v -> {
+                selectAll();
+                return true;
             });
-            fileButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!isSearching) {
-                        if (new File(path + File.separator + realPath).isDirectory()) {
-                            if (new File(path + File.separator + realPath).canWrite()) {
-                                if (((GoogleDriveUploadSelector) activity).currentOperationNumber == 0) {
-                                    Recview.stopScroll();
-                                    ((GoogleDriveUploadSelector) activity).currentOperationNumber++;
-                                    Animation fadeIn = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_out_right);
-                                    fadeIn.setDuration(200);
-                                    fadeIn.setFillAfter(true);
-                                    Recview.startAnimation(fadeIn);
-                                    Recview.suppressLayout(true);
-                                    Thread thread = new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            viewModel.getFileNames(new File(path + File.separator + realPath));
-                                            if (((GoogleDriveUploadSelector) activity).searchEnded) {
-                                                ((GoogleDriveUploadSelector) activity).searchEnded = false;
-                                            }
-                                        }
-                                    });
-                                    thread.start();
-                                }
-                            } else {
-                                Snackbar.make(v, R.string.accessDenied, Snackbar.LENGTH_LONG).show();
+            fileButton.setOnClickListener(v -> {
+                if (!isSearching) {
+                    if (new File(path + File.separator + realPath).isDirectory()) {
+                        if (new File(path + File.separator + realPath).canWrite()) {
+                            if (((GoogleDriveUploadSelector) activity).currentOperationNumber == 0) {
+                                Recview.stopScroll();
+                                ((GoogleDriveUploadSelector) activity).currentOperationNumber++;
+                                Animation fadeIn = AnimationUtils.loadAnimation(activity.getBaseContext(), android.R.anim.slide_out_right);
+                                fadeIn.setDuration(200);
+                                fadeIn.setFillAfter(true);
+                                Recview.startAnimation(fadeIn);
+                                Recview.suppressLayout(true);
+                                Thread thread = new Thread(() -> {
+                                    viewModel.getFileNames(new File(path + File.separator + realPath));
+                                    if (((GoogleDriveUploadSelector) activity).searchEnded) {
+                                        ((GoogleDriveUploadSelector) activity).searchEnded = false;
+                                    }
+                                });
+                                thread.start();
                             }
                         } else {
-                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
-                                    .setTitle(R.string.confirmAction)
-                                    .setMessage(R.string.uploadSelectorConfirmText)
-                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            ArrayList<String> paths = new ArrayList<>();
-                                            paths.add(path + File.separator + realPath);
-                                            Intent intent = new Intent(activity, EncryptorService.class);
-                                            intent.putExtra("actionType", "gDriveE");
-                                            EncryptorService.uniqueID++;
-                                            int i = EncryptorService.uniqueID;
-                                            EncryptorService.paths.put(i, paths);
-                                            intent.putExtra("index", i);
-                                            intent.putExtra("pass", activity.getIntent().getByteArrayExtra("pass"));
-                                            intent.putExtra("gDriveFolder", activity.getIntent().getStringExtra("gDriveFolder"));
-                                            ContextCompat.startForegroundService(activity, intent);
-                                            activity.finish();
-                                        }
-                                    })
-                                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                        }
-                                    });
-                            builder.show();
+                            Snackbar.make(v, R.string.accessDenied, Snackbar.LENGTH_LONG).show();
                         }
+                    } else {
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(fileImage.getContext(), R.style.MaterialAlertDialog_rounded)
+                                .setTitle(R.string.confirmAction)
+                                .setMessage(R.string.uploadSelectorConfirmText)
+                                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                    ArrayList<String> paths = new ArrayList<>();
+                                    paths.add(path + File.separator + realPath);
+                                    Intent intent = new Intent(activity, EncryptorService.class);
+                                    intent.putExtra("actionType", "gDriveE");
+                                    EncryptorService.uniqueID++;
+                                    int i = EncryptorService.uniqueID;
+                                    EncryptorService.paths.put(i, paths);
+                                    intent.putExtra("index", i);
+                                    intent.putExtra("pass", activity.getIntent().getByteArrayExtra("pass"));
+                                    intent.putExtra("gDriveFolder", activity.getIntent().getStringExtra("gDriveFolder"));
+                                    ContextCompat.startForegroundService(activity, intent);
+                                    activity.finish();
+                                })
+                                .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                        builder.show();
                     }
                 }
             });
-            textView = (TextView) view.findViewById(R.id.fileName);
+            textView = view.findViewById(R.id.fileName);
         }
 
         public TextView getTextView() {
@@ -212,12 +183,6 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         }
     }
 
-    /**
-     * Initialize the dataset of the Adapter.
-     *
-     * @param dataSet String[] containing the data to populate views to be used
-     *                by RecyclerView.
-     */
     public GDriveUploadSelectorAdapter(ArrayList<String> dataSet, String path, RecyclerView view, Activity activity, ExplorerViewModel viewModel) {
         localDataSet = dataSet;
         this.path = path;
@@ -242,10 +207,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         listener = (view1, resid, parent) -> parent.addView(view1);
     }
 
-    // Create new views (invoked by the layout manager)
+    @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.viewholder_dummy, viewGroup, false);
         AsyncLayoutInflater asyncLayoutInflater = new AsyncLayoutInflater(viewGroup.getContext());
@@ -276,9 +240,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         }
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
+    @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(@NotNull ViewHolder viewHolder, final int position) {
         service.submit(() -> {
             while (viewHolder.parentView.findViewById(R.id.fileName) == null) {
                 try {
@@ -316,19 +280,13 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
             } else {
                 activity.runOnUiThread(() -> viewHolder.setFileImageAlpha(1f));
             }
-            // Get element from your dataset at this position and replace the
-            // contents of the view with that element
             File file = new File(path + File.separator + localDataSet.get(position));
             long lastModified = file.lastModified();
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             format.setTimeZone(TimeZone.getDefault());
             String formattedDate = format.format(new Date(lastModified));
             activity.runOnUiThread(() -> {if (viewHolder.getTextView().getText().toString().equals(file.getName()))viewHolder.getDateView().setText(formattedDate);});
-            if (file.getName().endsWith(".enc") || file.getName().endsWith("Enc")) {
-                viewHolder.encrypted = true;
-            } else {
-                viewHolder.encrypted = false;
-            }
+            viewHolder.encrypted = file.getName().endsWith(".enc") || file.getName().endsWith("Enc");
             if (file.isFile()) {
                 Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", file);
                 String type = activity.getContentResolver().getType(uriForFile);
@@ -343,14 +301,12 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                     } else if (type.contains("video")) {
                         viewHolder.setFile(R.drawable.ic_movie);
                     } else if (type.contains("x-msdos-program")) {
-                        //EXE
                         viewHolder.setFile(R.drawable.exefile);
                     } else if (type.contains("vnd.android.package-archive")) {
                         viewHolder.setFile(R.drawable.apk);
                     } else if (type.contains("powerpoint") || type.contains("presentation")) {
                         viewHolder.setFile(R.drawable.presentation);
                     } else if (type.contains("msword") || type.contains("document") || type.contains("pdf") || type.contains("rtf") || type.contains("excel") || type.contains("sheet")) {
-                        //DOCX
                         viewHolder.setFile(R.drawable.rtf);
                     } else if (type.contains("rar") || type.contains("zip") || type.contains("7z")) {
                         viewHolder.setFile(R.drawable.zipfile);
@@ -375,23 +331,18 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                     switch (finalUnit) {
                         case 0:
                             viewHolder.getSizeView().setText(finalLength + " " + B);
-                            //B
                             break;
                         case 1:
                             viewHolder.getSizeView().setText(finalLength + " " + KB);
-                            //KB
                             break;
                         case 2:
                             viewHolder.getSizeView().setText(finalLength + " " + MB);
-                            //MB
                             break;
                         case 3:
                             viewHolder.getSizeView().setText(finalLength + " " + GB);
-                            //GB
                             break;
                         case 4:
                             viewHolder.getSizeView().setText(finalLength + " " + TB);
-                            //TB
                             break;
                         default:
                             break;
@@ -453,21 +404,10 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         return files;
     }
 
-    public HashMap<Integer, String> getCheckedNames() {
-        HashMap<Integer, String> files = new HashMap<>();
-        for (int i = 0; i < holders.size(); i++) {
-            if (holders.get(i).fileCheckbox.isChecked()) {
-                files.put(holders.get(i).getAdapterPosition(), (holders.get(i).getTextView().getText()).toString());
-            }
-        }
-        return files;
-    }
-
     public String getPath() {
         return path;
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return localDataSet.size();
