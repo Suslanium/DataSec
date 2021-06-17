@@ -21,7 +21,7 @@
         android:roundIcon="@mipmap/icon_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Encryptor.Light">
-        <activity android:name=".ui.AboutActivity"></activity>
+        <activity android:name=".ui.AboutActivity" />
         <activity android:name=".ui.notebook.NotebookActivity" />
         <activity
             android:name=".ui.welcomescreen.WelcomeActivity"
@@ -54,7 +54,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.suslanium.encryptor.ui.Explorer" />
         </activity>
-        <activity android:name=".ui.PasswordActivity">
+        <activity android:name=".ui.PasswordActivity"
+            android:theme="@style/Theme.Encryptor.Light.Splash">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>

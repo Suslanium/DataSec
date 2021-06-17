@@ -37,6 +37,14 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+    <style name="Theme.Encryptor.Light.Splash" parent="Theme.Encryptor.Light">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:colorPrimary">@color/navTitleLight</item>
+        <item name="colorPrimary">@color/navTitleLight</item>
+        <item name="android:colorPrimaryDark">@color/navTitleLight</item>
+        <item name="colorPrimaryDark">@color/navTitleLight</item>
+        <item name="colorPrimaryVariant">@color/navTitleLight</item>
+    </style>
     <style name="Theme.Encryptor.Light.ActionBar" parent="Theme.MaterialComponents.Light">
         <!-- Primary brand color. -->
         <!-- Customize your theme here. -->
