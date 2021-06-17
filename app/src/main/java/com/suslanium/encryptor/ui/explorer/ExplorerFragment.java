@@ -222,6 +222,7 @@ public class ExplorerFragment extends Fragment {
                 fileView.setLayoutManager(manager);
                 fileView.setAdapter(adapter[0]);
                 if(!tutorialComplete)showHints(fileView,t);
+                else requireActivity().findViewById(R.id.hintDummy1).setVisibility(View.GONE);
             }
         };
         if (currentNames.getValue() != null && !currentNames.getValue().isEmpty()) {
