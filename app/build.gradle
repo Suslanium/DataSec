@@ -9,6 +9,7 @@ android {
     defaultConfig {
         applicationId "com.suslanium.encryptor"
         minSdkVersion 21
+        //Warning: Changing targetSdkVersion to 30 and above will BREAK file explorer(because apps that target API 30 or above can only "see" media files)
         targetSdkVersion 29
         versionCode 1
         versionName '1.0-rel3'
