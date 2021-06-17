@@ -74,7 +74,7 @@
     <string name="noInternet">Нет подключения к интернету</string>
     <string name="copied">Скопировано в буфер обмена</string>
     <string name="smthWentWrong">Что-то пошло не так...</string>
-    <string name="wait">Пожалуста, подождите...</string>
+    <string name="wait">Пожалуйста, подождите...</string>
     <string name="enterKeyForEnc">Введите ключ для шифрования</string>
     <string name="enterTextToEnc">Введите текст для шифрования</string>
     <string name="ciphertext">Зашифрованный текст</string>
@@ -225,7 +225,7 @@
     <string name="signOutSuccess">Выход выполнен</string>
     <string name="signOutErr">Вы не вошли в аккаунт</string>
     <string name="fileTooBig">Файл слишком большой</string>
-    <string name="decryptionRunning">Идёт дешифроавние. Это может занять некоторое время.</string>
+    <string name="decryptionRunning">Идёт дешифрование. Это может занять некоторое время.</string>
     <string name="enableAutofill">Включить сервис автозаполнения</string>
     <string name="autofillEnabled">Автозаполнение уже включено</string>
     <string name="authRequired">Требуется аутентификация</string>
