@@ -38,6 +38,8 @@ android {
     }
     signingConfigs {
         release {
+            /*Replace this with your own keystore
+            * Also, all features related to Google Drive will not work unless you create your own app in Google Developer Console(because the key in your keystore will be different)*/
             storeFile file("C:\\Users\\Ruslan\\.android\\keystore.jks")
         }
     }
