@@ -120,7 +120,7 @@ public class ExplorerFragment extends Fragment {
             bottomBar.getMenu().getItem(i).setChecked(false);
         }
         bottomBar.getMenu().setGroupCheckable(0, true, true);
-        ((Explorer) requireActivity()).explorerVisible = true;
+        ((Explorer) requireActivity()).setExplorerVisible(true);
         ListIterator<String> pathIterator;
         RecyclerView fileView = requireActivity().findViewById(R.id.fileView);
         SwipeRefreshLayout swipeRefreshLayout = requireActivity().findViewById(R.id.swipeExplorer);
@@ -133,11 +133,11 @@ public class ExplorerFragment extends Fragment {
         createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
         cancelDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_delete);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if (((Explorer) requireActivity()).searchButton != null)
-            t.removeView(((Explorer) requireActivity()).searchButton);
-        if (((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if (((Explorer) requireActivity()).getSearchButton() != null)
+            t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if (((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
@@ -153,7 +153,7 @@ public class ExplorerFragment extends Fragment {
         Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
         l3.gravity = Gravity.END;
         b1.setLayoutParams(l3);
-        ((Explorer) requireActivity()).searchButton = b1;
+        ((Explorer) requireActivity()).setSearchButton(b1);
         t.addView(b1);
         b1.setImageDrawable(drawable);
         b1.setBackgroundColor(Color.parseColor("#00000000"));
@@ -201,7 +201,7 @@ public class ExplorerFragment extends Fragment {
 
                         @Override
                         public void onAnimationEnd(Animation animation) {
-                            ((Explorer) requireActivity()).currentOperationNumber = 0;
+                            ((Explorer) requireActivity()).setCurrentOperationNumber(0);
                         }
 
                         @Override
@@ -278,14 +278,14 @@ public class ExplorerFragment extends Fragment {
                                 String pathBefore = viewModel.getPath().getValue();
                                 Intent intent = new Intent(requireContext(), EncryptorService.class);
                                 intent.putExtra(ACTIONTYPE, "delete");
-                                EncryptorService.uniqueID++;
-                                int i = EncryptorService.uniqueID;
-                                EncryptorService.paths.put(i, paths12);
+                                EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                int i = EncryptorService.getUniqueID();
+                                EncryptorService.getPaths().put(i, paths12);
                                 intent.putExtra(INDEX, i);
                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                 ContextCompat.startForegroundService(requireContext(), intent);
                                 adapter[0].addAllDeletedFiles(paths12);
-                                while (EncryptorService.deletingFiles.get(i) == null) {
+                                while (EncryptorService.getDeletingFiles().get(i) == null) {
                                     try {
                                         Thread.sleep(1);
                                     } catch (InterruptedException e) {
@@ -293,7 +293,7 @@ public class ExplorerFragment extends Fragment {
                                         Thread.currentThread().interrupt();
                                     }
                                 }
-                                while (EncryptorService.deletingFiles.get(i) != null) {
+                                while (EncryptorService.getDeletingFiles().get(i) != null) {
                                     try {
                                         Thread.sleep(100);
                                     } catch (InterruptedException e) {
@@ -381,9 +381,9 @@ public class ExplorerFragment extends Fragment {
                                                 dialogBuilder.setPositiveButton(R.string.delete, (dialog15, which15) -> {
                                                     Intent intent = new Intent(requireContext(), EncryptorService.class);
                                                     intent.putExtra(ACTIONTYPE, "E");
-                                                    EncryptorService.uniqueID++;
-                                                    int i = EncryptorService.uniqueID;
-                                                    EncryptorService.paths.put(i, checkedFiles);
+                                                    EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                                    int i = EncryptorService.getUniqueID();
+                                                    EncryptorService.getPaths().put(i, checkedFiles);
                                                     intent.putExtra(INDEX, i);
                                                     intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(requireContext(), intent);
@@ -398,9 +398,9 @@ public class ExplorerFragment extends Fragment {
                                             } else {
                                                 Intent intent = new Intent(requireContext(), EncryptorService.class);
                                                 intent.putExtra(ACTIONTYPE, "E");
-                                                EncryptorService.uniqueID++;
-                                                int i = EncryptorService.uniqueID;
-                                                EncryptorService.paths.put(i, checkedFiles);
+                                                EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                                int i = EncryptorService.getUniqueID();
+                                                EncryptorService.getPaths().put(i, checkedFiles);
                                                 intent.putExtra(INDEX, i);
                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                 ContextCompat.startForegroundService(requireContext(), intent);
@@ -431,9 +431,9 @@ public class ExplorerFragment extends Fragment {
                                                 dialogBuilder.setPositiveButton(R.string.delete, (dialog13, which13) -> {
                                                     Intent intent = new Intent(requireContext(), EncryptorService.class);
                                                     intent.putExtra(ACTIONTYPE, "D");
-                                                    EncryptorService.uniqueID++;
-                                                    int i = EncryptorService.uniqueID;
-                                                    EncryptorService.paths.put(i, checkedFiles);
+                                                    EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                                    int i = EncryptorService.getUniqueID();
+                                                    EncryptorService.getPaths().put(i, checkedFiles);
                                                     intent.putExtra(INDEX, i);
                                                     intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
                                                     ContextCompat.startForegroundService(requireContext(), intent);
@@ -447,9 +447,9 @@ public class ExplorerFragment extends Fragment {
                                                 dialogBuilder.show();
                                             } else {
                                                 Intent intent = new Intent(requireContext(), EncryptorService.class);
-                                                EncryptorService.uniqueID++;
-                                                int i = EncryptorService.uniqueID;
-                                                EncryptorService.paths.put(i, checkedFiles);
+                                                EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                                int i = EncryptorService.getUniqueID();
+                                                EncryptorService.getPaths().put(i, checkedFiles);
                                                 intent.putExtra(INDEX, i);
                                                 intent.putExtra(ACTIONTYPE, "D");
                                                 intent.putExtra("pass", intent2.getByteArrayExtra("pass"));
@@ -482,7 +482,7 @@ public class ExplorerFragment extends Fragment {
         });
         changeStorage = requireActivity().findViewById(R.id.sdCardButton);
         changeStorageListener = v -> {
-            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+            if (((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
                 if (storagePaths.size() > 1) {
                     String path;
                     if (pathIterator.hasNext()) {
@@ -511,7 +511,7 @@ public class ExplorerFragment extends Fragment {
                         Snackbar.make(v, getString(R.string.swInt), Snackbar.LENGTH_LONG).show();
                     }
                     File parent = new File(path);
-                    if (parent.canWrite() && ((Explorer) requireActivity()).currentOperationNumber == 0) {
+                    if (parent.canWrite() && ((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
                         updateUI(adapter[0], fileView, parent);
                     }
                 }
@@ -519,7 +519,7 @@ public class ExplorerFragment extends Fragment {
         };
         changeStorage.setOnClickListener(changeStorageListener);
         upFolderAction = v -> {
-            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+            if (((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
                 fileView.stopScroll();
                 String path = viewModel.getPath().getValue();
                 File parent = new File(path).getParentFile();
@@ -544,7 +544,7 @@ public class ExplorerFragment extends Fragment {
         };
         newFolder = requireActivity().findViewById(R.id.addNewFolder);
         newFolderListener = v -> {
-            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+            if (((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
                 final EditText input = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
                 input.setTypeface(ubuntu);
@@ -592,17 +592,17 @@ public class ExplorerFragment extends Fragment {
         Drawable finalCancelDrawable = cancelDrawable;
         Drawable finalCreateDrawable = createDrawable;
         View.OnClickListener searchListener = v -> {
-            if (((Explorer) requireActivity()).currentOperationNumber == 0) {
-                String fileName = ((Explorer) requireActivity()).searchBar.getText().toString();
+            if (((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
+                String fileName = ((Explorer) requireActivity()).getSearchBar().getText().toString();
                 if (!fileName.matches("")) {
-                    ((Explorer) requireActivity()).currentOperationNumber++;
+                    ((Explorer) requireActivity()).setCurrentOperationNumber(((Explorer) requireActivity()).getCurrentOperationNumber() + 1);
                     b1.setEnabled(false);
                     newFolder.setEnabled(false);
                     changeStorage.setEnabled(false);
                     adapter[0].isSearching = true;
-                    if (((Explorer) requireActivity()).searchBar != null) {
-                        t.removeView(((Explorer) requireActivity()).searchBar);
-                        ((Explorer) requireActivity()).searchBar = null;
+                    if (((Explorer) requireActivity()).getSearchBar() != null) {
+                        t.removeView(((Explorer) requireActivity()).getSearchBar());
+                        ((Explorer) requireActivity()).setSearchBar(null);
                         final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
@@ -618,46 +618,30 @@ public class ExplorerFragment extends Fragment {
                     bar[0] = requireActivity().findViewById(R.id.progressBarSearch);
                     search[0].setVisibility(View.VISIBLE);
                     bar[0].setVisibility(View.VISIBLE);
-                    search[0].startAnimation(fadeOut);
-                    bar[0].startAnimation(fadeOut);
+                    fadeOut(search[0]);
+                    fadeOut(bar[0]);
                     String path = viewModel.getPath().getValue();
                     fileView.suppressLayout(true);
                     Thread thread = new Thread(() -> {
                         boolean hasResults = viewModel.searchFile(path, fileName);
-                        while (!fadeOut.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-
-                                Thread.currentThread().interrupt();
-                            }
-                        }
                         if (!hasResults) {
                             requireActivity().runOnUiThread(() -> {
                                 try {
                                     fileView.suppressLayout(false);
                                     fileView.startAnimation(fadeOut);
-                                    search[0].startAnimation(fadeIn);
-                                    bar[0].startAnimation(fadeIn);
+                                    fadeIn(search[0]);
+                                    fadeIn(bar[0]);
                                     Snackbar.make(requireView(), R.string.noResults, Snackbar.LENGTH_LONG).show();
                                 } catch (Exception ignored) {
                                 }
                             });
                         } else {
                             requireActivity().runOnUiThread(() -> {
-                                search[0].startAnimation(fadeIn);
-                                bar[0].startAnimation(fadeIn);
+                                fadeIn(search[0]);
+                                fadeIn(bar[0]);
                             });
                         }
-                        while (!fadeIn.hasEnded()) {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-
-                                Thread.currentThread().interrupt();
-                            }
-                        }
-                        ((Explorer) requireActivity()).currentOperationNumber--;
+                        ((Explorer) requireActivity()).setCurrentOperationNumber(((Explorer) requireActivity()).getCurrentOperationNumber() - 1);
                         requireActivity().runOnUiThread(() -> {
                             search[0].setVisibility(View.INVISIBLE);
                             bar[0].setVisibility(View.INVISIBLE);
@@ -684,7 +668,7 @@ public class ExplorerFragment extends Fragment {
             }
         };
         b1.setOnClickListener(v -> {
-            if (((Explorer) requireActivity()).searchBar == null) {
+            if (((Explorer) requireActivity()).getSearchBar() == null) {
                 EditText layout = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
                 layout.setTypeface(ubuntu);
@@ -706,7 +690,7 @@ public class ExplorerFragment extends Fragment {
                 layout.requestFocus();
                 final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
-                ((Explorer) requireActivity()).searchBar = layout;
+                ((Explorer) requireActivity()).setSearchBar(layout);
             } else {
                 searchListener.onClick(v);
             }
@@ -719,10 +703,10 @@ public class ExplorerFragment extends Fragment {
     }
 
     protected void updateUI(ExplorerAdapter adapter, RecyclerView fileView, File parent) {
-        if (((Explorer) requireActivity()).currentOperationNumber == 0) {
+        if (((Explorer) requireActivity()).getCurrentOperationNumber() == 0) {
             if (adapter.getSearchEnded()) cancelSearch();
             fileView.stopScroll();
-            ((Explorer) requireActivity()).currentOperationNumber++;
+            ((Explorer) requireActivity()).setCurrentOperationNumber(((Explorer) requireActivity()).getCurrentOperationNumber() + 1);
             Animation fadeIn1 = AnimationUtils.loadAnimation(requireContext(), android.R.anim.slide_out_right);
             fadeIn1.setDuration(200);
             fadeIn1.setFillAfter(true);
@@ -951,16 +935,16 @@ public class ExplorerFragment extends Fragment {
                     });
                     if (!checkedFiles2.isEmpty()) {
                         Intent intent = new Intent(requireContext(), EncryptorService.class);
-                        EncryptorService.uniqueID++;
-                        int i = EncryptorService.uniqueID;
-                        EncryptorService.paths.put(i, checkedFiles2);
-                        EncryptorService.path.put(i, path);
-                        EncryptorService.originalPath.put(i, originalPath);
-                        EncryptorService.folderReplacements.put(i, folderRenamings);
+                        EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                        int i = EncryptorService.getUniqueID();
+                        EncryptorService.getPaths().put(i, checkedFiles2);
+                        EncryptorService.getPath().put(i, path);
+                        EncryptorService.getOriginalPath().put(i, originalPath);
+                        EncryptorService.getFolderReplacements().put(i, folderRenamings);
                         if (!cut) intent.putExtra(ACTIONTYPE, "copyFiles");
                         else {
                             intent.putExtra(ACTIONTYPE, "moveFiles");
-                            EncryptorService.originalPaths.put(i, originalSelected);
+                            EncryptorService.getOriginalPaths().put(i, originalSelected);
                         }
                         intent.putExtra(INDEX, i);
                         ContextCompat.startForegroundService(requireContext(), intent);
@@ -1152,7 +1136,7 @@ public class ExplorerFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        ((Explorer) requireActivity()).explorerVisible = false;
+        ((Explorer) requireActivity()).setExplorerVisible(false);
         super.onDestroyView();
     }
 

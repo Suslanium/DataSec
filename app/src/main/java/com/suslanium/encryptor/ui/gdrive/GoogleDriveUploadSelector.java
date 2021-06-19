@@ -41,11 +41,11 @@ import java.util.regex.Pattern;
 public class GoogleDriveUploadSelector extends AppCompatActivity {
     private final ArrayList<String> fileList = new ArrayList<>();
     public FloatingActionButton upFolder;
-    public int currentOperationNumber = 0;
+    protected int currentOperationNumber = 0;
     private TextView storagePath;
     private TextView freeSpace;
-    public boolean searchEnded = false;
-    public boolean showHiddenFiles = false;
+    protected boolean searchEnded = false;
+    protected boolean showHiddenFiles = false;
     private TextView title;
     private ExplorerViewModel viewModel;
 
@@ -218,9 +218,9 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
             if (!paths13.isEmpty()) {
                 Intent intent = new Intent(GoogleDriveUploadSelector.this, EncryptorService.class);
                 intent.putExtra("actionType", "gDriveE");
-                EncryptorService.uniqueID++;
-                int i = EncryptorService.uniqueID;
-                EncryptorService.paths.put(i, paths13);
+                EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                int i = EncryptorService.getUniqueID();
+                EncryptorService.getPaths().put(i, paths13);
                 intent.putExtra("index", i);
                 intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                 intent.putExtra("gDriveFolder", getIntent().getStringExtra("gDriveFolder"));
@@ -313,7 +313,7 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         super.onResume();
     }
 
-    public void updateUI(RecyclerView fileView, File parent) {
+    protected void updateUI(RecyclerView fileView, File parent) {
         if (currentOperationNumber == 0) {
             fileView.stopScroll();
             currentOperationNumber++;
@@ -327,20 +327,10 @@ public class GoogleDriveUploadSelector extends AppCompatActivity {
         }
     }
 
-    public void setStoragePath(String path) {
+    protected void setStoragePath(String path) {
         String pathToShow = path.replace(viewModel.getCurrentStoragePath().getValue(), viewModel.getCurrentStorageName().getValue());
-        pathToShow = fitString(storagePath, pathToShow);
+        pathToShow = ExplorerFragment.fitString(storagePath, pathToShow);
         storagePath.setText(pathToShow);
     }
 
-    private String fitString(TextView text, String newText) {
-        float textWidth = text.getPaint().measureText(newText);
-        int startIndex = 1;
-        while (textWidth >= text.getMeasuredWidth()) {
-            newText = newText.substring(startIndex);
-            textWidth = text.getPaint().measureText(newText);
-            startIndex++;
-        }
-        return newText;
-    }
 }

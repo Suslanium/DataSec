@@ -65,7 +65,7 @@ public class NotebookAdapter extends RecyclerView.Adapter<NotebookAdapter.ViewHo
         return localDataSet.size();
     }
 
-    public void setNewData(ArrayList<String> dataSet){
+    protected void setNewData(ArrayList<String> dataSet){
         int position = 0;
         localDataSet = dataSet;
         notifyDataSetChanged();

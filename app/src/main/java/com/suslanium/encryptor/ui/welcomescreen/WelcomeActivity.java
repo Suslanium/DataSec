@@ -13,9 +13,6 @@ import java.io.InputStreamReader;
 
 public class WelcomeActivity extends AppCompatActivity {
 
-    WelcomeActivityAdapter messageCryptCollectionAdapter;
-    ViewPager2 viewPager;
-
     @Override
     public void onBackPressed() {}
 
@@ -23,11 +20,11 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        messageCryptCollectionAdapter = new WelcomeActivityAdapter(this);
-        viewPager = findViewById(R.id.welcomePager);
-        viewPager.setAdapter(messageCryptCollectionAdapter);
+        WelcomeActivityAdapter welcomeActivityAdapter = new WelcomeActivityAdapter(this);
+        ViewPager2 viewPager = findViewById(R.id.welcomePager);
+        viewPager.setAdapter(welcomeActivityAdapter);
     }
-    public static boolean isDeviceRooted() {
+    protected static boolean isDeviceRooted() {
         return checkRootMethod1() || checkRootMethod2() || checkRootMethod3();
     }
 

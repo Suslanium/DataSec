@@ -41,7 +41,7 @@ public class Notebook extends Fragment {
     private ProgressBar searchProgress;
     private boolean tutorialComplete = false;
 
-    public Notebook() {}
+    //public Notebook() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,20 +58,20 @@ public class Notebook extends Fragment {
 
     @Override
     public void onDestroyView() {
-        ((Explorer) requireActivity()).notesVisible = false;
+        ((Explorer) requireActivity()).setNotesVisible(false);
         super.onDestroyView();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((Explorer) requireActivity()).notesVisible = true;
+        ((Explorer) requireActivity()).setNotesVisible(true);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if (((Explorer) requireActivity()).searchButton != null)
-            t.removeView(((Explorer) requireActivity()).searchButton);
-        if (((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if (((Explorer) requireActivity()).getSearchButton() != null)
+            t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if (((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(requireView().getWindowToken(), 0);
         }
@@ -107,7 +107,7 @@ public class Notebook extends Fragment {
         return inflater.inflate(R.layout.fragment_notebook, container, false);
     }
 
-    public void updateUI(){
+    private void updateUI(){
         if(adapter != null) {
             fadeIn(recview);
             fadeOut(searchProgress);

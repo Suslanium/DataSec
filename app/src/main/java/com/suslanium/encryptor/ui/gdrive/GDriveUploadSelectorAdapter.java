@@ -54,7 +54,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
     private final ArrayList<String> CheckedId = new ArrayList<>();
     private int thumbnailLoadingCount = 0;
     private final ExecutorService service;
-    public boolean isSearching = false;
+    protected boolean isSearching = false;
     private final boolean showPreviews;
     private final String B;
     private final String KB;
@@ -83,7 +83,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
             parentView = view;
         }
 
-        public void setupHolder(View view) {
+        private void setupHolder(View view) {
             fileImage = view.findViewById(R.id.fileImage);
             Button fileButton = view.findViewById(R.id.fileButton);
             fileCheckbox = view.findViewById(R.id.fileCheckbox);
@@ -137,9 +137,9 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
                                     paths.add(path + File.separator + realPath);
                                     Intent intent = new Intent(activity, EncryptorService.class);
                                     intent.putExtra("actionType", "gDriveE");
-                                    EncryptorService.uniqueID++;
-                                    int i = EncryptorService.uniqueID;
-                                    EncryptorService.paths.put(i, paths);
+                                    EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                    int i = EncryptorService.getUniqueID();
+                                    EncryptorService.getPaths().put(i, paths);
                                     intent.putExtra("index", i);
                                     intent.putExtra("pass", activity.getIntent().getByteArrayExtra("pass"));
                                     intent.putExtra("gDriveFolder", activity.getIntent().getStringExtra("gDriveFolder"));
@@ -154,31 +154,31 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
             textView = view.findViewById(R.id.fileName);
         }
 
-        public TextView getTextView() {
+        private TextView getTextView() {
             return textView;
         }
 
-        public TextView getDateView() {
+        private TextView getDateView() {
             return dateView;
         }
 
-        public TextView getSizeView() {
+        private TextView getSizeView() {
             return sizeView;
         }
 
-        public void setFile(int id) {
+        private void setFile(int id) {
             fileImage.setImageResource(id);
         }
 
-        public void setFileImageAlpha(float v) {
+        private void setFileImageAlpha(float v) {
             fileImage.setAlpha(v);
         }
 
-        public void setBitMap(Bitmap thumbnail) {
+        private void setBitMap(Bitmap thumbnail) {
             fileImage.setImageBitmap(thumbnail);
         }
 
-        public void setTint(ColorStateList list) {
+        private void setTint(ColorStateList list) {
             fileImage.setImageTintList(list);
         }
     }
@@ -217,7 +217,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         return new ViewHolder(view);
     }
 
-    public void selectAll() {
+    protected void selectAll() {
         if (((GoogleDriveUploadSelector) activity).currentOperationNumber == 0) {
             if (!localDataSet.equals(CheckedId)) {
                 if (!holders.isEmpty()) {
@@ -396,7 +396,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         });
     }
 
-    public ArrayList<String> getCheckedFiles() {
+    protected ArrayList<String> getCheckedFiles() {
         ArrayList<String> files = new ArrayList<>();
         for (int i = 0; i < CheckedId.size(); i++) {
             files.add(path + File.separator + CheckedId.get(i));
@@ -404,7 +404,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         return files;
     }
 
-    public String getPath() {
+    protected String getPath() {
         return path;
     }
 
@@ -413,7 +413,7 @@ public class GDriveUploadSelectorAdapter extends RecyclerView.Adapter<GDriveUplo
         return localDataSet.size();
     }
 
-    public void setNewData(String path, ArrayList<String> fileNames) {
+    protected void setNewData(String path, ArrayList<String> fileNames) {
         int position;
         if (holders.size() > 0) position = holders.get(0).getAdapterPosition();
         else position = 0;

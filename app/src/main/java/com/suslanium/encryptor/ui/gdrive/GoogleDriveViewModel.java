@@ -41,7 +41,7 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         currentFolderID = new MutableLiveData<>();
     }
 
-    public boolean setDrive(){
+    protected boolean setDrive(){
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -50,7 +50,7 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         return acct != null;
     }
 
-    public void setUpDrive(){
+    protected void setUpDrive(){
         GoogleSignInAccount mAccount = GoogleSignIn.getLastSignedInAccount(getApplication().getBaseContext());
         GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getApplication().getBaseContext(), Collections.singleton(Scopes.DRIVE_APPFOLDER));
         if (mAccount != null) {
@@ -141,7 +141,7 @@ public class GoogleDriveViewModel extends AndroidViewModel {
         return prevLists;
     }
 
-    public int createFolder(String name){
+    protected int createFolder(String name){
         final int[] result = new int[]{3};
         java.io.File file = new java.io.File(getApplication().getBaseContext().getCacheDir() + java.io.File.separator + name);
         try {

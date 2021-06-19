@@ -44,11 +44,10 @@ import com.suslanium.encryptor.ui.explorer.ExplorerFragment;
 import java.util.ArrayList;
 
 public class GoogleDriveManager extends AppCompatActivity {
-    Scope SCOPEEMAIL = new Scope(Scopes.EMAIL);
-    Scope SCOPEAPP = new Scope(Scopes.DRIVE_APPFOLDER);
-    GoogleDriveAdapter adapter = null;
-    int RCAUTHORIZEDRIVE = 1;
-    public int currentOperationNumber = 0;
+    private final Scope SCOPEEMAIL = new Scope(Scopes.EMAIL);
+    private final Scope SCOPEAPP = new Scope(Scopes.DRIVE_APPFOLDER);
+    private GoogleDriveAdapter adapter = null;
+    protected int currentOperationNumber = 0;
     private RecyclerView recyclerView;
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton newFolder;
@@ -94,7 +93,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void checkFileBar() {
+    protected void checkFileBar() {
         ArrayList<String> checkedIds = adapter.getCheckedIds();
         if (checkedIds != null && checkedIds.size() > 0 && bottomNavigationView.getVisibility() == View.GONE) {
             adapter.setCanSelect(false);
@@ -116,7 +115,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         }
     }
 
-    public void updateUI(boolean search) {
+    protected void updateUI(boolean search) {
         try {
             if (currentOperationNumber == 0) {
                 currentOperationNumber++;
@@ -162,7 +161,7 @@ public class GoogleDriveManager extends AppCompatActivity {
 
     private void checkForGooglePermissions() {
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(getApplicationContext()), SCOPEAPP, SCOPEEMAIL)) {
-            GoogleSignIn.requestPermissions(GoogleDriveManager.this, RCAUTHORIZEDRIVE, GoogleSignIn.getLastSignedInAccount(getApplicationContext()), SCOPEEMAIL, SCOPEAPP);
+            GoogleSignIn.requestPermissions(GoogleDriveManager.this, 1, GoogleSignIn.getLastSignedInAccount(getApplicationContext()), SCOPEEMAIL, SCOPEAPP);
         } else {
             driveSetUp();
         }
@@ -248,9 +247,9 @@ public class GoogleDriveManager extends AppCompatActivity {
                         .setPositiveButton(R.string.yes, (dialog, which) -> {
                             Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
                             intent.putExtra("actionType", "gDriveDelete");
-                            EncryptorService.uniqueID++;
-                            int i = EncryptorService.uniqueID;
-                            EncryptorService.paths.put(i, ids2);
+                            EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                            int i = EncryptorService.getUniqueID();
+                            EncryptorService.getPaths().put(i, ids2);
                             intent.putExtra("index", i);
                             intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                             ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
@@ -272,11 +271,11 @@ public class GoogleDriveManager extends AppCompatActivity {
                         .setPositiveButton(R.string.yes, (dialog, which) -> {
                             Intent intent = new Intent(GoogleDriveManager.this, EncryptorService.class);
                             intent.putExtra("actionType", "gDriveD");
-                            EncryptorService.uniqueID++;
-                            int i = EncryptorService.uniqueID;
-                            EncryptorService.paths.put(i, checkedIds);
-                            EncryptorService.names.put(i, checkedNames);
-                            EncryptorService.mimeTypes.put(i, mimes);
+                            EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                            int i = EncryptorService.getUniqueID();
+                            EncryptorService.getPaths().put(i, checkedIds);
+                            EncryptorService.getNames().put(i, checkedNames);
+                            EncryptorService.getMimeTypes().put(i, mimes);
                             intent.putExtra("index", i);
                             intent.putExtra("pass", getIntent().getByteArrayExtra("pass"));
                             ContextCompat.startForegroundService(GoogleDriveManager.this, intent);
@@ -364,7 +363,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         showRootFilesInDrive();
     }
 
-    public void showRootFilesInDrive() {
+    private void showRootFilesInDrive() {
         @SuppressLint("SetTextI18n") Thread thread = new Thread(() -> {
             try {
                 double[] freeSpace = viewModel.getFreeSpace();
@@ -405,7 +404,7 @@ public class GoogleDriveManager extends AppCompatActivity {
         thread.start();
     }
 
-    public void constructAndSetPath() {
+    protected void constructAndSetPath() {
         StringBuilder path = new StringBuilder();
         for (int i = 0; i < viewModel.getFolders().size(); i++) {
             path.append(java.io.File.separator).append(viewModel.getFolders().get(i));

@@ -19,15 +19,15 @@ public class ExplorerActivityViewModel extends AndroidViewModel {
         currentFragmentID = new MutableLiveData<>(0);
     }
 
-    public void setCurrentFragmentID(int id){
+    protected void setCurrentFragmentID(int id){
         currentFragmentID.setValue(id);
     }
 
-    public LiveData<Integer> getID(){
+    protected LiveData<Integer> getID(){
         return currentFragmentID;
     }
 
-    public void deleteFiles(ArrayList<String> paths) {
+    protected void deleteFiles(ArrayList<String> paths) {
         for (int i = 0; i < paths.size(); i++) {
             File file = new File(paths.get(i));
             if (!file.isFile()) {
@@ -45,7 +45,7 @@ public class ExplorerActivityViewModel extends AndroidViewModel {
         }
     }
 
-    public void deleteFiles(String path) {
+    protected void deleteFiles(String path) {
         File file = new File(path);
         if (!file.isFile()) {
             File[] files = file.listFiles();

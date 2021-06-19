@@ -154,7 +154,7 @@ public class ExplorerViewModel extends AndroidViewModel {
         }
         return result;
     }
-    public static List<String> sortFiles(List<String> filePaths) {
+    private static List<String> sortFiles(List<String> filePaths) {
         ArrayList<String> sortedFiles = new ArrayList<>();
         ArrayList<String> originDirs = new ArrayList<>();
         ArrayList<String> originFiles = new ArrayList<>();
@@ -233,7 +233,7 @@ public class ExplorerViewModel extends AndroidViewModel {
         return storagePaths;
     }
 
-    public void decryptTemp(File encrypted, File cached, Activity activity, AlertDialog alertDialog) throws Exception {
+    protected void decryptTemp(File encrypted, File cached, Activity activity, AlertDialog alertDialog) throws Exception {
         if(password == null) password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
         Encryptor.decryptFileAES256(encrypted, password,cached);
         Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);

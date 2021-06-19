@@ -29,7 +29,6 @@ import com.suslanium.encryptor.R;
 
 public class GoogleDriveFragment extends Fragment {
     private GoogleSignInClient mGoogleSignInClient;
-    SignInButton signInButton;
     private static final int SIGNIN = 0;
 
     @Override
@@ -49,10 +48,10 @@ public class GoogleDriveFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if(((Explorer) requireActivity()).searchButton != null)t.removeView(((Explorer) requireActivity()).searchButton);
-        if(((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if(((Explorer) requireActivity()).getSearchButton() != null)t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if(((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
@@ -61,7 +60,7 @@ public class GoogleDriveFragment extends Fragment {
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
-            signInButton = requireActivity().findViewById(R.id.sign_in_button);
+            SignInButton signInButton = requireActivity().findViewById(R.id.sign_in_button);
             signInButton.setSize(SignInButton.SIZE_STANDARD);
             signInButton.setOnClickListener(v -> {
                 if (v.getId() == R.id.sign_in_button) {

@@ -78,13 +78,13 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((Explorer) requireActivity()).settingsVisible = true;
+        ((Explorer) requireActivity()).setSettingsVisible(true);
         updateUI();
     }
 
     @Override
     public void onDestroyView() {
-        ((Explorer) requireActivity()).settingsVisible = false;
+        ((Explorer) requireActivity()).setSettingsVisible(false);
         super.onDestroyView();
     }
 
@@ -172,11 +172,11 @@ public class SettingsFragment extends Fragment {
             builder.show();
         });
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if (((Explorer) requireActivity()).searchButton != null)
-            t.removeView(((Explorer) requireActivity()).searchButton);
-        if (((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if (((Explorer) requireActivity()).getSearchButton() != null)
+            t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if (((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(requireView().getWindowToken(), 0);
         }
@@ -372,7 +372,7 @@ public class SettingsFragment extends Fragment {
                                 intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
                                 ContextCompat.startForegroundService(requireContext(), intent);
                                 Thread.sleep(1000);
-                                while (EncryptorService.changingPassword) {
+                                while (EncryptorService.isChangingPassword()) {
                                     Thread.sleep(100);
                                 }
                                 requireActivity().runOnUiThread(() -> {
@@ -457,8 +457,8 @@ public class SettingsFragment extends Fragment {
                                     .setPositiveButton(R.string.cont, (dialog13, which13) -> {
                                         Intent intent = new Intent(requireContext(), EncryptorService.class);
                                         intent.putExtra("actionType", "gDriveDBU");
-                                        EncryptorService.uniqueID++;
-                                        int i = EncryptorService.uniqueID;
+                                        EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                        int i = EncryptorService.getUniqueID();
                                         intent.putExtra("index", i);
                                         intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
                                         ContextCompat.startForegroundService(requireContext(), intent);
@@ -481,7 +481,7 @@ public class SettingsFragment extends Fragment {
 
                                                 Thread.currentThread().interrupt();
                                             }
-                                            while (EncryptorService.deletingFiles.containsValue(true)) {
+                                            while (EncryptorService.getDeletingFiles().containsValue(true)) {
                                                 try {
                                                     Thread.sleep(100);
                                                 } catch (InterruptedException e) {
@@ -491,17 +491,17 @@ public class SettingsFragment extends Fragment {
                                             }
                                             requireActivity().runOnUiThread(() -> {
                                                 alertDialog.dismiss();
-                                                switch (EncryptorService.backupRestoreReturn) {
+                                                switch (EncryptorService.getBackupRestoreReturn()) {
                                                     case 0:
                                                         Snackbar.make(requireView(), R.string.backupSuccess, Snackbar.LENGTH_LONG).show();
                                                         break;
                                                     case 2:
                                                         Snackbar.make(requireView(), R.string.databaseNotFound, Snackbar.LENGTH_LONG).show();
-                                                        EncryptorService.backupRestoreReturn = 0;
+                                                        EncryptorService.setBackupRestoreReturn(0);
                                                         break;
                                                     case 3:
                                                         Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
-                                                        EncryptorService.backupRestoreReturn = 0;
+                                                        EncryptorService.setBackupRestoreReturn(0);
                                                         break;
                                                     default:
                                                         break;
@@ -521,8 +521,8 @@ public class SettingsFragment extends Fragment {
                                     .setPositiveButton(R.string.merge, (dialog12, which12) -> {
                                         Intent intent = new Intent(requireContext(), EncryptorService.class);
                                         intent.putExtra("actionType", "gDriveDBD");
-                                        EncryptorService.uniqueID++;
-                                        int i = EncryptorService.uniqueID;
+                                        EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                        int i = EncryptorService.getUniqueID();
                                         intent.putExtra("index", i);
                                         intent.putExtra("mergeData", true);
                                         intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
@@ -532,8 +532,8 @@ public class SettingsFragment extends Fragment {
                                     .setNegativeButton(R.string.replace, (dialog1, which1) -> {
                                         Intent intent = new Intent(requireContext(), EncryptorService.class);
                                         intent.putExtra("actionType", "gDriveDBD");
-                                        EncryptorService.uniqueID++;
-                                        int i = EncryptorService.uniqueID;
+                                        EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                        int i = EncryptorService.getUniqueID();
                                         intent.putExtra("index", i);
                                         intent.putExtra("mergeData", false);
                                         intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
@@ -567,7 +567,7 @@ public class SettingsFragment extends Fragment {
 
                 Thread.currentThread().interrupt();
             }
-            while (EncryptorService.deletingFiles.containsValue(true)) {
+            while (EncryptorService.getDeletingFiles().containsValue(true)) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -577,21 +577,21 @@ public class SettingsFragment extends Fragment {
             }
             requireActivity().runOnUiThread(() -> {
                 alertDialog.dismiss();
-                switch (EncryptorService.backupRestoreReturn) {
+                switch (EncryptorService.getBackupRestoreReturn()) {
                     case 0:
                         Snackbar.make(requireView(), R.string.databaseRestoreSuccess, Snackbar.LENGTH_LONG).show();
                         break;
                     case 1:
                         Snackbar.make(requireView(), R.string.databasePassNotMatch, Snackbar.LENGTH_LONG).show();
-                        EncryptorService.backupRestoreReturn = 0;
+                        EncryptorService.setBackupRestoreReturn(0);
                         break;
                     case 2:
                         Snackbar.make(requireView(), R.string.noDBfoundInCloud, Snackbar.LENGTH_LONG).show();
-                        EncryptorService.backupRestoreReturn = 0;
+                        EncryptorService.setBackupRestoreReturn(0);
                         break;
                     case 3:
                         Snackbar.make(requireView(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
-                        EncryptorService.backupRestoreReturn = 0;
+                        EncryptorService.setBackupRestoreReturn(0);
                         break;
                     default:
                         break;

@@ -58,7 +58,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
             parentView = view;
         }
 
-        public void setupHolder(View view){
+        private void setupHolder(View view){
             fileType = view.findViewById(R.id.fileImage);
             Button fileButton = view.findViewById(R.id.fileButton);
             Button checkBoxButton = view.findViewById(R.id.checkBoxButton);
@@ -99,11 +99,11 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
                                             mimes.add(mimeTypes.get(i));
                                             Intent intent = new Intent(context, EncryptorService.class);
                                             intent.putExtra("actionType", "gDriveD");
-                                            EncryptorService.uniqueID++;
-                                            int j = EncryptorService.uniqueID;
-                                            EncryptorService.paths.put(j, paths);
-                                            EncryptorService.names.put(j, names);
-                                            EncryptorService.mimeTypes.put(j, mimes);
+                                            EncryptorService.setUniqueID(EncryptorService.getUniqueID() + 1);
+                                            int j = EncryptorService.getUniqueID();
+                                            EncryptorService.getPaths().put(j, paths);
+                                            EncryptorService.getNames().put(j, names);
+                                            EncryptorService.getMimeTypes().put(j, mimes);
                                             intent.putExtra("index", j);
                                             intent.putExtra("pass", ((GoogleDriveManager) context).getIntent().getByteArrayExtra("pass"));
                                             ContextCompat.startForegroundService(context, intent);
@@ -144,19 +144,19 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
             textView = view.findViewById(R.id.fileName);
         }
 
-        public ImageView getFileType() {
+        private ImageView getFileType() {
             return fileType;
         }
 
-        public TextView getTextView() {
+        private TextView getTextView() {
             return textView;
         }
 
-        public TextView getFileModDate() {
+        private TextView getFileModDate() {
             return fileModDate;
         }
 
-        public TextView getFileSize() {
+        private TextView getFileSize() {
             return fileSize;
         }
     }
@@ -220,7 +220,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         });
     }
 
-    public void setCanSelect(boolean canSelect) {
+    protected void setCanSelect(boolean canSelect) {
         this.canSelect = canSelect;
     }
 
@@ -230,7 +230,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         if (localDataSet == null) return 0;
         else return localDataSet.size();
     }
-    public void selectAll() {
+    protected void selectAll() {
         if (((GoogleDriveManager) context).currentOperationNumber == 0) {
             if (!localDataSet.equals(checkedId)) {
                 if (!holders.isEmpty()) {
@@ -255,7 +255,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         }
     }
 
-    public ArrayList<String> getCheckedIds() {
+    protected ArrayList<String> getCheckedIds() {
         ArrayList<String> files = new ArrayList<>();
         for (int i = 0; i < checkedId.size(); i++) {
             for (int j = 0; j < localDataSet.size(); j++) {
@@ -268,7 +268,7 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         return files;
     }
 
-    public ArrayList<String> getCheckedMimes() {
+    protected ArrayList<String> getCheckedMimes() {
         ArrayList<String> files = new ArrayList<>();
         for (int i = 0; i < checkedId.size(); i++) {
             for (int j = 0; j < localDataSet.size(); j++) {
@@ -281,16 +281,16 @@ public class GoogleDriveAdapter extends RecyclerView.Adapter<GoogleDriveAdapter.
         return files;
     }
 
-    public void deselectAll() {
+    protected void deselectAll() {
         checkedId.clear();
         setNewData(localDataSet, ids, mimeTypes);
     }
 
-    public ArrayList<String> getCheckedNames() {
+    protected ArrayList<String> getCheckedNames() {
         return new ArrayList<>(checkedId);
     }
 
-    public void setNewData(ArrayList<String> dataSet, ArrayList<String> ids, ArrayList<String> mimeTypes) {
+    protected void setNewData(ArrayList<String> dataSet, ArrayList<String> ids, ArrayList<String> mimeTypes) {
         int position = 0;
         localDataSet = dataSet;
         this.ids = ids;

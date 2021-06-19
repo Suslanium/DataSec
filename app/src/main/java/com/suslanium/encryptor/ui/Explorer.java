@@ -43,14 +43,14 @@ public class Explorer extends AppCompatActivity {
     private ExplorerFragment fragment = null;
     private PasswordFragment passwordFragment = null;
     private Intent intent = null;
-    public int currentOperationNumber = 0;
-    public ImageButton searchButton = null;
-    public EditText searchBar = null;
-    public boolean explorerVisible = false;
-    public boolean passwordVaultVisible = false;
-    public boolean messageCryptVisible = false;
-    public boolean settingsVisible = false;
-    public boolean notesVisible = false;
+    private int currentOperationNumber = 0;
+    private ImageButton searchButton = null;
+    private EditText searchBar = null;
+    private boolean explorerVisible = false;
+    private boolean passwordVaultVisible = false;
+    private boolean messageCryptVisible = false;
+    private boolean settingsVisible = false;
+    private boolean notesVisible = false;
     private View navExplorer;
     private int backPressedCount = 0;
     private ExecutorService service;
@@ -122,25 +122,25 @@ public class Explorer extends AppCompatActivity {
                 new Handler().postDelayed(() -> {
                     switch (itemID) {
                         case R.id.nav_explorer:
-                            if (!explorerVisible) viewModel.setCurrentFragmentID(itemID);
+                            if (!isExplorerVisible()) viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_datavault:
-                            if (!passwordVaultVisible)
+                            if (!isPasswordVaultVisible())
                                 viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_keyexchange:
                             viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_notes:
-                            if(!notesVisible)
+                            if(!isNotesVisible())
                                 viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_messagecrypt:
-                            if (!messageCryptVisible)
+                            if (!isMessageCryptVisible())
                                 viewModel.setCurrentFragmentID(itemID);
                             break;
                         case R.id.nav_settings:
-                            if (!settingsVisible) viewModel.setCurrentFragmentID(itemID);
+                            if (!isSettingsVisible()) viewModel.setCurrentFragmentID(itemID);
                             break;
                         default:
                             break;
@@ -221,4 +221,67 @@ public class Explorer extends AppCompatActivity {
     }
 
 
+    public int getCurrentOperationNumber() {
+        return currentOperationNumber;
+    }
+
+    public void setCurrentOperationNumber(int currentOperationNumber) {
+        this.currentOperationNumber = currentOperationNumber;
+    }
+
+    public ImageButton getSearchButton() {
+        return searchButton;
+    }
+
+    public void setSearchButton(ImageButton searchButton) {
+        this.searchButton = searchButton;
+    }
+
+    public EditText getSearchBar() {
+        return searchBar;
+    }
+
+    public void setSearchBar(EditText searchBar) {
+        this.searchBar = searchBar;
+    }
+
+    public boolean isExplorerVisible() {
+        return explorerVisible;
+    }
+
+    public void setExplorerVisible(boolean explorerVisible) {
+        this.explorerVisible = explorerVisible;
+    }
+
+    public boolean isPasswordVaultVisible() {
+        return passwordVaultVisible;
+    }
+
+    public void setPasswordVaultVisible(boolean passwordVaultVisible) {
+        this.passwordVaultVisible = passwordVaultVisible;
+    }
+
+    public boolean isMessageCryptVisible() {
+        return messageCryptVisible;
+    }
+
+    public void setMessageCryptVisible(boolean messageCryptVisible) {
+        this.messageCryptVisible = messageCryptVisible;
+    }
+
+    public boolean isSettingsVisible() {
+        return settingsVisible;
+    }
+
+    public void setSettingsVisible(boolean settingsVisible) {
+        this.settingsVisible = settingsVisible;
+    }
+
+    public boolean isNotesVisible() {
+        return notesVisible;
+    }
+
+    public void setNotesVisible(boolean notesVisible) {
+        this.notesVisible = notesVisible;
+    }
 }

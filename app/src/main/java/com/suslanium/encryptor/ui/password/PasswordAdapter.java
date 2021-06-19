@@ -120,34 +120,34 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
             textView = view.findViewById(R.id.serviceName);
         }
 
-        public TextView getTextView() {
+        private TextView getTextView() {
             return textView;
         }
 
-        public TextView getLoginView() {
+        private TextView getLoginView() {
             return loginView;
         }
 
-        public void setIconBitmap(Bitmap bitmap) {
+        private void setIconBitmap(Bitmap bitmap) {
             iconView.setImageBitmap(bitmap);
         }
 
-        public void setDefaultIcon() {
+        private void setDefaultIcon() {
             iconView.setImageTintList(defTint);
             iconView.setImageResource(R.drawable.managerkey);
         }
 
-        public void setCategory() {
+        private void setCategory() {
             isCategory = true;
             iconView.setImageTintList(defTint);
             iconView.setImageResource(R.drawable.ic_folder);
         }
 
-        public void setNonCategory(){
+        private void setNonCategory(){
             isCategory = false;
         }
 
-        public void removeTint(){
+        private void removeTint(){
             iconView.setImageTintList(null);
         }
     }
@@ -240,7 +240,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         }
     }
 
-    public void setNewData(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories) {
+    protected void setNewData(ArrayList<String> dataSet, ArrayList<Integer> ids, ArrayList<String> logins, ArrayList<String> categories) {
         int position = 0;
         localDataSet = dataSet;
         if (dataSet.isEmpty()) {
@@ -252,7 +252,7 @@ public class PasswordAdapter extends RecyclerView.Adapter<PasswordAdapter.ViewHo
         notifyDataSetChanged();
     }
 
-    public void setIcons(ArrayList<Bitmap> icons) {
+    protected void setIcons(ArrayList<Bitmap> icons) {
         this.icons = icons;
         activity.runOnUiThread(() -> setNewData(localDataSet, localids, localLogins, localCategories));
     }

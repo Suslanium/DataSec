@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class MessageCryptCollectionAdapter extends FragmentStateAdapter {
-    public MessageCryptCollectionAdapter(Fragment fragment) {
+    protected MessageCryptCollectionAdapter(Fragment fragment) {
         super(fragment);
     }
 

@@ -33,7 +33,7 @@ import com.suslanium.encryptor.R;
 import static com.suslanium.encryptor.ui.explorer.ExplorerFragment.getTapTarget;
 
 public class EncryptFragment extends Fragment {
-    public static final String ARG_OBJECT = "intType";
+    protected static final String ARG_OBJECT = "intType";
     private boolean isLoading = false;
 
     @Nullable

@@ -236,7 +236,7 @@ public class EncryptorAutofillService extends AutofillService {
 
     }
 
-    public void parseAutoFillFields(AssistStructure.ViewNode node, List<AssistStructure.ViewNode> loginNodes, boolean passwords) {
+    private void parseAutoFillFields(AssistStructure.ViewNode node, List<AssistStructure.ViewNode> loginNodes, boolean passwords) {
         String[] hints = node.getAutofillHints();
         String viewId = node.getIdEntry();
         String hint = node.getHint();
@@ -260,7 +260,7 @@ public class EncryptorAutofillService extends AutofillService {
         }
     }
 
-    public void getPossibleAppNames(AssistStructure.ViewNode node, List<String> names) {
+    private void getPossibleAppNames(AssistStructure.ViewNode node, List<String> names) {
         CharSequence text = node.getText();
         String viewId = node.getIdEntry();
         String hint = node.getHint();
@@ -293,7 +293,7 @@ public class EncryptorAutofillService extends AutofillService {
         return contains;
     }
 
-    public boolean checkStringForLogin(String hint) {
+    private boolean checkStringForLogin(String hint) {
         boolean contains = false;
         for (int i = 0; i < loginKeyWords.length; i++) {
             if (hint != null && hint.contains(loginKeyWords[i])) {
@@ -304,7 +304,7 @@ public class EncryptorAutofillService extends AutofillService {
         return contains;
     }
 
-    public boolean checkStringForPassword(String hint) {
+    private boolean checkStringForPassword(String hint) {
         boolean contains = false;
         for (int i = 0; i < passKeyWords.length; i++) {
             if (hint != null && hint.contains(passKeyWords[i])) {

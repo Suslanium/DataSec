@@ -59,17 +59,77 @@ public class EncryptorService extends Service {
     private static final String CHANNEL_ID = "Encryptor";
     private int id = 1;
     private final ArrayList<Boolean> isRunning = new ArrayList<>();
-    public static HashMap<Integer, ArrayList<String>> paths = new HashMap<>();
-    public static HashMap<Integer, String> path = new HashMap<>();
-    public static HashMap<Integer, String> originalPath = new HashMap<>();
-    public static HashMap<Integer, ArrayList<String>> originalPaths = new HashMap<>();
-    public static HashMap<Integer, ArrayList<String>> names = new HashMap<>();
-    public static HashMap<Integer, ArrayList<String>> mimeTypes = new HashMap<>();
-    public static HashMap<Integer, HashMap<String, String>> folderReplacements = new HashMap<>();
-    public static HashMap<Integer, Boolean> deletingFiles = new HashMap<>();
-    public static boolean changingPassword = false;
-    public static Integer uniqueID = 0;
-    public static int backupRestoreReturn = 0;
+    private static final HashMap<Integer, ArrayList<String>> paths = new HashMap<>();
+    private static HashMap<Integer, String> path = new HashMap<>();
+    private static final HashMap<Integer, String> originalPath = new HashMap<>();
+    private static final HashMap<Integer, ArrayList<String>> originalPaths = new HashMap<>();
+    private static final HashMap<Integer, ArrayList<String>> names = new HashMap<>();
+    private static final HashMap<Integer, ArrayList<String>> mimeTypes = new HashMap<>();
+    private static final HashMap<Integer, HashMap<String, String>> folderReplacements = new HashMap<>();
+    private static final HashMap<Integer, Boolean> deletingFiles = new HashMap<>();
+    private static boolean changingPassword = false;
+    private static Integer uniqueID = 0;
+    private static int backupRestoreReturn = 0;
+
+    public static HashMap<Integer, ArrayList<String>> getPaths() {
+        return paths;
+    }
+
+    public static HashMap<Integer, String> getPath() {
+        return path;
+    }
+
+    public static void setPath(HashMap<Integer, String> path) {
+        EncryptorService.path = path;
+    }
+
+    public static HashMap<Integer, String> getOriginalPath() {
+        return originalPath;
+    }
+
+    public static HashMap<Integer, ArrayList<String>> getOriginalPaths() {
+        return originalPaths;
+    }
+
+    public static HashMap<Integer, ArrayList<String>> getNames() {
+        return names;
+    }
+
+    public static HashMap<Integer, ArrayList<String>> getMimeTypes() {
+        return mimeTypes;
+    }
+
+    public static HashMap<Integer, HashMap<String, String>> getFolderReplacements() {
+        return folderReplacements;
+    }
+
+    public static HashMap<Integer, Boolean> getDeletingFiles() {
+        return deletingFiles;
+    }
+
+    public static boolean isChangingPassword() {
+        return changingPassword;
+    }
+
+    public static void setChangingPassword(boolean changingPassword) {
+        EncryptorService.changingPassword = changingPassword;
+    }
+
+    public static Integer getUniqueID() {
+        return uniqueID;
+    }
+
+    public static void setUniqueID(Integer uniqueID) {
+        EncryptorService.uniqueID = uniqueID;
+    }
+
+    public static int getBackupRestoreReturn() {
+        return backupRestoreReturn;
+    }
+
+    public static void setBackupRestoreReturn(int backupRestoreReturn) {
+        EncryptorService.backupRestoreReturn = backupRestoreReturn;
+    }
 
     @Override
     public void onCreate() {
@@ -99,9 +159,9 @@ public class EncryptorService extends Service {
         startForeground(++id, builder.build());
         String actionType = intent.getStringExtra("actionType");
         int index = intent.getIntExtra("index", 0);
-        ArrayList<String> pathsList = EncryptorService.paths.remove(index);
-        ArrayList<String> namesList = EncryptorService.names.remove(index);
-        ArrayList<String> mimesList = EncryptorService.mimeTypes.remove(index);
+        ArrayList<String> pathsList = EncryptorService.getPaths().remove(index);
+        ArrayList<String> namesList = EncryptorService.getNames().remove(index);
+        ArrayList<String> mimesList = EncryptorService.getMimeTypes().remove(index);
         byte[] pass = intent.getByteArrayExtra("pass");
         String currentFolderID = intent.getStringExtra("gDriveFolder");
         isRunning.add(true);
@@ -689,7 +749,7 @@ public class EncryptorService extends Service {
                     }
                     if(origin.exists()) {
                         try {
-                            EncryptorService.changingPassword = true;
+                            EncryptorService.setChangingPassword(true);
                             deleteFiles(toDownload.getPath());
                             try (InputStream in = new BufferedInputStream(new FileInputStream(origin)); OutputStream out = new BufferedOutputStream(new FileOutputStream(toDownload))) {
                                 byte[] buffer = new byte[256 * 1024];
@@ -767,7 +827,7 @@ public class EncryptorService extends Service {
                                     }
                                 }
                             } finally {
-                                EncryptorService.changingPassword = false;
+                                EncryptorService.setChangingPassword(false);
                                 isRunning.remove(true);
                                 if (!isRunning.contains(true)) stopSelf();
                             }
@@ -788,7 +848,7 @@ public class EncryptorService extends Service {
                             edit.apply();
                         } catch (Exception ignored){
                         }
-                        EncryptorService.changingPassword = false;
+                        EncryptorService.setChangingPassword(false);
                         isRunning.remove(true);
                         if (!isRunning.contains(true)) stopSelf();
                     }
@@ -798,7 +858,7 @@ public class EncryptorService extends Service {
             }
             case "delete": {
                 Thread thread = new Thread(() -> {
-                    EncryptorService.deletingFiles.put(index, true);
+                    EncryptorService.getDeletingFiles().put(index, true);
                     NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
                             .setSmallIcon(R.drawable.ic_baseline_lock_24)
                             .setContentTitle(getString(R.string.serviceDelete))
@@ -811,7 +871,7 @@ public class EncryptorService extends Service {
                         deleteFiles(pathsList);
                     }
                     notificationManager3.cancel(operationID);
-                    EncryptorService.deletingFiles.remove(index);
+                    EncryptorService.getDeletingFiles().remove(index);
                     isRunning.remove(true);
                     if (!isRunning.contains(true)) stopSelf();
                 });
@@ -819,9 +879,9 @@ public class EncryptorService extends Service {
                 break;
             }
             case "copyFiles": {
-                String currentPath = EncryptorService.path.remove(index);
-                String currentOriginalPath = EncryptorService.originalPath.remove(index);
-                HashMap<String, String> pathsToReplace = EncryptorService.folderReplacements.remove(index);
+                String currentPath = EncryptorService.getPath().remove(index);
+                String currentOriginalPath = EncryptorService.getOriginalPath().remove(index);
+                HashMap<String, String> pathsToReplace = EncryptorService.getFolderReplacements().remove(index);
                 Thread thread = new Thread(() -> {
                     NotificationCompat.Builder builder3;
                     if (pathsList != null) {
@@ -840,10 +900,10 @@ public class EncryptorService extends Service {
                 break;
             }
             case "moveFiles": {
-                String currentPath = EncryptorService.path.remove(index);
-                String currentOriginalPath = EncryptorService.originalPath.remove(index);
-                HashMap<String, String> pathsToReplace = EncryptorService.folderReplacements.remove(index);
-                ArrayList<String> currentOriginalPaths = EncryptorService.originalPaths.remove(index);
+                String currentPath = EncryptorService.getPath().remove(index);
+                String currentOriginalPath = EncryptorService.getOriginalPath().remove(index);
+                HashMap<String, String> pathsToReplace = EncryptorService.getFolderReplacements().remove(index);
+                ArrayList<String> currentOriginalPaths = EncryptorService.getOriginalPaths().remove(index);
                 Thread thread = new Thread(() -> {
                     if (pathsList != null) {
                         NotificationCompat.Builder builder3 = new NotificationCompat.Builder(EncryptorService.this, CHANNEL_ID)
@@ -861,7 +921,7 @@ public class EncryptorService extends Service {
                 break;
             }
             case "gDriveDBU": {
-                EncryptorService.deletingFiles.put(index, true);
+                EncryptorService.getDeletingFiles().put(index, true);
                 Thread thread = new Thread(() -> {
                     try {
                         File fileToUpload = new File(getBaseContext().getApplicationInfo().dataDir + File.separator + "database.db");
@@ -899,13 +959,13 @@ public class EncryptorService extends Service {
                                 }
                             }
                         } else {
-                            EncryptorService.backupRestoreReturn = 2;
+                            EncryptorService.setBackupRestoreReturn(2);
                         }
                     } catch (Exception e) {
 
-                        EncryptorService.backupRestoreReturn = 3;
+                        EncryptorService.setBackupRestoreReturn(3);
                     }
-                    EncryptorService.deletingFiles.remove(index);
+                    EncryptorService.getDeletingFiles().remove(index);
                     isRunning.remove(true);
                     if (!isRunning.contains(true)) stopSelf();
                 });
@@ -913,7 +973,7 @@ public class EncryptorService extends Service {
                 break;
             }
             case "gDriveDBD": {
-                EncryptorService.deletingFiles.put(index, true);
+                EncryptorService.getDeletingFiles().put(index, true);
                 boolean mergeDatabases = intent.getBooleanExtra("mergeData", true);
                 Thread thread = new Thread(() -> {
                     try {
@@ -991,18 +1051,18 @@ public class EncryptorService extends Service {
                                     } else {
                                         Encryptor.wipeFile(toDownload);
                                         toDownload.delete();
-                                        EncryptorService.backupRestoreReturn = 1;
+                                        EncryptorService.setBackupRestoreReturn(1);
                                     }
                                 }
                             } else {
-                                EncryptorService.backupRestoreReturn = 2;
+                                EncryptorService.setBackupRestoreReturn(2);
                             }
                         }
                     } catch (Exception e) {
 
-                        EncryptorService.backupRestoreReturn = 3;
+                        EncryptorService.setBackupRestoreReturn(3);
                     }
-                    EncryptorService.deletingFiles.remove(index);
+                    EncryptorService.getDeletingFiles().remove(index);
                     isRunning.remove(true);
                     if (!isRunning.contains(true)) stopSelf();
                 });

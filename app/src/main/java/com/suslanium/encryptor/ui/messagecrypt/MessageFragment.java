@@ -19,8 +19,7 @@ import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
 
 public class MessageFragment extends Fragment {
-    MessageCryptCollectionAdapter messageCryptCollectionAdapter;
-    ViewPager2 viewPager;
+
     public MessageFragment() {}
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -30,17 +29,17 @@ public class MessageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((Explorer) requireActivity()).messageCryptVisible = true;
+        ((Explorer) requireActivity()).setMessageCryptVisible(true);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if(((Explorer) requireActivity()).searchButton != null)t.removeView(((Explorer) requireActivity()).searchButton);
-        if(((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if(((Explorer) requireActivity()).getSearchButton() != null)t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if(((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-        messageCryptCollectionAdapter = new MessageCryptCollectionAdapter(this);
-        viewPager = view.findViewById(R.id.pager);
+        MessageCryptCollectionAdapter messageCryptCollectionAdapter = new MessageCryptCollectionAdapter(this);
+        ViewPager2 viewPager = view.findViewById(R.id.pager);
         viewPager.setAdapter(messageCryptCollectionAdapter);
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
@@ -59,7 +58,7 @@ public class MessageFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        ((Explorer) requireActivity()).messageCryptVisible = false;
+        ((Explorer) requireActivity()).setMessageCryptVisible(false);
         super.onDestroyView();
     }
 }

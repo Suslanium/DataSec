@@ -39,7 +39,7 @@ import com.suslanium.encryptor.util.Encryptor;
 import static android.content.Context.POWER_SERVICE;
 
 public class WelcomeActivityFragment extends Fragment {
-    public static final String ARG_OBJECT = "intType";
+    protected static final String ARG_OBJECT = "intType";
 
     @Nullable
     @Override

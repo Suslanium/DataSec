@@ -91,46 +91,52 @@ public class PasswordActivity extends AppCompatActivity {
         Button loginButton = findViewById(R.id.loginButton);
         if(isAuthActivity){ bottom.setText(R.string.enterPassAuth); loginButton.setText(R.string.cont);}
         if(usesBioAuth){
-            BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(getString(R.string.bioAuth))
-                    .setSubtitle(getString(R.string.loginBio))
-                    .setNegativeButtonText(getString(R.string.usePass))
-                    .build();
-            Executor executor = ContextCompat.getMainExecutor(this);
-            BiometricPrompt biometricPrompt = new BiometricPrompt(PasswordActivity.this,
-                    executor, new BiometricPrompt.AuthenticationCallback() {
-                @Override
-                public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                    super.onAuthenticationError(errorCode, errString);
-                }
-
-                @Override
-                public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                    super.onAuthenticationSucceeded(result);
-                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                    try {
-                        MasterKey mainKey = new MasterKey.Builder(getBaseContext())
-                                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                .build();
-                        SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-                        String pass = editor.getString("pass", null);
-                        if(pass != null){
-                            login(pass);
-                        } else {
-                            Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+            String packageName = getPackageName();
+            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || pm.isIgnoringBatteryOptimizations(packageName)) {
+                    BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                            .setTitle(getString(R.string.bioAuth))
+                            .setSubtitle(getString(R.string.loginBio))
+                            .setNegativeButtonText(getString(R.string.usePass))
+                            .build();
+                    Executor executor = ContextCompat.getMainExecutor(this);
+                    BiometricPrompt biometricPrompt = new BiometricPrompt(PasswordActivity.this,
+                            executor, new BiometricPrompt.AuthenticationCallback() {
+                        @Override
+                        public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                            super.onAuthenticationError(errorCode, errString);
                         }
-                    } catch (Exception e){
-                        Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
-                    }
-                }
 
-                @Override
-                public void onAuthenticationFailed() {
-                    super.onAuthenticationFailed();
+                        @Override
+                        public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                            super.onAuthenticationSucceeded(result);
+                            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            try {
+                                MasterKey mainKey = new MasterKey.Builder(getBaseContext())
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .build();
+                                SharedPreferences editor = EncryptedSharedPreferences.create(getBaseContext(), "encryptor_shared_prefs", mainKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+                                String pass = editor.getString("pass", null);
+                                if(pass != null){
+                                    login(pass);
+                                } else {
+                                    Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                                }
+                            } catch (Exception e){
+                                Snackbar.make(getCurrentFocus(), R.string.smthWentWrong, Snackbar.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onAuthenticationFailed() {
+                            super.onAuthenticationFailed();
+                        }
+                    });
+                    biometricPrompt.authenticate(promptInfo);
                 }
-            });
-            biometricPrompt.authenticate(promptInfo);
+            }
         }
     }
 
@@ -150,8 +156,8 @@ public class PasswordActivity extends AppCompatActivity {
         }
     }
 
-    public void checkPassword(View v) {
-        if (!EncryptorService.changingPassword) {
+    private void checkPassword(View v) {
+        if (!EncryptorService.isChangingPassword()) {
             startLogin();
         } else {
             Snackbar.make(v, R.string.cannotUseWhileChanging, Snackbar.LENGTH_LONG).show();
@@ -165,7 +171,7 @@ public class PasswordActivity extends AppCompatActivity {
         if (requestCode == 1002) {
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (!EncryptorService.changingPassword) {
+            if (!EncryptorService.isChangingPassword()) {
                 if (pm.isIgnoringBatteryOptimizations(packageName)) {
                         startLogin();
                     }

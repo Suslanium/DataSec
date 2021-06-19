@@ -39,11 +39,11 @@ public class PasswordViewModel extends AndroidViewModel {
         currentCategory = new MutableLiveData<>("");
     }
 
-    public void setCurrentSearchQuery(String query) {
+    protected void setCurrentSearchQuery(String query) {
         currentSearchQuery.setValue(query);
     }
 
-    public void setCurrentCategory(String category) {
+    protected void setCurrentCategory(String category) {
         currentCategory.setValue(category);
     }
 
@@ -57,7 +57,7 @@ public class PasswordViewModel extends AndroidViewModel {
         return currentCategory;
     }
 
-    public boolean updateList() throws Exception {
+    protected boolean updateList() throws Exception {
         ArrayList<String> strings3 = new ArrayList<>();
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<String> logins = new ArrayList<>();
@@ -150,11 +150,11 @@ public class PasswordViewModel extends AndroidViewModel {
         return categories;
     }
 
-    public void setIntent(Intent intent) {
+    protected void setIntent(Intent intent) {
         this.intent = intent;
     }
 
-    public boolean createCategory(String name) throws Exception {
+    protected boolean createCategory(String name) throws Exception {
         byte[] pass = intent.getByteArrayExtra("pass");
         String password = Encryptor.rsadecrypt(pass);
         SQLiteDatabase database = Encryptor.initDataBase(getApplication().getBaseContext(), password);

@@ -64,7 +64,7 @@ public class PasswordEntry extends AppCompatActivity {
     private String mediumPassword = "Medium password";
     private String strongPassword = "Strong password";
     private PasswordEntryViewModel viewModel;
-    public static final int PICK_IMAGE = 1;
+    private static final int PICK_IMAGE = 1;
 
 
     @Override

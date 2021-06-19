@@ -83,11 +83,11 @@ public class PasswordFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        ((Explorer) requireActivity()).passwordVaultVisible = false;
+        ((Explorer) requireActivity()).setPasswordVaultVisible(false);
         super.onDestroyView();
     }
 
-    public void setCategory(String category) {
+    protected void setCategory(String category) {
         if(currentOperationNumber == 0) {
             viewModel.setCurrentCategory(category);
             updateView(requireView());
@@ -105,13 +105,13 @@ public class PasswordFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((Explorer) requireActivity()).passwordVaultVisible = true;
+        ((Explorer) requireActivity()).setPasswordVaultVisible(true);
         Toolbar t = requireActivity().findViewById(R.id.toolbar);
-        if (((Explorer) requireActivity()).searchButton != null)
-            t.removeView(((Explorer) requireActivity()).searchButton);
-        if (((Explorer) requireActivity()).searchBar != null) {
-            t.removeView(((Explorer) requireActivity()).searchBar);
-            ((Explorer) requireActivity()).searchBar = null;
+        if (((Explorer) requireActivity()).getSearchButton() != null)
+            t.removeView(((Explorer) requireActivity()).getSearchButton());
+        if (((Explorer) requireActivity()).getSearchBar() != null) {
+            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
@@ -127,7 +127,7 @@ public class PasswordFragment extends Fragment {
         Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
         l3.gravity = Gravity.END;
         b1.setLayoutParams(l3);
-        ((Explorer) requireActivity()).searchButton = b1;
+        ((Explorer) requireActivity()).setSearchButton(b1);
         t.addView(b1);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
@@ -141,14 +141,14 @@ public class PasswordFragment extends Fragment {
         }
         View.OnClickListener searchListener = v -> {
             if(currentOperationNumber == 0) {
-                String searchQuery = ((Explorer) requireActivity()).searchBar.getText().toString();
+                String searchQuery = ((Explorer) requireActivity()).getSearchBar().getText().toString();
                 if (!searchQuery.matches("")) {
                     b1.setEnabled(false);
                     viewModel.setCurrentSearchQuery(searchQuery);
                     updateView(v);
-                    if (((Explorer) requireActivity()).searchBar != null) {
-                        t.removeView(((Explorer) requireActivity()).searchBar);
-                        ((Explorer) requireActivity()).searchBar = null;
+                    if (((Explorer) requireActivity()).getSearchBar() != null) {
+                        t.removeView(((Explorer) requireActivity()).getSearchBar());
+                        ((Explorer) requireActivity()).setSearchBar(null);
                         final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
@@ -159,7 +159,7 @@ public class PasswordFragment extends Fragment {
         };
         fab = requireView().findViewById(R.id.addData);
         b1.setOnClickListener(v -> {
-            if (((Explorer) requireActivity()).searchBar == null) {
+            if (((Explorer) requireActivity()).getSearchBar() == null) {
                 EditText layout = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
                 layout.setTypeface(ubuntu);
@@ -181,7 +181,7 @@ public class PasswordFragment extends Fragment {
                 });
                 final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.showSoftInput(layout, InputMethodManager.SHOW_IMPLICIT);
-                ((Explorer) requireActivity()).searchBar = layout;
+                ((Explorer) requireActivity()).setSearchBar(layout);
             } else {
                 searchListener.onClick(v);
             }
@@ -255,7 +255,7 @@ public class PasswordFragment extends Fragment {
         });
     }
 
-    public void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins, ArrayList<Bitmap> icons) {
+    private void onThreadDone(ArrayList<String> strings2, ArrayList<Integer> id, ArrayList<String> logins, ArrayList<Bitmap> icons) {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         if (adapter == null) {
             adapter = new PasswordAdapter(strings2, id, logins, viewModel.getCategories().getValue(), intent2, requireActivity(), this);
@@ -322,7 +322,7 @@ public class PasswordFragment extends Fragment {
         }
     }
 
-    public String getCurrentCategory() {
+    protected String getCurrentCategory() {
         return viewModel.getCurrentCategory().getValue();
     }
 
