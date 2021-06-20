@@ -97,6 +97,7 @@ public class SettingsFragment extends Fragment {
     @SuppressLint("SetTextI18n")
     private void updateUI() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        //TODO: Fix issue: dark theme doesn't work on some devices + dark theme crashes the app in some activities if it's is not working after it was enabled
         boolean dark_theme = preferences.getBoolean("dark_Theme", false);
         boolean autoDelete = preferences.getBoolean("auto_Delete", true);
         boolean autoDelete2 = preferences.getBoolean("auto_Delete2", true);

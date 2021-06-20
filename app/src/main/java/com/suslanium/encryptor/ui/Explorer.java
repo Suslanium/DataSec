@@ -102,6 +102,7 @@ public class Explorer extends AppCompatActivity {
             if(integer != 0) navController.navigate(integer);
         };
         id.observe(this,integerObserver);
+        //This is for optimization: the fragment is not loaded right after click, so drawer can be closed without lags
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
