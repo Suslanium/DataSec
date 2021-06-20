@@ -165,6 +165,9 @@ public class Explorer extends AppCompatActivity {
             fragment.getUpFolderAction().onClick(navExplorer);
         } else if(passwordFragment != null && passwordFragment.isVisible()){
             passwordFragment.backPress();
+        } else {
+            moveTaskToBack(true);
+            finishAffinity();
         }
     }
 

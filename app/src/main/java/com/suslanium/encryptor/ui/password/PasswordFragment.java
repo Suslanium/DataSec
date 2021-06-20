@@ -59,7 +59,7 @@ public class PasswordFragment extends Fragment {
     private View.OnClickListener cancelSearchListener;
     private Drawable createDrawable;
     private Drawable cancelDrawable;
-    private ImageButton b1;
+    private ImageButton searchButton;
     protected FloatingActionButton fab;
     private PasswordAdapter adapter = null;
     protected FloatingActionButton newCategory;
@@ -106,29 +106,29 @@ public class PasswordFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ((Explorer) requireActivity()).setPasswordVaultVisible(true);
-        Toolbar t = requireActivity().findViewById(R.id.toolbar);
+        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).getSearchButton() != null)
-            t.removeView(((Explorer) requireActivity()).getSearchButton());
+            toolbar.removeView(((Explorer) requireActivity()).getSearchButton());
         if (((Explorer) requireActivity()).getSearchBar() != null) {
-            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            toolbar.removeView(((Explorer) requireActivity()).getSearchBar());
             ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-        b1 = new ImageButton(requireContext());
+        searchButton = new ImageButton(requireContext());
         Drawable drawable;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
         } else {
             drawable = getResources().getDrawable(R.drawable.ic_search);
         }
-        b1.setImageDrawable(drawable);
-        b1.setBackgroundColor(Color.parseColor("#00000000"));
+        searchButton.setImageDrawable(drawable);
+        searchButton.setBackgroundColor(Color.parseColor("#00000000"));
         Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
         l3.gravity = Gravity.END;
-        b1.setLayoutParams(l3);
-        ((Explorer) requireActivity()).setSearchButton(b1);
-        t.addView(b1);
+        searchButton.setLayoutParams(l3);
+        ((Explorer) requireActivity()).setSearchButton(searchButton);
+        toolbar.addView(searchButton);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
         } else {
@@ -143,11 +143,11 @@ public class PasswordFragment extends Fragment {
             if(currentOperationNumber == 0) {
                 String searchQuery = ((Explorer) requireActivity()).getSearchBar().getText().toString();
                 if (!searchQuery.matches("")) {
-                    b1.setEnabled(false);
+                    searchButton.setEnabled(false);
                     viewModel.setCurrentSearchQuery(searchQuery);
                     updateView(v);
                     if (((Explorer) requireActivity()).getSearchBar() != null) {
-                        t.removeView(((Explorer) requireActivity()).getSearchBar());
+                        toolbar.removeView(((Explorer) requireActivity()).getSearchBar());
                         ((Explorer) requireActivity()).setSearchBar(null);
                         final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -158,7 +158,7 @@ public class PasswordFragment extends Fragment {
             }
         };
         fab = requireView().findViewById(R.id.addData);
-        b1.setOnClickListener(v -> {
+        searchButton.setOnClickListener(v -> {
             if (((Explorer) requireActivity()).getSearchBar() == null) {
                 EditText layout = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
@@ -169,7 +169,7 @@ public class PasswordFragment extends Fragment {
                 layout.setHint(R.string.enterServiceName);
                 layout.setTextColor(Color.parseColor("#FFFFFF"));
                 layout.setSingleLine(true);
-                t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                toolbar.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layout.setFocusableInTouchMode(true);
                 layout.requestFocus();
                 layout.setOnKeyListener((v1, keyCode, event) -> {
@@ -270,7 +270,7 @@ public class PasswordFragment extends Fragment {
             fadeIn(searchText);
             fadeOut(recyclerView);
             if (viewModel.getCurrentSearchQuery().getValue() != null && !viewModel.getCurrentSearchQuery().getValue().matches("")) {
-                b1.setEnabled(true);
+                searchButton.setEnabled(true);
                 fab.setOnClickListener(cancelSearchListener);
                 fab.setImageDrawable(cancelDrawable);
             }
@@ -331,7 +331,7 @@ public class PasswordFragment extends Fragment {
         new TapTargetSequence(requireActivity()).targets(
                 getTapTarget(fab,getString(R.string.passwordHintTitle1),getString(R.string.passwordHintMessage1),ubuntu),
                 getTapTarget(newCategory, getString(R.string.passwordHintTitle2),getString(R.string.passwordHintMessage2),ubuntu),
-                getTapTarget(b1, getString(R.string.explorerHintTitle3), getString(R.string.passwordHintMessage3),ubuntu)
+                getTapTarget(searchButton, getString(R.string.explorerHintTitle3), getString(R.string.passwordHintMessage3),ubuntu)
         ).listener(new TapTargetSequence.Listener() {
             @Override
             public void onSequenceFinish() {

@@ -41,8 +41,6 @@ public class Notebook extends Fragment {
     private ProgressBar searchProgress;
     private boolean tutorialComplete = false;
 
-    //public Notebook() {}
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

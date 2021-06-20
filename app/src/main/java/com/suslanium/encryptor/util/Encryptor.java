@@ -43,7 +43,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public final class Encryptor {
     //region File or folder encryption
-    private static final int PBKDF2_ITERATION_COUNT = 300_000;
+    private static final int PBKDF2_ITERATION_COUNT = 300000;
     private static final int PBKDF2_SALT_LENGTH = 16;
     private static final int AES_KEY_LENGTH = 256;
     private static final int GCM_NONCE_LENGTH = 12;
@@ -347,7 +347,6 @@ public final class Encryptor {
                 hexString.append(h);
             }
             return hexString.toString();
-
         } catch (NoSuchAlgorithmException ignored) {
 
         }

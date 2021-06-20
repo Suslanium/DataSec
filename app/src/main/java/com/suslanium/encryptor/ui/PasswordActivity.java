@@ -54,7 +54,7 @@ import static com.suslanium.encryptor.EncryptorAutofillService.generateMaskedPas
 
 public class PasswordActivity extends AppCompatActivity {
 
-    private boolean isAuthActivity = false;
+    private boolean isAutoFillAuthActivity = false;
     private boolean usesBioAuth = false;
 
     @Override
@@ -67,7 +67,7 @@ public class PasswordActivity extends AppCompatActivity {
             Intent intent = new Intent(this, WelcomeActivity.class);
             startActivity(intent);
         }
-        if(getIntent().getIntExtra("TYPE", 5) != 5) isAuthActivity = true;
+        if(getIntent().getIntExtra("TYPE", 5) != 5) isAutoFillAuthActivity = true;
         boolean darkTheme = preferences.getBoolean("dark_Theme", false);
         if (darkTheme) setTheme(R.style.Theme_Encryptor_Dark);
         else setTheme(R.style.Theme_Encryptor_Light);
@@ -89,7 +89,7 @@ public class PasswordActivity extends AppCompatActivity {
         super.onStart();
         TextView bottom = findViewById(R.id.welcomeBottomText);
         Button loginButton = findViewById(R.id.loginButton);
-        if(isAuthActivity){ bottom.setText(R.string.enterPassAuth); loginButton.setText(R.string.cont);}
+        if(isAutoFillAuthActivity){ bottom.setText(R.string.enterPassAuth); loginButton.setText(R.string.cont);}
         if(usesBioAuth){
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -220,7 +220,7 @@ public class PasswordActivity extends AppCompatActivity {
         byte[] pass;
         runOnUiThread(() -> getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE));
-        if(!isAuthActivity) {
+        if(!isAutoFillAuthActivity) {
             try {
                 pass = Encryptor.rsaencrypt(password);
                 runOnUiThread(() -> {

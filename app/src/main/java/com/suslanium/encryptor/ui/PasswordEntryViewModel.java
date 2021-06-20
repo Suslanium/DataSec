@@ -68,6 +68,7 @@ public class PasswordEntryViewModel extends AndroidViewModel {
                 URL imageURL = new URL("https://logo.clearbit.com/" + URLUtil.guessUrl(website));
                 HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
                 connection.setDoInput(true);
+                connection.setConnectTimeout(10000);
                 connection.connect();
                 Bitmap imageBitmap = BitmapFactory.decodeStream(connection.getInputStream());
                 Bitmap thumbnail = Bitmap.createScaledBitmap(imageBitmap, 256,256, false);

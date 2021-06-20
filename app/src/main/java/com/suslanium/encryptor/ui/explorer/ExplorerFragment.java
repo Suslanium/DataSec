@@ -79,7 +79,7 @@ public class ExplorerFragment extends Fragment {
     private TextView freeSpace;
     private ArrayList<String> storagePaths;
     private ExplorerViewModel viewModel;
-    private ImageButton b1;
+    private ImageButton searchButton;
     private boolean tutorialComplete = false;
 
     @Override
@@ -132,31 +132,27 @@ public class ExplorerFragment extends Fragment {
         LiveData<ArrayList<String>> currentNames = viewModel.getCurrentNames();
         createDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_input_add);
         cancelDrawable = ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_delete);
-        Toolbar t = requireActivity().findViewById(R.id.toolbar);
+        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
         if (((Explorer) requireActivity()).getSearchButton() != null)
-            t.removeView(((Explorer) requireActivity()).getSearchButton());
+            toolbar.removeView(((Explorer) requireActivity()).getSearchButton());
         if (((Explorer) requireActivity()).getSearchBar() != null) {
-            t.removeView(((Explorer) requireActivity()).getSearchBar());
+            toolbar.removeView(((Explorer) requireActivity()).getSearchBar());
             ((Explorer) requireActivity()).setSearchBar(null);
             final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-        b1 = new ImageButton(requireContext());
+        searchButton = new ImageButton(requireContext());
         Drawable drawable;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
-        } else {
-            drawable = getResources().getDrawable(R.drawable.ic_search);
-        }
-        b1.setImageDrawable(drawable);
-        b1.setBackgroundColor(Color.parseColor("#00000000"));
+        drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_search);
+        searchButton.setImageDrawable(drawable);
+        searchButton.setBackgroundColor(Color.parseColor("#00000000"));
         Toolbar.LayoutParams l3 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT);
         l3.gravity = Gravity.END;
-        b1.setLayoutParams(l3);
-        ((Explorer) requireActivity()).setSearchButton(b1);
-        t.addView(b1);
-        b1.setImageDrawable(drawable);
-        b1.setBackgroundColor(Color.parseColor("#00000000"));
+        searchButton.setLayoutParams(l3);
+        ((Explorer) requireActivity()).setSearchButton(searchButton);
+        toolbar.addView(searchButton);
+        searchButton.setImageDrawable(drawable);
+        searchButton.setBackgroundColor(Color.parseColor("#00000000"));
         final TextView[] search = {requireActivity().findViewById(R.id.searchText)};
         final ProgressBar[] bar = {requireActivity().findViewById(R.id.progressBarSearch)};
         search[0].setVisibility(View.INVISIBLE);
@@ -221,7 +217,7 @@ public class ExplorerFragment extends Fragment {
                 manager.setSmoothScrollbarEnabled(true);
                 fileView.setLayoutManager(manager);
                 fileView.setAdapter(adapter[0]);
-                if(!tutorialComplete)showHints(fileView,t);
+                if(!tutorialComplete)showHints(fileView,toolbar);
                 else requireActivity().findViewById(R.id.hintDummy1).setVisibility(View.GONE);
             }
         };
@@ -470,10 +466,10 @@ public class ExplorerFragment extends Fragment {
                     }
                     break;
                 case R.id.action_copyFiles:
-                    copyFiles(false, adapter[0], t, b1, confirm, cancel);
+                    copyFiles(false, adapter[0], toolbar, searchButton, confirm, cancel);
                     break;
                 case R.id.action_moveFiles:
-                    copyFiles(true, adapter[0], t, b1, confirm, cancel);
+                    copyFiles(true, adapter[0], toolbar, searchButton, confirm, cancel);
                     break;
                 default:
                     break;
@@ -596,12 +592,12 @@ public class ExplorerFragment extends Fragment {
                 String fileName = ((Explorer) requireActivity()).getSearchBar().getText().toString();
                 if (!fileName.matches("")) {
                     ((Explorer) requireActivity()).setCurrentOperationNumber(((Explorer) requireActivity()).getCurrentOperationNumber() + 1);
-                    b1.setEnabled(false);
+                    searchButton.setEnabled(false);
                     newFolder.setEnabled(false);
                     changeStorage.setEnabled(false);
                     adapter[0].isSearching = true;
                     if (((Explorer) requireActivity()).getSearchBar() != null) {
-                        t.removeView(((Explorer) requireActivity()).getSearchBar());
+                        toolbar.removeView(((Explorer) requireActivity()).getSearchBar());
                         ((Explorer) requireActivity()).setSearchBar(null);
                         final InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -647,7 +643,7 @@ public class ExplorerFragment extends Fragment {
                             bar[0].setVisibility(View.INVISIBLE);
                             adapter[0].isSearching = false;
                             adapter[0].setSearchEnded();
-                            b1.setEnabled(true);
+                            searchButton.setEnabled(true);
                             newFolder.setEnabled(true);
                             changeStorage.setEnabled(true);
                             if (hasResults) {
@@ -667,7 +663,7 @@ public class ExplorerFragment extends Fragment {
                 }
             }
         };
-        b1.setOnClickListener(v -> {
+        searchButton.setOnClickListener(v -> {
             if (((Explorer) requireActivity()).getSearchBar() == null) {
                 EditText layout = new EditText(requireContext());
                 Typeface ubuntu = ResourcesCompat.getFont(requireContext(), R.font.ubuntu);
@@ -678,7 +674,7 @@ public class ExplorerFragment extends Fragment {
                 layout.setTextColor(Color.parseColor("#FFFFFF"));
                 layout.setHint(R.string.enterFileNameSearch);
                 layout.setSingleLine(true);
-                t.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
+                toolbar.addView(layout, Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT);
                 layout.setFocusableInTouchMode(true);
                 layout.setOnKeyListener((v14, keyCode, event) -> {
                     if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
@@ -1146,7 +1142,7 @@ public class ExplorerFragment extends Fragment {
         new TapTargetSequence(requireActivity()).targets(
                 getTapTarget(newFolder, getString(R.string.explorerHintTitle1), getString(R.string.explorerHintMessage1), ubuntu),
                 getTapTarget(changeStorage, getString(R.string.explorerHintTitle2), getString(R.string.explorerHintMessage2), ubuntu),
-                getTapTarget(b1, getString(R.string.explorerHintTitle3), getString(R.string.explorerHintMessage3), ubuntu),
+                getTapTarget(searchButton, getString(R.string.explorerHintTitle3), getString(R.string.explorerHintMessage3), ubuntu),
                 getTapTarget(requireActivity().findViewById(R.id.hintDummy1), getString(R.string.explorerHintTitle4), getString(R.string.explorerHintMessage4), ubuntu),
                 getTapTarget(requireActivity().findViewById(R.id.action_encryptFiles), getString(R.string.explorerHintTitle5), getString(R.string.explorerHintMessage5), ubuntu),
                 getTapTarget(changeStorage, getString(R.string.explorerHintTitle7), getString(R.string.explorerHintMessage7), ubuntu),

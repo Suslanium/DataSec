@@ -16,6 +16,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.util.Encryptor;
 import com.suslanium.encryptor.ui.Explorer;
 import com.suslanium.encryptor.R;
@@ -236,15 +237,20 @@ public class ExplorerViewModel extends AndroidViewModel {
     protected void decryptTemp(File encrypted, File cached, Activity activity, AlertDialog alertDialog) throws Exception {
         if(password == null) password = Encryptor.rsadecrypt(((Explorer) activity).getIntent2().getByteArrayExtra("pass"));
         Encryptor.decryptFileAES256(encrypted, password,cached);
-        Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
-        String type = activity.getContentResolver().getType(uriForFile);
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(uriForFile, type);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         activity.runOnUiThread(() -> {
-            alertDialog.dismiss();
-            activity.startActivityForResult(intent, 101);
+            try {
+                alertDialog.dismiss();
+                Uri uriForFile = FileProvider.getUriForFile(activity.getBaseContext(), "com.suslanium.encryptor.fileprovider", cached);
+                String type = activity.getContentResolver().getType(uriForFile);
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uriForFile, type);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                activity.startActivityForResult(intent, 101);
+            } catch (Exception e){
+                Snackbar.make(activity.getCurrentFocus(),R.string.noAppsFound,Snackbar.LENGTH_LONG).show();
+                cached.delete();
+            }
         });
     }
 }
