@@ -42,12 +42,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.suslanium.encryptor.EncryptorService;
 import com.suslanium.encryptor.R;
+import com.suslanium.encryptor.ui.gdrive.GoogleDriveManager;
 import com.suslanium.encryptor.util.Encryptor;
 
 import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
@@ -56,6 +59,8 @@ public class SettingsFragment extends Fragment {
 
     private GoogleSignInClient mGoogleSignInClient;
     private static final int SIGNIN = 0;
+    private final Scope SCOPEEMAIL = new Scope(Scopes.EMAIL);
+    private final Scope SCOPEAPP = new Scope(Scopes.DRIVE_APPFOLDER);
 
     public SettingsFragment() {
     }
@@ -406,7 +411,7 @@ public class SettingsFragment extends Fragment {
                 mGoogleSignInClient = GoogleSignIn.getClient(requireContext(), gso);
                 GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(requireContext());
                 if (account != null) {
-                    askForRestoringOrBackup();
+                    checkForGooglePermissions();
                 } else {
                     Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                     startActivityForResult(signInIntent, SIGNIN);
@@ -440,12 +445,18 @@ public class SettingsFragment extends Fragment {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            askForRestoringOrBackup();
+            checkForGooglePermissions();
         } catch (ApiException e) {
             Log.w("GoogleDrive", "signInResult:failed code=" + e.getStatusCode());
         }
     }
-
+    private void checkForGooglePermissions() {
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(requireContext()), SCOPEAPP, SCOPEEMAIL)) {
+            GoogleSignIn.requestPermissions(requireActivity(), 1, GoogleSignIn.getLastSignedInAccount(requireContext()), SCOPEEMAIL, SCOPEAPP);
+        } else {
+            askForRestoringOrBackup();
+        }
+    }
     private void askForRestoringOrBackup() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
                 .setTitle(R.string.choose)

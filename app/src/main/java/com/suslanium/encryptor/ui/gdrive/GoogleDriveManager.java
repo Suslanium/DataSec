@@ -1,6 +1,7 @@
 package com.suslanium.encryptor.ui.gdrive;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -17,6 +18,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -165,6 +167,16 @@ public class GoogleDriveManager extends AppCompatActivity {
         } else {
             driveSetUp();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(resultCode == Activity.RESULT_OK){
+            if(requestCode == 1){
+                driveSetUp();
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @SuppressLint("NonConstantResourceId")
