@@ -305,7 +305,7 @@ public class ExplorerFragment extends Fragment {
                                     ArrayList<String> listToRemove = new ArrayList<>();
                                     if (!localDataSet.isEmpty()) {
                                         for (int j = 0; j < paths12.size(); j++) {
-                                            listToRemove.add(paths12.get(j).substring(paths12.get(j).lastIndexOf(File.separator) + 1));
+                                            listToRemove.add(paths12.get(j).replaceFirst(Pattern.quote(pathBefore), "").substring(1));
                                         }
                                         localDataSet.removeAll(listToRemove);
                                     }

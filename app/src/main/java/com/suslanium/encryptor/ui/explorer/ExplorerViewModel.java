@@ -147,7 +147,7 @@ public class ExplorerViewModel extends AndroidViewModel {
             ArrayList<String> paths = new ArrayList<>(preferences.getStringSet("fav", new HashSet<>()));
             if(!paths.isEmpty()){
                 for(int i=0;i<paths.size();i++){
-                    if(paths.get(i).startsWith(path)){
+                    if(paths.get(i).startsWith(path) && new File(paths.get(i)).exists()){
                         result.add(new File(paths.get(i)));
                     }
                 }
