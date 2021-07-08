@@ -1,21 +1,30 @@
 package com.suslanium.encryptor.ui.welcomescreen;
 
 import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,12 +43,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.suslanium.encryptor.R;
 import com.suslanium.encryptor.ui.PasswordActivity;
+import com.suslanium.encryptor.ui.PasswordEntryViewModel;
 import com.suslanium.encryptor.util.Encryptor;
 
 import static android.content.Context.POWER_SERVICE;
 
 public class WelcomeActivityFragment extends Fragment {
     protected static final String ARG_OBJECT = "intType";
+    private int colorFrom = Color.parseColor("#FF0000");
 
     @Nullable
     @Override
@@ -64,6 +75,8 @@ public class WelcomeActivityFragment extends Fragment {
         Button next = view.findViewById(R.id.next);
         ViewPager2 pager2 = requireActivity().findViewById(R.id.welcomePager);
         FrameLayout whyPermissions = view.findViewById(R.id.whyPermissionsFrame);
+        ProgressBar strength = view.findViewById(R.id.passwordStrengthBar3);
+        strength.setMax(1000);
         switch (position) {
             case 1:
                 if(WelcomeActivity.isDeviceRooted()){
@@ -79,11 +92,13 @@ public class WelcomeActivityFragment extends Fragment {
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
                 whyPermissions.setVisibility(View.GONE);
+                strength.setVisibility(View.GONE);
                 next.setOnClickListener(v -> pager2.setCurrentItem(1, true));
                 break;
             case 2:
                 confPass.setVisibility(View.GONE);
                 pass.setVisibility(View.GONE);
+                strength.setVisibility(View.GONE);
                 whyPermissions.setOnClickListener(v -> {
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
                             .setTitle(R.string.whyPermissions)
@@ -134,6 +149,9 @@ public class WelcomeActivityFragment extends Fragment {
                 });
                 break;
             case 3:
+                String weakPassword = getString(R.string.weakPassword);
+                String mediumPassword = getString(R.string.mediumPassword);
+                String strongPassword = getString(R.string.strongPassword);
                 grantBattery.setVisibility(View.GONE);
                 grantStorage.setVisibility(View.GONE);
                 whyPermissions.setVisibility(View.GONE);
@@ -166,6 +184,36 @@ public class WelcomeActivityFragment extends Fragment {
                         Snackbar.make(v, R.string.enterPassErr, Snackbar.LENGTH_LONG).show();
                     }
                 });
+                passL.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        int passStrength = PasswordEntryViewModel.calculatePasswordStrength(s.toString());
+                        setPassBarProgress(passStrength * 100, strength);
+                        if (passStrength >= 8) {
+                            pass.setHelperTextEnabled(true);
+                            pass.setHelperText(strongPassword);
+                            setPassBarColor(Color.parseColor("#4CAF50"), strength);
+                        } else if (passStrength >= 5) {
+                            pass.setHelperTextEnabled(true);
+                            pass.setHelperText(mediumPassword);
+                            setPassBarColor(Color.parseColor("#FBC02D"), strength);
+                        } else if (passStrength <= 3) {
+                            pass.setHelperTextEnabled(true);
+                            pass.setHelperText(weakPassword);
+                            setPassBarColor(Color.parseColor("#EF5350"), strength);
+                        }
+                    }
+                });
                 break;
             default:
                 break;
@@ -192,5 +240,22 @@ public class WelcomeActivityFragment extends Fragment {
             }
         });
         thread.start();
+    }
+
+    private void setPassBarProgress(int progress, ProgressBar strength) {
+        ObjectAnimator animation = ObjectAnimator.ofInt(strength, "progress", strength.getProgress(), progress);
+        animation.setDuration(400);
+        animation.setAutoCancel(true);
+        animation.setInterpolator(new DecelerateInterpolator());
+        animation.start();
+    }
+
+    private void setPassBarColor(int color, ProgressBar strength) {
+        int finalColorFrom = colorFrom;
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), finalColorFrom, color);
+        colorAnimation.setDuration(400);
+        colorAnimation.addUpdateListener(animator -> strength.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue())));
+        colorAnimation.start();
+        colorFrom = color;
     }
 }

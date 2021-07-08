@@ -24,7 +24,8 @@
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
         app:cardMaxElevation="0dp"
-        android:layout_gravity="center|start">
+        android:layout_gravity="center|start"
+        android:layout_marginStart="7dp">
 
         <ImageView
             android:id="@+id/serviceIcon"

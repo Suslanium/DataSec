@@ -289,6 +289,9 @@ public class PasswordFragment extends Fragment {
             } else if (viewModel.getCurrentCategory().getValue() != null && !viewModel.getCurrentCategory().getValue().matches("")) {
                 viewModel.setCurrentCategory(null);
                 updateView(requireView());
+            } else {
+                requireActivity().moveTaskToBack(true);
+                requireActivity().finishAffinity();
             }
         }
     }

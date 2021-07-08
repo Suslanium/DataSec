@@ -56,9 +56,13 @@ public class PasswordActivity extends AppCompatActivity {
 
     private boolean isAutoFillAuthActivity = false;
     private boolean usesBioAuth = false;
+    private boolean isLoggingIn = false;
 
     @Override
-    public void onBackPressed() {}
+    public void onBackPressed() {
+        if(!isLoggingIn)
+            finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,6 +191,7 @@ public class PasswordActivity extends AppCompatActivity {
     private void startLogin(){
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        isLoggingIn = true;
         TextInputLayout text = findViewById(R.id.textInputLayout);
         String password = text.getEditText().getText().toString();
         Thread thread = new Thread(() -> {
@@ -206,11 +211,11 @@ public class PasswordActivity extends AppCompatActivity {
                     if (passwordHash.equals(passHash)) {
                         login(password);
                     } else {
-                        runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);});
+                        runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);isLoggingIn = false;});
                     }
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);});
+                runOnUiThread(() -> {Snackbar.make(getCurrentFocus(), R.string.wentWrongPass, Snackbar.LENGTH_LONG).show();getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);isLoggingIn = false;});
             }
         });
         thread.start();
@@ -220,6 +225,7 @@ public class PasswordActivity extends AppCompatActivity {
         byte[] pass;
         runOnUiThread(() -> getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE));
+        isLoggingIn = true;
         if(!isAutoFillAuthActivity) {
             try {
                 pass = Encryptor.rsaencrypt(password);
@@ -232,6 +238,8 @@ public class PasswordActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
             } catch (Exception ignored) {
+                runOnUiThread(() -> getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE));
+                isLoggingIn = false;
             }
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

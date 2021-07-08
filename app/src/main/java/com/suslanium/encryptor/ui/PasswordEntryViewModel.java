@@ -102,7 +102,7 @@ public class PasswordEntryViewModel extends AndroidViewModel {
         return null;
     }
 
-    protected int calculatePasswordStrength(String password) {
+    public static int calculatePasswordStrength(String password) {
 
         int passwordScore = 0;
 

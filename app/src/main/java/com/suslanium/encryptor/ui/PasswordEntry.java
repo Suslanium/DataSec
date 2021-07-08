@@ -163,9 +163,8 @@ public class PasswordEntry extends AppCompatActivity {
                 } else finish();
             });
         } else {
-            cancel.setVisibility(View.GONE);
             delete.setImageResource(android.R.drawable.ic_delete);
-            delete.setOnClickListener(v -> {
+            View.OnClickListener deleteListener = v -> {
                 if (!name.getText().toString().matches(Pattern.quote(service)) || !login.getText().toString().matches(Pattern.quote(loginName)) || !pass.getText().toString().matches(Pattern.quote(passName)) || !website.getText().toString().matches(Pattern.quote(websiteName)) || !notes.getText().toString().matches(Pattern.quote(notesName))) {
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PasswordEntry.this, R.style.MaterialAlertDialog_rounded)
                             .setTitle(R.string.discardChanges)
@@ -177,7 +176,10 @@ public class PasswordEntry extends AppCompatActivity {
                             .setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                     builder.show();
                 } else finish();
-            });
+            };
+            delete.setOnClickListener(deleteListener);
+            cancel.setOnClickListener(deleteListener);
+            cancel.setVisibility(View.GONE);
         }
         icon.setOnClickListener(v -> {
             Intent intent1 = new Intent(Intent.ACTION_GET_CONTENT);
@@ -263,7 +265,7 @@ public class PasswordEntry extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                int passStrength = viewModel.calculatePasswordStrength(s.toString());
+                int passStrength = PasswordEntryViewModel.calculatePasswordStrength(s.toString());
                 setPassBarProgress(passStrength * 100, strength);
                 if (passStrength >= 8) {
                     passLayout.setHelperTextEnabled(true);
