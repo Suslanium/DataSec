@@ -110,6 +110,7 @@ public class SettingsFragment extends Fragment {
         boolean showPreview = preferences.getBoolean("showPreviews", false);
         boolean showHide = preferences.getBoolean("showHidden", false);
         boolean canUseBioAuth = false;
+        final boolean[] darkThemeFirstTime = {preferences.getBoolean("darkThemeFirstTime", true)};
         BiometricManager biometricManager = BiometricManager.from(requireContext());
         switch (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
             case BiometricManager.BIOMETRIC_SUCCESS:
@@ -325,23 +326,38 @@ public class SettingsFragment extends Fragment {
         showLogins.setChecked(showLogin);
         showHidden.setChecked(showHide);
         darkTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
-            if (isChecked) {
-                editor.putBoolean("dark_Theme", true);
-                editor.apply();
-                Intent intent = new Intent(requireContext(), Explorer.class);
-                intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                intent.putExtra("fromSettings", true);
-                startActivity(intent);
+            if(!darkThemeFirstTime[0]) {
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(requireContext()).edit();
+                if (isChecked) {
+                    editor.putBoolean("dark_Theme", true);
+                    editor.apply();
+                    Intent intent = new Intent(requireContext(), Explorer.class);
+                    intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                    intent.putExtra("fromSettings", true);
+                    startActivity(intent);
+                } else {
+                    editor.putBoolean("dark_Theme", false);
+                    editor.apply();
+                    Intent intent = new Intent(requireContext(), Explorer.class);
+                    intent.putExtra("fromSettings", true);
+                    intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
+                    startActivity(intent);
+                }
+                requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             } else {
-                editor.putBoolean("dark_Theme", false);
-                editor.apply();
-                Intent intent = new Intent(requireContext(), Explorer.class);
-                intent.putExtra("fromSettings", true);
-                intent.putExtra("pass", ((Explorer) requireActivity()).getIntent2().getByteArrayExtra("pass"));
-                startActivity(intent);
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                        .setTitle(R.string.warning)
+                        .setCancelable(false)
+                        .setMessage(R.string.mayNotWork)
+                        .setPositiveButton(R.string.cont, (dialog, which) -> {
+                            dialog.dismiss();
+                            darkThemeFirstTime[0] = false;
+                            preferences.edit().putBoolean("darkThemeFirstTime", false).apply();
+                            darkTheme.setChecked(false);
+                            darkTheme.setChecked(true);
+                        });
+                builder.show();
             }
-            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
         changePass.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded);

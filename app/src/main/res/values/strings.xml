@@ -301,4 +301,7 @@
     <string name="whyPermissionsText">Access to the storage is necessary for the file manager and other functions to work, and disabling consumption optimization is necessary so that the application can perform operations in the background (Encryption, decryption, etc.). On some devices without this permission, background operations are very slow, and downloading or downloading files may be interrupted. Don\'t worry, the app will only run in the background when needed.</string>
     <string name="failedToReadDB">Failed to read database(perhaps your password is wrong?).</string>
     <string name="noAppsFound">No application found to open file</string>
+    <string name="cantEnableOpti">Can\'t turn off battery optimization?</string>
+    <string name="cantEnableOptiText">If you cannot turn off the battery optimization - go to the settings and find the section \"Battery optimization\", in it find this application and turn off the optimization by clicking on the switch. If there is no \"Battery optimization\" section, then go to the application information and look for the setting that is responsible for battery consumption and put everything in it without restrictions (For example, in MIUI this item is called Battery Saver)</string>
+    <string name="mayNotWork">Dark theme may not work on some devices</string>
 </resources>

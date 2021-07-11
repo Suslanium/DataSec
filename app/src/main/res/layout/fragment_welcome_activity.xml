@@ -79,6 +79,32 @@
                 android:textSize="14sp" />
         </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/cantEnableBatteryOptimization"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="11dp"
+            android:alpha="0.8"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/imageView22"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/question"
+                app:tint="?android:attr/textColor" />
+
+            <TextView
+                android:id="@+id/textView44"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center|start"
+                android:text="@string/cantEnableOpti"
+                android:textSize="14sp" />
+        </FrameLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

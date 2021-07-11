@@ -75,6 +75,7 @@ public class WelcomeActivityFragment extends Fragment {
         Button next = view.findViewById(R.id.next);
         ViewPager2 pager2 = requireActivity().findViewById(R.id.welcomePager);
         FrameLayout whyPermissions = view.findViewById(R.id.whyPermissionsFrame);
+        FrameLayout cantDisableBatteryOptimization = view.findViewById(R.id.cantEnableBatteryOptimization);
         ProgressBar strength = view.findViewById(R.id.passwordStrengthBar3);
         strength.setMax(1000);
         switch (position) {
@@ -120,6 +121,14 @@ public class WelcomeActivityFragment extends Fragment {
                             intent.setData(Uri.parse("package:" + packageName));
                             startActivityForResult(intent, 1002);
                         }
+                        cantDisableBatteryOptimization.setVisibility(View.VISIBLE);
+                        cantDisableBatteryOptimization.setOnClickListener(v1 -> {
+                            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialAlertDialog_rounded)
+                                    .setTitle(R.string.cantEnableOpti)
+                                    .setMessage(R.string.cantEnableOptiText)
+                                    .setPositiveButton(R.string.cont, (dialog, which) -> dialog.dismiss());
+                            builder.show();
+                        });
                     }
                 });
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
