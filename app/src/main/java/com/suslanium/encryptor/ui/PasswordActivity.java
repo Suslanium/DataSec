@@ -16,12 +16,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
 import android.view.View;
@@ -95,10 +92,7 @@ public class PasswordActivity extends AppCompatActivity {
         Button loginButton = findViewById(R.id.loginButton);
         if(isAutoFillAuthActivity){ bottom.setText(R.string.enterPassAuth); loginButton.setText(R.string.cont);}
         if(usesBioAuth){
-            String packageName = getPackageName();
-            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || pm.isIgnoringBatteryOptimizations(packageName)) {
                     BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                             .setTitle(getString(R.string.bioAuth))
                             .setSubtitle(getString(R.string.loginBio))
@@ -139,22 +133,14 @@ public class PasswordActivity extends AppCompatActivity {
                         }
                     });
                     biometricPrompt.authenticate(promptInfo);
-                }
             }
         }
     }
 
     public void checkForPermissionsPassword(View v) {
-        String packageName = getPackageName();
-        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !pm.isIgnoringBatteryOptimizations(packageName)) {
-            Intent intent = new Intent();
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + packageName));
-            startActivityForResult(intent, 1002);
         } else {
             checkPassword(v);
         }
@@ -173,12 +159,8 @@ public class PasswordActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1002) {
-            String packageName = getPackageName();
-            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (!EncryptorService.isChangingPassword()) {
-                if (pm.isIgnoringBatteryOptimizations(packageName)) {
-                        startLogin();
-                    }
+                startLogin();
             } else {
                 try {
                     Snackbar.make(findViewById(R.id.welcomeText), R.string.cannotUseWhileChanging, Snackbar.LENGTH_LONG).show();
